@@ -13,9 +13,13 @@ export const drawNetwork = (
 
   // Draw the links first
   links.forEach((link) => {
+    const source = nodes.find(n => n.id === link.source);
+    const target = nodes.find(n => n.id === link.target);
+    if (!source?.x || !source?.y || !target?.x || !target?.y) return;
+
     context.beginPath();
-    context.moveTo(link.source.x, link.source.y);
-    context.lineTo(link.target.x, link.target.y);
+    context.moveTo(source.x, source.y);
+    context.lineTo(target.x, target.y);
     context.stroke();
   });
 
