@@ -1,7 +1,3 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import agentsData from '@/app/agents.json';
 
@@ -22,35 +18,18 @@ const privacyLevelColors = {
   critical: 'bg-red-100 text-red-800',
 };
 
-export default function AgentDetails({ params }: { params: { id: string } }) {
-  const [agent, setAgent] = useState<Agent | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+type Params = Promise<{ id: string }>
 
-  useEffect(() => {
-    // Find the agent with the matching ID
-    const foundAgent = agentsData.agents.find(a => a.id === params.id);
-    
-    if (foundAgent) {
-      setAgent(foundAgent);
-    }
-    
-    setLoading(false);
-  }, [params.id]);
 
-  if (loading) {
-    return (
-      <div className="h-96 flex items-center justify-center">
-        <div className="animate-pulse text-xl">Loading...</div>
-      </div>
-    );
-  }
+export default async function AgentDetails({ params }: { params: Params }) {
+  const { id } = await params;
+  const agent = agentsData.agents.find(a => a.id === id);
 
   if (!agent) {
     return (
       <div className="h-96 flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold mb-4">Agent Not Found</h2>
-        <p className="mb-6">We couldn't find an agent with the ID: {params.id}</p>
+        <p className="mb-6">We couldn't find an agent with the ID: {id}</p>
         <Link 
           href="/agents" 
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"

@@ -31,8 +31,8 @@ export default function AgentsDirectory() {
   const [sortBy, setSortBy] = useState<'name' | 'stake'>('name');
 
   useEffect(() => {
-    // Load the agents data
-    setAgents(agentsData.agents);
+    // Load the agents data with proper type assertion
+    setAgents(agentsData.agents as unknown as Agent[]);
   }, []);
   
   // Filter and sort agents based on search term, privacy filter, and sort order
