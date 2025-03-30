@@ -15,43 +15,86 @@ type SubTask = {
 
 type Relationship = (typeof relationships)[0];
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { query, minConfidence = 0.8 } = await req.json();
+    const { query, minConfidence = 0.7 } = await request.json();
     
     if (!query) {
-      return NextResponse.json({ error: "Query is required" }, { status: 400 });
+      return new Response(JSON.stringify({ error: 'Query is required' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     }
 
-    console.log(`Task Router: Processing query "${query}"`);
-
-    // Step 1: Decompose the query into subtasks using LLM
-    const subtasks = await decomposeTask(query);
-    console.log(`Task Router: Decomposed into ${subtasks.length} subtasks:`, subtasks);
+    // Decompose task into subtasks
+    const subtaskAssignments = await decomposeTask(query);
     
-    // Step 2: Find best agents for each subtask
-    const tasks = await assignAgents(subtasks, minConfidence);
-    console.log(`Task Router: Assigned ${tasks.length} agents to subtasks`);
+    // Assign agents to subtasks based on context and capabilities
+    const tasks = assignAgentsToTasks(subtaskAssignments);
     
-    return NextResponse.json({ tasks });
+    // Return tasks with agent assignments
+    return new Response(JSON.stringify({ tasks }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   } catch (error) {
-    console.error("Task Router Error:", error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    console.error('Error in task router:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 }
 
 /**
  * Uses the LLM to decompose a complex task into simpler subtasks
  */
-async function decomposeTask(query: string): Promise<string[]> {
+async function decomposeTask(query: string): Promise<any[]> {
   try {
     const API_URL = "https://anura-testnet.lilypad.tech/api/v1/chat/completions";
     const API_TOKEN = process.env.LILYPAD_API_TOKEN;
 
+    // Get available agents for context
+    const availableAgents = agents.map(agent => ({
+      id: agent.id,
+      name: agent.name,
+      expertise: agent.description
+    }));
+
     const systemPrompt = `You are an expert task decomposer for the Agent Nexus Protocol. 
-    Your job is to break down complex user queries into 2-4 specific subtasks that can be assigned to specialized AI agents.
-    Each subtask should be focused on a single aspect of the problem and be self-contained.
-    Respond ONLY with a JSON array of strings, each describing a subtask. Do not include any other text or explanations.`;
+    Your job is to break down complex user queries into 2-4 specific subtasks and assign each to the most appropriate specialized AI agent.
+    
+    Available agents and their expertise:
+    ${JSON.stringify(availableAgents, null, 2)}
+
+    For each subtask:
+    1. Make it focused on a single aspect of the problem
+    2. Make it self-contained
+    3. Assign it to the most appropriate agent based on the agent's expertise
+    
+    Respond ONLY with a JSON array of objects, where each object has:
+    - "subtask": a string describing the subtask
+    - "agent_id": the ID of the assigned agent
+    
+    Example response format:
+    [
+      {
+        "subtask": "Research legal compliance requirements for data processing",
+        "agent_id": "agent_legal"
+      },
+      {
+        "subtask": "Analyze technical implementation options",
+        "agent_id": "agent_tech"
+      }
+    ]
+    
+    Do not include any other text or explanations.`;
 
     const messages = [
       {
@@ -60,7 +103,7 @@ async function decomposeTask(query: string): Promise<string[]> {
       },
       {
         role: "user",
-        content: `Break this query into 2-4 specific subtasks: "${query}"`
+        content: `Break this query into 2-4 specific subtasks and assign each to the most appropriate agent: "${query}"`
       }
     ];
 
@@ -88,7 +131,7 @@ async function decomposeTask(query: string): Promise<string[]> {
     const result = await response.json();
     
     // Parse the response as JSON array (clean it first if needed)
-    let subtasks: string[] = [];
+    let subtaskAssignments: any[] = [];
     
     if (result.choices && result.choices[0] && result.choices[0].message.content) {
       const content = result.choices[0].message.content.trim();
@@ -96,47 +139,67 @@ async function decomposeTask(query: string): Promise<string[]> {
       try {
         // Try to parse directly first
         if (content.startsWith('[') && content.endsWith(']')) {
-          subtasks = JSON.parse(content);
+          subtaskAssignments = JSON.parse(content);
         } else {
           // Extract JSON array if wrapped in markdown or extra text
           const jsonMatch = content.match(/\[[\s\S]*\]/);
           if (jsonMatch) {
-            subtasks = JSON.parse(jsonMatch[0]);
-          } else {
-            // Fallback - split by newlines and clean up
-            subtasks = content.split('\n')
-              .map((line: string) => line.trim())
-              .filter((line: string) => line && !line.startsWith('```') && !line.endsWith('```'));
+            subtaskAssignments = JSON.parse(jsonMatch[0]);
           }
         }
       } catch (parseError) {
         console.error("Error parsing LLM response:", parseError);
-        // If JSON parsing fails, treat each line as a task
-        subtasks = content.split('\n')
-          .map((line: string) => line.trim())
-          .filter((line: string) => line && !line.startsWith('```') && !line.endsWith('```'));
+        // Use fallback if parsing fails
+        subtaskAssignments = [];
       }
     }
-
-    if (subtasks.length === 0) {
+    
+    if (subtaskAssignments.length === 0) {
       // Fallback for when the LLM doesn't return properly formatted tasks
-      subtasks = [
-        "Research background information",
-        "Analyze domain-specific factors",
-        "Provide recommendations and next steps"
+      subtaskAssignments = [
+        {
+          subtask: "Research background information",
+          agent_id: "agent_research"
+        },
+        {
+          subtask: "Analyze domain-specific factors",
+          agent_id: "agent_domain"
+        },
+        {
+          subtask: "Provide recommendations and next steps",
+          agent_id: "agent_planning"
+        }
       ];
     }
 
-    return subtasks;
+    return subtaskAssignments;
   } catch (error) {
     console.error("Error decomposing task:", error);
     // Fallback tasks in case of an error
     return [
-      "Research background information",
-      "Analyze domain-specific factors", 
-      "Provide recommendations and next steps"
+      {
+        subtask: "Research background information",
+        agent_id: "agent_research"
+      },
+      {
+        subtask: "Analyze domain-specific factors",
+        agent_id: "agent_domain"
+      },
+      {
+        subtask: "Provide recommendations and next steps",
+        agent_id: "agent_planning"
+      }
     ];
   }
+}
+
+/**
+ * Assigns agents to subtasks based on capability matching
+ */
+function assignAgentsToTasks(subtaskAssignments: any[]): any[] {
+  // We now receive the assignments directly from the LLM
+  // Just return them as is - the frontend will match agent_id to actual agents
+  return subtaskAssignments;
 }
 
 /**

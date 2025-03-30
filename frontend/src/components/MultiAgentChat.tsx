@@ -374,7 +374,19 @@ export default function MultiAgentChat() {
       }
       
       // Get the tasks from the API response and update state
-      const tasks: SubTask[] = data.tasks;
+      const tasks: SubTask[] = data.tasks.map((task: any) => {
+        // Find the agent assigned to this task using agent_id
+        const assignedAgent = agents.find(agent => agent.id === task.agent_id) || 
+          // Fallback to a random agent if no specific assignment or agent not found
+          agents[Math.floor(Math.random() * agents.length)];
+          
+        return {
+          id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          description: task.subtask || task.description,
+          agent: assignedAgent,
+          status: 'pending'
+        };
+      });
       setActiveTasks(tasks);
       
       // Add system message - Found agents
@@ -452,7 +464,7 @@ export default function MultiAgentChat() {
     } catch (error) {
       console.error('Error calling task router:', error);
       
-      // Fallback to hardcoded task generation in case of API failure
+      // Fallback to structured task generation in case of API failure
       addSystemMessage('Router encountered an issue. Falling back to local task decomposition...');
       
       // Generate random subtasks based on the input query (fallback method)
@@ -462,9 +474,38 @@ export default function MultiAgentChat() {
       }
       
       const selectedAgents = Array.from(selectedAgentIndices).map(i => agents[i as number]);
+      const queryLower = input.toLowerCase();
       
-      // Create tasks based on the query and selected agents
-      const tasks: SubTask[] = generateSubtasks(input, selectedAgents);
+      // Create structured task assignments based on the query and selected agents
+      const structuredTasks = [
+        {
+          subtask: queryLower.includes('legal') || queryLower.includes('compliance') ? 
+            'Analyze legal and regulatory requirements' : 'Research background information',
+          agent_id: selectedAgents[0].id
+        },
+        {
+          subtask: queryLower.includes('financial') || queryLower.includes('cost') ? 
+            'Evaluate financial implications' : 'Analyze domain-specific factors',
+          agent_id: selectedAgents[1].id
+        },
+        {
+          subtask: queryLower.includes('risk') || queryLower.includes('security') ? 
+            'Assess potential risks and mitigations' : 'Provide recommendations and next steps',
+          agent_id: selectedAgents[2].id
+        }
+      ];
+      
+      // Convert structured tasks to SubTask objects
+      const tasks: SubTask[] = structuredTasks.map(task => {
+        const assignedAgent = agents.find(agent => agent.id === task.agent_id) || selectedAgents[0];
+        return {
+          id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          description: task.subtask,
+          agent: assignedAgent,
+          status: 'pending'
+        };
+      });
+      
       setActiveTasks(tasks);
       
       // Add system message - Found agents
