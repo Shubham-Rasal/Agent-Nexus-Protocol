@@ -86,6 +86,9 @@ import DelayNode from './nodes/DelayNode';
 // Sidebar Components
 import AgentCard from './sidebar/AgentCard';
 
+// Import the TriggerSelector component
+import TriggerSelector from './triggers/TriggerSelector';
+
 // Define the custom node types
 const nodeTypes: NodeTypes = {
   trigger: TriggerNode,
@@ -460,11 +463,24 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
               label: 'New Trigger',
               type,
               description: 'Triggered when an event occurs',
-              config: {},
+              config: {
+                triggerType: 'gmail',
+                emailConfig: {
+                  fromAddress: '',
+                  subject: '',
+                  hasAttachment: false,
+                  maxResults: 5,
+                  includeParsedContent: true
+                }
+              },
               outputs: {
                 event: 'The triggered event',
                 timestamp: 'When the event occurred',
-                data: 'Data associated with the event'
+                data: 'Data associated with the event',
+                emailFrom: 'Sender of the email (Gmail trigger)',
+                emailSubject: 'Subject of the email (Gmail trigger)',
+                emailBody: 'Content of the email (Gmail trigger)',
+                emailAttachments: 'Attachments from the email (Gmail trigger)'
               },
               ...nodeCallbacks,
             },
@@ -1038,6 +1054,49 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+                
+                {/* Trigger Node Settings */}
+                {selectedNode.type === 'trigger' && (
+                  <div className="space-y-4">
+                    <TriggerSelector 
+                      config={selectedNode.data.config || {}}
+                      onChange={(newConfig) => {
+                        // Update the node's config
+                        setNodes(nodes.map(node => {
+                          if (node.id === selectedNode.id) {
+                            return {
+                              ...node,
+                              data: { 
+                                ...node.data, 
+                                config: newConfig,
+                                // If this is a Gmail trigger and it's connected, update the label
+                                label: newConfig.triggerType === 'gmail' && newConfig.connected 
+                                  ? `Gmail: ${newConfig.userEmail?.split('@')[0] || 'Connected'}`
+                                  : node.data.label
+                              }
+                            };
+                          }
+                          return node;
+                        }));
+                        
+                        // Update the selected node with the new config
+                        setSelectedNode({
+                          ...selectedNode,
+                          data: { 
+                            ...selectedNode.data, 
+                            config: newConfig,
+                            // If this is a Gmail trigger and it's connected, update the label
+                            label: newConfig.triggerType === 'gmail' && newConfig.connected 
+                              ? `Gmail: ${newConfig.userEmail?.split('@')[0] || 'Connected'}`
+                              : selectedNode.data.label
+                          }
+                        });
+                        
+                        setIsEdited(true);
+                      }}
+                    />
                   </div>
                 )}
                 
