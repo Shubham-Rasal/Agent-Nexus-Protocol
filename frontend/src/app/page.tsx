@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import AgentCreationFeature from '@/components/AgentCreationFeature';
 
 export default function Home() {
   return (
@@ -8,6 +9,10 @@ export default function Home() {
         <p className="text-gray-600 mb-6">
           Leverage multiple AI agents working together to solve complex problems.
         </p>
+        
+        <div className="mb-10">
+          <AgentCreationFeature />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">

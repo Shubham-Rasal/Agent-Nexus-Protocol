@@ -1,0 +1,35 @@
+---
+description: This is a rough requirements to build an agent worlfow editor for this project
+globs: 
+---
+To make our system really useful, I am thinking of  solving the following problem
+
+Task 
+
+automated lead management
+
+what agents are needed?
+
+email finder - to finder the email of people asked for. This agent will receive a link to profile or x.com link
+
+sheets agent - adds leads to a sheet
+
+gmail agent - drafts a mail with the context received from the previous steps
+
+calender assistant  - schedules appointments on my calender
+
+briefer agent
+
+AI agent that texts me a meeting briefing 30 minutes before each meeting.
+It reviews their LinkedIn for a bio + our recent emails for context. Incredible.
+
+I need to build an extensible way to implement an automated lead management agents. I don't want to hardcode the agent workflow. This is just an example. I need to build infrastructure to build similar agents and workflows.
+
+Creating agents is customisable. each agent will have following parameters - prompt, model (llm), skills. Skills can be anything like sending a mail, drafting a message, browsing the web, setting up calender. 
+
+I need to be able to create the following 
+
+- self contained tools that can be used assigned to any agent during agent creation process
+- a flow based workflow editor to implement my workflow
+
+For the flow based editor, we will use reactflow
