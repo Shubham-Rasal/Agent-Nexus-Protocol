@@ -16,9 +16,9 @@ export default function GoogleAuthCallback() {
       
       if (token) {
         setStatus('success');
-        // Redirect back to the workflow editor after a short delay
+        // Redirect back to the tools page after a short delay
         setTimeout(() => {
-          router.push('/leadflow');
+          router.push('/tools');
         }, 2000);
       } else {
         // No token found in URL, likely not a redirect from Google
@@ -51,7 +51,7 @@ export default function GoogleAuthCallback() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-gray-600 text-center">Authentication successful! You will be redirected back to the workflow editor in a moment.</p>
+            <p className="text-gray-600 text-center">Authentication successful! You will be redirected back to the tools page in a moment.</p>
           </div>
         )}
         
@@ -63,8 +63,8 @@ export default function GoogleAuthCallback() {
               </svg>
             </div>
             <p className="text-red-500 text-center">{errorMessage || 'Authentication failed. Please try again.'}</p>
-            <Button onClick={() => router.push('/leadflow')} className="mt-4">
-              Return to Workflow Editor
+            <Button onClick={() => router.push('/tools')} className="mt-4">
+              Return to Tools Page
             </Button>
           </div>
         )}

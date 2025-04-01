@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import GmailSendTool from './GmailSendTool';
 import AkaveStorageTool from './AkaveStorageTool';
+import GoogleCalendarTool from './GoogleCalendarTool';
 
 interface ToolConfigProps {
   toolId: string;
@@ -43,6 +44,14 @@ export default function ToolConfig({ toolId, config, onChange }: ToolConfigProps
       case 'akave-storage':
         return (
           <AkaveStorageTool
+            config={config}
+            onChange={onChange}
+            onTest={handleTestResult}
+          />
+        );
+      case 'google-calendar':
+        return (
+          <GoogleCalendarTool
             config={config}
             onChange={onChange}
             onTest={handleTestResult}

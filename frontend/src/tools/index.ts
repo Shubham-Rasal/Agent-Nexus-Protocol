@@ -1,5 +1,6 @@
 import { gmailSendTool } from './gmail-send';
 import { akaveStorageTool } from './akave-storage';
+import { googleCalendarTool } from './google-calendar';
 
 /**
  * Registry of all available tool implementations
@@ -7,6 +8,7 @@ import { akaveStorageTool } from './akave-storage';
 export const toolRegistry: Record<string, Function> = {
   'gmail-send': gmailSendTool,
   'akave-storage': akaveStorageTool,
+  'google-calendar': googleCalendarTool,
   // Add more tools here as they are implemented
 };
 

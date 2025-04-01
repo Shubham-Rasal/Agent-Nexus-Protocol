@@ -7,6 +7,8 @@ const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly', // For reading emails
   'https://www.googleapis.com/auth/gmail.send',     // For sending emails
   'https://www.googleapis.com/auth/userinfo.email', // For user info
+  'https://www.googleapis.com/auth/calendar',       // For Google Calendar access
+  'https://www.googleapis.com/auth/calendar.events', // For managing calendar events
 ];
 
 // Store tokens in localStorage with these keys
@@ -64,6 +66,11 @@ export const handleAuthCallback = () => {
  * Checks if the user is authenticated with Google
  */
 export const isGoogleAuthenticated = (): boolean => {
+  // Check for browser environment (important for Next.js SSR)
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return false;
+  }
+
   // Check if token exists and is not expired
   const token = localStorage.getItem(AUTH_STORAGE_KEY);
   const expiryTime = localStorage.getItem(TOKEN_EXPIRY_KEY);
@@ -74,7 +81,15 @@ export const isGoogleAuthenticated = (): boolean => {
   
   // Check if token is expired
   const now = Date.now();
-  return now < parseInt(expiryTime);
+  const isValid = now < parseInt(expiryTime);
+  
+  // If token is expired, clean up
+  if (!isValid) {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_EXPIRY_KEY);
+  }
+  
+  return isValid;
 };
 
 /**

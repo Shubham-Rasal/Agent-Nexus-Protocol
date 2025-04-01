@@ -85,6 +85,8 @@ import DelayNode from './nodes/DelayNode';
 
 // Sidebar Components
 import AgentCard from './sidebar/AgentCard';
+import ToolCard from '@/components/sidebar/ToolCard';
+import ToolConfig from '@/components/tools/ToolConfig';
 
 // Import the TriggerSelector component
 import TriggerSelector from './triggers/TriggerSelector';
@@ -600,7 +602,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
     },
     [reactFlowInstance, setNodes, handleDeleteNode, handleEditNode, handleDuplicateNode, handleNodeInfo]
   );
-
+  
   const handleSave = useCallback(() => {
     // Convert React Flow nodes back to workflow nodes
     const workflowNodes = nodes.map((node) => ({
@@ -637,7 +639,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
     // This is a placeholder for running the workflow
     alert('This would run the workflow in a real implementation');
   }, []);
-
+  
   const handleExport = useCallback(() => {
     // Create updated workflow object with current nodes and edges
     const workflowNodes = nodes.map((node) => ({
@@ -675,12 +677,12 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
     linkElement.setAttribute('download', exportName);
     linkElement.click();
   }, [initialWorkflow, nodes, edges, workflowName, workflowDescription]);
-
+  
   const handleImport = useCallback(() => {
     // In a real implementation, this would open a file dialog
     alert('This would open a file dialog to import a workflow JSON file');
   }, []);
-
+  
   // Update the renderSidebar function to modify what's shown when an edge is selected
   const renderSidebar = () => (
     <div className="bg-white flex flex-col h-full">
@@ -920,7 +922,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                           
                           return noEdges.map(edge => {
                             const targetNode = nodes.find(n => n.id === edge.target);
-                            return (
+  return (
                               <div key={edge.id} className="flex justify-between items-center text-sm">
                                 <span>→ {targetNode?.data.label || 'Unknown Node'}</span>
                                 <Button 
@@ -1136,69 +1138,70 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                   </Button>
                 </div>
                 <div className="space-y-2">
-                  <div>
+            <div>
                     <Label htmlFor="workflow-name">Name</Label>
-                    <Input
-                      id="workflow-name"
+              <Input
+                id="workflow-name"
                       value={workflowName}
                       onChange={(e) => setWorkflowName(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="workflow-description">Description</Label>
-                    <Input
-                      id="workflow-description"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="workflow-description">Description</Label>
+              <Input
+                id="workflow-description"
                       value={workflowDescription}
                       onChange={(e) => setWorkflowDescription(e.target.value)}
-                      className="mt-1"
-                    />
+                className="mt-1"
+              />
                   </div>
-                </div>
-              </div>
-              
+            </div>
+          </div>
+          
               <div className="space-y-2 mb-4">
-                <Button 
-                  onClick={handleSave} 
-                  variant="default" 
+              <Button 
+                onClick={handleSave} 
+                variant="default" 
                   className="w-full"
-                  disabled={!isEdited}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </Button>
-                <Button 
-                  onClick={handleRunWorkflow} 
-                  variant="outline"
+                disabled={!isEdited}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save
+              </Button>
+              <Button 
+                onClick={handleRunWorkflow} 
+                variant="outline"
                   className="w-full"
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  Run
-                </Button>
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Run
+              </Button>
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={handleExport} 
-                    variant="outline"
+              <Button 
+                onClick={handleExport} 
+                variant="outline"
                     className="flex-1"
-                  >
-                    <FileDown className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                  <Button 
-                    onClick={handleImport} 
-                    variant="outline"
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              <Button 
+                onClick={handleImport} 
+                variant="outline"
                     className="flex-1"
-                  >
-                    <FileUp className="h-4 w-4 mr-2" />
-                    Import
-                  </Button>
-                </div>
-              </div>
+              >
+                <FileUp className="h-4 w-4 mr-2" />
+                Import
+              </Button>
+            </div>
+          </div>
               
               <Tabs defaultValue="nodes" className="flex flex-col">
                 <TabsList className="w-full">
                   <TabsTrigger value="nodes" className="flex-1">Nodes</TabsTrigger>
                   <TabsTrigger value="agents" className="flex-1">Agents</TabsTrigger>
+                  <TabsTrigger value="tools" className="flex-1">Tools</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="nodes" className="overflow-hidden">
@@ -1243,7 +1246,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                         onDragStart={onDragStart}
                       />
                     </NodeCategory>
-                  </div>
+        </div>
                 </TabsContent>
                 
                 <TabsContent value="agents" className="overflow-hidden">
@@ -1256,14 +1259,32 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                         className="cursor-move"
                       >
                         <AgentCard agent={agent} showTools={true} />
+              </div>
+                    ))}
+            </div>
+                </TabsContent>
+                
+                <TabsContent value="tools" className="overflow-hidden">
+                  <div className="space-y-4 mt-2">
+                    {PRESET_TOOLS.filter(tool => tool.id === 'akave-storage').map((tool) => (
+                      <div key={tool.id} className="space-y-3">
+                        <ToolCard tool={tool} />
+                        <div className="border rounded-md p-4 bg-gray-50">
+                          <h4 className="text-sm font-medium mb-3">Test Tool</h4>
+                          <ToolConfig 
+                            toolId={tool.id}
+                            config={{}}
+                            onChange={() => {}}
+                          />
+                        </div>
                       </div>
                     ))}
-                  </div>
+          </div>
                 </TabsContent>
               </Tabs>
             </>
-          )}
-        </div>
+        )}
+      </div>
       </ScrollArea>
     </div>
   );
