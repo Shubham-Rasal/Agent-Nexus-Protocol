@@ -6,6 +6,7 @@ import { AlertCircle } from 'lucide-react';
 import GmailSendTool from './GmailSendTool';
 import AkaveStorageTool from './AkaveStorageTool';
 import GoogleCalendarTool from './GoogleCalendarTool';
+import CSVProcessorTool from './CSVProcessorTool';
 
 interface ToolConfigProps {
   toolId: string;
@@ -52,6 +53,14 @@ export default function ToolConfig({ toolId, config, onChange }: ToolConfigProps
       case 'google-calendar':
         return (
           <GoogleCalendarTool
+            config={config}
+            onChange={onChange}
+            onTest={handleTestResult}
+          />
+        );
+      case 'csv-processor':
+        return (
+          <CSVProcessorTool
             config={config}
             onChange={onChange}
             onTest={handleTestResult}

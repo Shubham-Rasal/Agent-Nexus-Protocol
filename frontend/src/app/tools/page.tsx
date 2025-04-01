@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
   Plus, Wrench, FileEdit, Trash2, Mail, FileSpreadsheet, Calendar, 
-  BarChart2, X, CheckCircle, AlertCircle, ExternalLink, Code, Database, Loader2, FileText, FileIcon, FileDown, Video, LinkIcon, Clock, UserPlus, CalendarIcon, FileUp, FolderPlus, Upload
+  BarChart2, X, CheckCircle, AlertCircle, ExternalLink, Code, Database, Loader2, FileText, FileIcon, FileDown, Video, LinkIcon, Clock, UserPlus, CalendarIcon, FileUp, FolderPlus, Upload, FileJson
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatProviderName } from '@/components/WorkflowUtils';
@@ -39,6 +39,7 @@ const TOOL_ICONS: Record<string, any> = {
 const TOOL_ID_GMAIL = 'gmail-send';
 const TOOL_ID_AKAVE = 'akave-storage';
 const TOOL_ID_CALENDAR = 'google-calendar';
+const TOOL_ID_CSV = 'csv-processor';
 
 export default function ToolBuilderPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -125,6 +126,23 @@ export default function ToolBuilderPage() {
           if (result.success && toolConfig.operation === 'download' && result.data?.downloadUrl) {
             setDownloadUrl(result.data.downloadUrl);
           }
+        }
+      }
+      // For CSV Processor tool
+      else if (selectedTool.id === TOOL_ID_CSV) {
+        const result = await executeTool(TOOL_ID_CSV, {
+          inputUrl: toolConfig.inputUrl || '',
+          systemPrompt: toolConfig.systemPrompt || '',
+          outputFormat: toolConfig.outputFormat || 'csv',
+          maxRows: parseInt(toolConfig.maxRows || '1000'),
+          model: toolConfig.model || 'llama3.1:8b'
+        });
+        
+        setTestResult(result);
+        
+        // If successful and has outputUrl, set it for download
+        if (result.success && result.outputUrl) {
+          setDownloadUrl(result.outputUrl);
         }
       }
       // For Google Calendar tool
@@ -964,6 +982,157 @@ another@company.com"
                         )}
                       </div>
                     </>
+                  )}
+                  
+                  {/* Tool testing section for CSV Processor */}
+                  {selectedTool?.id === TOOL_ID_CSV && (
+                    <div className="border rounded-md p-4 mt-6">
+                      <h3 className="text-lg font-medium mb-4">Test CSV Processor</h3>
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="inputUrl">CSV Input URL</Label>
+                          <Input
+                            id="inputUrl"
+                            placeholder="https://example.com/data.csv"
+                            value={toolConfig.inputUrl || ''}
+                            onChange={(e) => updateConfig('inputUrl', e.target.value)}
+                          />
+                          <p className="text-xs text-gray-500">
+                            URL to a publicly accessible CSV file that needs to be processed
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="systemPrompt">Transformation Instructions</Label>
+                          <Textarea
+                            id="systemPrompt"
+                            placeholder="Describe how you want the CSV data to be transformed..."
+                            value={toolConfig.systemPrompt || ''}
+                            onChange={(e) => updateConfig('systemPrompt', e.target.value)}
+                            rows={5}
+                            className="resize-y"
+                          />
+                          <p className="text-xs text-gray-500">
+                            <Code className="h-3 w-3 inline-block mr-1" />
+                            Provide clear instructions for how the CSV data should be transformed
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="outputFormat">Output Format</Label>
+                            <Select
+                              value={toolConfig.outputFormat || 'csv'}
+                              onValueChange={(value: string) => updateConfig('outputFormat', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select output format" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="csv">CSV</SelectItem>
+                                <SelectItem value="json">JSON</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="maxRows">Max Rows</Label>
+                            <Input
+                              id="maxRows"
+                              type="number"
+                              placeholder="1000"
+                              min="1"
+                              max="10000"
+                              value={toolConfig.maxRows || '1000'}
+                              onChange={(e) => updateConfig('maxRows', e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="model">LLM Model</Label>
+                          <Select
+                            value={toolConfig.model || 'llama3.1:8b'}
+                            onValueChange={(value: string) => updateConfig('model', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select LLM model" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="llama3.1:8b">Llama 3.1 (8B)</SelectItem>
+                              <SelectItem value="llama3.1:70b">Llama 3.1 (70B)</SelectItem>
+                              <SelectItem value="mixtral:8x7b">Mixtral 8x7B</SelectItem>
+                              <SelectItem value="mistral:7b">Mistral 7B</SelectItem>
+                              <SelectItem value="gemma:7b">Gemma 7B</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <Button
+                          onClick={handleTest}
+                          disabled={isTesting || !toolConfig.inputUrl || !toolConfig.systemPrompt}
+                          className="w-full"
+                        >
+                          {isTesting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Processing CSV Data...
+                            </>
+                          ) : (
+                            <>
+                              {toolConfig.outputFormat === 'json' ? <FileJson className="mr-2 h-4 w-4" /> : <FileText className="mr-2 h-4 w-4" />}
+                              Transform CSV Data
+                            </>
+                          )}
+                        </Button>
+
+                        {testResult && (
+                          <Card className={`${testResult.success ? 'bg-green-50 border-green-200' : 'bg-rose-50 border-rose-200'} mt-4`}>
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-3">
+                                {testResult.success ? (
+                                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                                ) : (
+                                  <AlertCircle className="h-5 w-5 text-rose-500 mt-0.5" />
+                                )}
+                                <div className="flex-1">
+                                  <p className={`text-sm ${testResult.success ? 'text-green-800' : 'text-rose-800'} mb-2`}>
+                                    {testResult.success
+                                      ? 'CSV data transformed successfully!'
+                                      : `Error: ${testResult.error}`}
+                                  </p>
+
+                                  {testResult.success && testResult.data && (
+                                    <>
+                                      <div className="mt-3 mb-2">
+                                        <p className="text-sm font-medium text-gray-700">Preview:</p>
+                                      </div>
+                                      <div className="bg-white p-2 rounded border border-green-200 text-xs overflow-auto max-h-60 font-mono">
+                                        {typeof testResult.data === 'string' ? (
+                                          // Preview for CSV data - show first 10 lines
+                                          <pre>{testResult.data.split('\n').slice(0, 10).join('\n')}</pre>
+                                        ) : (
+                                          // Preview for JSON data - show first 10 items
+                                          <pre>{JSON.stringify(testResult.data.slice(0, 10), null, 2)}</pre>
+                                        )}
+                                      </div>
+                                      
+                                      {downloadUrl && (
+                                        <Button size="sm" onClick={handleDownload} variant="outline" className="mt-4">
+                                          <FileDown className="mr-2 h-4 w-4" />
+                                          Download {toolConfig.outputFormat === 'json' ? 'JSON' : 'CSV'} Result
+                                        </Button>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    </div>
                   )}
                   
                   <Separator />

@@ -14,7 +14,7 @@
       "name": "Email Outreach Agent",
       "description": "Sends personalized email sequences to leads",
       "knowledge_sources": ["recall:email_templates_kg", "storache:campaign_metrics"],
-      "tools": ["gmail-send", "email-template"],
+      "tools": ["gmail-send"],
       "stake": 1900,
       "privacy_level": "medium"
     },

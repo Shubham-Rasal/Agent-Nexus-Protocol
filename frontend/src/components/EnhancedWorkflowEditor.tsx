@@ -85,7 +85,6 @@ import DelayNode from './nodes/DelayNode';
 
 // Sidebar Components
 import AgentCard from './sidebar/AgentCard';
-import ToolCard from '@/components/sidebar/ToolCard';
 import ToolConfig from '@/components/tools/ToolConfig';
 
 // Import the TriggerSelector component
@@ -1201,7 +1200,6 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                 <TabsList className="w-full">
                   <TabsTrigger value="nodes" className="flex-1">Nodes</TabsTrigger>
                   <TabsTrigger value="agents" className="flex-1">Agents</TabsTrigger>
-                  <TabsTrigger value="tools" className="flex-1">Tools</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="nodes" className="overflow-hidden">
@@ -1264,23 +1262,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
             </div>
                 </TabsContent>
                 
-                <TabsContent value="tools" className="overflow-hidden">
-                  <div className="space-y-4 mt-2">
-                    {PRESET_TOOLS.filter(tool => tool.id === 'akave-storage').map((tool) => (
-                      <div key={tool.id} className="space-y-3">
-                        <ToolCard tool={tool} />
-                        <div className="border rounded-md p-4 bg-gray-50">
-                          <h4 className="text-sm font-medium mb-3">Test Tool</h4>
-                          <ToolConfig 
-                            toolId={tool.id}
-                            config={{}}
-                            onChange={() => {}}
-                          />
-                        </div>
-                      </div>
-                    ))}
-          </div>
-                </TabsContent>
+               
               </Tabs>
             </>
         )}
@@ -1319,7 +1301,6 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
           >
             <Controls />
             <Background />
-            <MiniMap />
             
             {!sidebarOpen && (
               <Panel position="top-right" className="m-2">

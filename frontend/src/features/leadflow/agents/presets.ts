@@ -18,7 +18,7 @@ export const PRESET_AGENTS: Agent[] = [
     description: 'Sends personalized email sequences to leads',
     model: 'gpt-4-turbo',
     storageProvider: 'mongodb',
-    tools: ['gmail-send', 'email-template'],
+    tools: ['gmail-send'],
     createdAt: '2023-10-15T09:45:00Z',
     updatedAt: '2023-10-15T09:45:00Z',
     systemPrompt: 'You are an email outreach specialist. Your goal is to create personalized emails that engage potential customers, establish a connection, and generate interest in our products or services.',
