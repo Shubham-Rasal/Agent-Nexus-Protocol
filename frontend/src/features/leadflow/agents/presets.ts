@@ -40,7 +40,7 @@ export const PRESET_AGENTS: Agent[] = [
     description: 'Analyzes lead and customer data for insights',
     model: 'claude-3-opus',
     storageProvider: 'pinecone',
-    tools: ['data-aggregate', 'sheets-read', 'csv-processor'],
+    tools: ['data-aggregate', 'akave-storage', 'csv-processor'],
     createdAt: '2023-10-20T11:15:00Z',
     updatedAt: '2023-10-20T11:15:00Z',
     systemPrompt: 'You are a data analysis expert. Your purpose is to examine customer and lead data, identify patterns and trends, and generate actionable insights to improve sales and marketing strategies.',
@@ -56,4 +56,15 @@ export const PRESET_AGENTS: Agent[] = [
     updatedAt: '2023-10-22T13:40:00Z',
     systemPrompt: 'You are a follow-up specialist. Your job is to maintain contact with potential customers who have shown interest but have not yet converted, providing them with relevant information and encouragement to move forward in the sales process.',
   },
+  {
+    id: 'email-finder',
+    name: 'Email Finder',
+    description: 'Searches the web to find email addresses from various inputs',
+    model: 'gpt-4-turbo',
+    storageProvider: 'mongodb',
+    tools: ['web-scraper', 'email-validator', 'data-formatter'],
+    createdAt: '2023-11-05T10:25:00Z',
+    updatedAt: '2023-11-05T10:25:00Z',
+    systemPrompt: 'You are an email discovery specialist. Your task is to search for and validate email addresses based on inputs like names, companies, or website URLs. Ensure all found emails are verified for deliverability and formatted consistently for further use.',
+  }
 ]; 

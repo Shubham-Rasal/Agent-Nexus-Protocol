@@ -32,9 +32,9 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     description: 'Tools for sending and managing emails',
   },
   {
-    id: 'sheets',
-    name: 'Spreadsheets',
-    description: 'Tools for working with spreadsheet data',
+    id: 'storage',
+    name: 'Storage',
+    description: 'Tools for storing and retrieving files and data',
   },
   {
     id: 'calendar',

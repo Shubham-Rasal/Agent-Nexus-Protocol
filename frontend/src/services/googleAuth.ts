@@ -5,6 +5,7 @@ const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 const GOOGLE_REDIRECT_URI = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI || '';
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly', // For reading emails
+  'https://www.googleapis.com/auth/gmail.send',     // For sending emails
   'https://www.googleapis.com/auth/userinfo.email', // For user info
 ];
 
@@ -232,5 +233,75 @@ export const fetchTestEmails = async (filterOptions: {
   } catch (error) {
     console.error('Error fetching test emails:', error);
     return { success: false, error: String(error) };
+  }
+};
+
+/**
+ * Sends an email using Gmail API
+ */
+export const sendGmailEmail = async (emailData: {
+  to: string;
+  subject: string;
+  body: string;
+  cc?: string;
+  bcc?: string;
+}): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+  const accessToken = getGoogleAccessToken();
+  
+  if (!accessToken) {
+    return { success: false, error: 'Not authenticated with Google' };
+  }
+  
+  try {
+    // Format the email according to RFC 5322
+    const message = [
+      `To: ${emailData.to}`,
+      emailData.cc ? `Cc: ${emailData.cc}` : '',
+      emailData.bcc ? `Bcc: ${emailData.bcc}` : '',
+      `Subject: ${emailData.subject}`,
+      'Content-Type: text/html; charset=utf-8',
+      '',
+      emailData.body
+    ]
+      .filter(line => line !== '') // Remove empty lines (like cc/bcc if not provided)
+      .join('\r\n');
+    
+    // Encode the email in base64 URL-safe format
+    const encodedMessage = btoa(message)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    
+    // Send the email via Gmail API
+    const response = await fetch('https://www.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        raw: encodedMessage
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { 
+        success: false, 
+        error: errorData.error?.message || 'Failed to send email' 
+      };
+    }
+    
+    const responseData = await response.json();
+    return { 
+      success: true, 
+      messageId: responseData.id 
+    };
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return { 
+      success: false, 
+      error: String(error) 
+    };
   }
 }; 

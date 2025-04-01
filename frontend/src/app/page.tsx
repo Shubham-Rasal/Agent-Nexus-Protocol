@@ -38,6 +38,14 @@ export default function Home() {
             </p>
             <a href="/network" className="text-blue-600 hover:underline font-medium">See network →</a>
           </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 className="text-xl font-semibold mb-3">Tools</h2>
+            <p className="text-gray-600 mb-4">
+              Browse our collection of tools that can be used to create and manage agents.
+            </p>
+            <a href="/tools" className="text-blue-600 hover:underline font-medium">View tools →</a>
+          </div>
         </div>
       </div>
     </div>
