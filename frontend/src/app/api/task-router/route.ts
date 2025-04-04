@@ -68,7 +68,7 @@ async function decomposeTask(query: string): Promise<any[]> {
     }));
 
     const systemPrompt = `You are an expert task decomposer for the Agent Nexus Protocol. 
-    Your job is to break down complex user queries into 2-4 specific subtasks and assign each to the most appropriate specialized AI agent.
+    Your job is to break down complex user queries into appropriate number of specific subtasks and assign each to the most appropriate specialized AI agent.
     
     Available agents and their expertise:
     ${JSON.stringify(availableAgents, null, 2)}

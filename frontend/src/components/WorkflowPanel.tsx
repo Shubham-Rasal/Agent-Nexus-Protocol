@@ -12,7 +12,7 @@ import AgentStatus from './AgentStatus';
 type SubTask = {
   id: string;
   description: string;
-  agent: any;
+  agent?: any;
   status: 'pending' | 'in-progress' | 'completed';
   response?: string;
   thoughtProcess?: string;
@@ -66,14 +66,7 @@ export default function WorkflowPanel({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          className="fixed top-24 right-4 z-40 bg-white shadow-md hover:bg-gray-50"
-          aria-label="Toggle workflow panel"
-        >
-          <ActivitySquare className="h-5 w-5 text-purple-600" />
-        </Button>
+        test
       </SheetTrigger>
       <SheetContent className="sm:max-w-md overflow-y-auto border-l border-gray-200">
         <SheetHeader className="mb-5">
@@ -147,28 +140,28 @@ export default function WorkflowPanel({
                   >
                     <div className="flex items-center mb-2">
                       <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-xs font-medium">
-                        {task.agent.name.substring(0, 2)}
+                        {task.agent?.name?.substring(0, 2) || 'NA'}
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{task.agent.name}</p>
-                        <p className="text-xs text-gray-500">{task.agent.description}</p>
+                        <p className="font-medium text-sm">{task.agent?.name || 'Unknown Agent'}</p>
+                        <p className="text-xs text-gray-500">{task.agent?.description || 'No description available'}</p>
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-1.5 mt-3">
-                      {task.agent.knowledge_sources.map((source: string, i: number) => (
+                      {task.agent?.knowledge_sources?.map((source: string, i: number) => (
                         <Badge key={i} variant="purple" className="text-xs">
                           {source.split(':')[0]}
                         </Badge>
-                      ))}
+                      )) || <Badge variant="secondary" className="text-xs">No knowledge sources</Badge>}
                     </div>
                     
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      {task.agent.tools.map((tool: string, i: number) => (
+                      {task.agent?.tools?.map((tool: string, i: number) => (
                         <Badge key={i} variant="secondary" className="text-xs">
                           {tool}
                         </Badge>
-                      ))}
+                      )) || <Badge variant="secondary" className="text-xs">No tools</Badge>}
                     </div>
                   </div>
                 ))
@@ -236,9 +229,9 @@ export default function WorkflowPanel({
                       {allTasks.map(task => (
                         <div key={task.id} className="rounded bg-gray-50 p-2 border border-gray-100">
                           <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-white border border-gray-200 flex items-center justify-center text-xs">
-                            {task.agent.name.substring(0, 1)}
+                            {task.agent?.name?.substring(0, 1) || 'NA'}
                           </div>
-                          <p className="text-xs font-medium truncate">{task.agent.name.split(' ')[0]}</p>
+                          <p className="text-xs font-medium truncate">{task.agent?.name?.split(' ')[0] || 'Unknown Agent'}</p>
                           <Badge 
                             variant={
                               task.status === 'completed' ? 'success' : 
@@ -246,7 +239,7 @@ export default function WorkflowPanel({
                             }
                             className="mt-1 text-[10px] px-1.5 py-0"
                           >
-                            {task.status === 'in-progress' ? 'Working' : task.status}
+                            {task.status === 'in-progress' ? 'Working' : task.status || 'No status'}
                           </Badge>
                         </div>
                       ))}
@@ -269,9 +262,9 @@ export default function WorkflowPanel({
                           >
                             <div className="flex items-center">
                               <div className="w-5 h-5 rounded-full bg-white border border-gray-200 flex items-center justify-center text-xs mr-2">
-                                {task.agent.name.substring(0, 1)}
+                                {task.agent?.name?.substring(0, 1) || 'NA'}
                               </div>
-                              <span className="text-xs font-medium">{task.agent.name.split(' ')[0]}</span>
+                              <span className="text-xs font-medium">{task.agent?.name?.split(' ')[0] || 'Unknown Agent'}</span>
                             </div>
                             {expandedThoughts[task.id] ? (
                               <ChevronUp className="h-4 w-4 text-gray-500" />
@@ -292,7 +285,7 @@ export default function WorkflowPanel({
                             <div className="bg-white px-2 pb-2">
                               <div className="mt-2 pt-2 border-t border-gray-100">
                                 <p className="text-xs font-medium text-gray-700 mb-1">Final Response:</p>
-                                <p className="text-xs text-gray-600">{task.response}</p>
+                                <p className="text-xs text-gray-600">{task.response || 'No response'}</p>
                               </div>
                             </div>
                           )}

@@ -16,7 +16,7 @@ type Agent = {
 type SubTask = {
   id: string;
   description: string;
-  agent: Agent;
+  agent?: Agent;
   status: 'pending' | 'in-progress' | 'completed';
   response?: string;
 };
@@ -55,7 +55,7 @@ export default function AgentStatus({ task }: AgentStatusProps) {
   };
   
   // Get agent type from ID (e.g., "legal" from "agent_legal_gdpr")
-  const agentType = task.agent.id.split('_')[1];
+  const agentType = task.agent?.id?.split('_')[1];
   
   // Generate a border color based on agent type
   const getBorderColor = () => {
@@ -76,24 +76,24 @@ export default function AgentStatus({ task }: AgentStatusProps) {
   return (
     <div className={`bg-white rounded-md border ${getBorderColor()} p-2 mb-2 text-sm hover:shadow-sm transition-shadow`}>
       <div className="flex justify-between items-start mb-1">
-        <span className="font-medium text-gray-700 truncate max-w-[70%]">{task.agent.name}</span>
+        <span className="font-medium text-gray-700 truncate max-w-[70%]">{task.agent?.name || 'Unknown Agent'}</span>
         {getStatusBadge()}
       </div>
       
       <p className="text-xs text-gray-600 mb-1.5">{task.description}</p>
       
       {/* Show knowledge sources and tools on completed tasks */}
-      {task.status === 'completed' && (
+      {task.status === 'completed' && task.agent && (
         <div className="mt-2 pt-2 border-t border-gray-100">
           <div className="flex flex-wrap gap-1 mb-1">
-            {task.agent.knowledge_sources.slice(0, 2).map((source, i) => (
+            {task.agent.knowledge_sources?.slice(0, 2).map((source, i) => (
               <span key={i} className="px-1 py-0.5 bg-purple-50 text-purple-700 text-xs rounded border border-purple-100">
                 {source.split(':')[0]}
               </span>
             ))}
           </div>
           <div className="flex flex-wrap gap-1">
-            {task.agent.tools.slice(0, 2).map((tool, i) => (
+            {task.agent.tools?.slice(0, 2).map((tool, i) => (
               <span key={i} className="px-1 py-0.5 bg-gray-50 text-gray-700 text-xs rounded border border-gray-100">
                 {tool}
               </span>

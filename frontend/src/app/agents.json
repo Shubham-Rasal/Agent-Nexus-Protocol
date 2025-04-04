@@ -1,6 +1,15 @@
 {
   "agents": [
     {
+      "id": "general_purpose",
+      "name": "General Assistant",
+      "description": "Answers general questions and handles queries that don't require specialized agents",
+      "knowledge_sources": ["recall:general_knowledge", "akave:web_search"],
+      "tools": ["web_search", "calculator", "text_processor"],
+      "stake": 1000,
+      "privacy_level": "low"
+    },
+    {
       "id": "lead-qualifier",
       "name": "Lead Qualifier",
       "description": "Qualifies leads based on criteria and assigns a score",
