@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { gmailSendTool } from '@/tools/gmail-send';
 import { isGoogleAuthenticated, initiateGoogleAuth } from '@/services/googleAuth';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 import { Loader2 } from 'lucide-react';
 
@@ -129,11 +129,7 @@ ${userData.position} | ${userData.company}`;
   // Handle adding a new recipient
   const handleAddRecipient = () => {
     if (!newRecipient.name || !newRecipient.email) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please provide at least a name and email for the recipient.',
-        variant: 'destructive',
-      });
+      toast.error('Please provide at least a name and email for the recipient.');
       return;
     }
 
@@ -156,20 +152,12 @@ ${userData.position} | ${userData.company}`;
   // Handle sending emails to all recipients
   const handleSendEmails = async () => {
     if (!isGoogleAuthenticated()) {
-      toast({
-        title: 'Not Authenticated',
-        description: 'Please connect your Google account first.',
-        variant: 'destructive',
-      });
+      toast.error('Please connect y our Google account first.');
       return;
     }
 
     if (recipients.length === 0) {
-      toast({
-        title: 'No Recipients',
-        description: 'Please add at least one recipient.',
-        variant: 'destructive',
-      });
+      toast.error('Please add at least one recipient.');
       return;
     }
 
@@ -198,10 +186,7 @@ ${userData.position} | ${userData.company}`;
     setIsSending(false);
     setCurrentIndex(-1);
 
-    toast({
-      title: 'Email Campaign Completed',
-      description: `Sent ${recipients.length} emails - ${results.filter(r => r.success).length} successful`,
-    });
+    toast.success(`Sent ${recipients.length} emails - ${results.filter(r => r.success).length} successful`);
   };
 
   // Send an email to a single recipient

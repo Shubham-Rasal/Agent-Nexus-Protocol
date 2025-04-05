@@ -97,16 +97,16 @@ export const emailExtractionSchema = {
       type: "string", 
       description: "The recipient's job title or position, if mentioned"
     },
-    objective: { 
+    subject: { 
       type: "string", 
-      description: "The purpose of the email (e.g., 'schedule a demo', 'follow up')"
+      description: "The subject of the email"
     },
-    content: { 
+    body: { 
       type: "string", 
-      description: "Any specific content that should be included in the email"
+      description: "The body of the email"
     }
   },
-  required: ["name", "email", "company", "position", "objective", "content"],
+  required: ["name", "email", "company", "position", "subject", "body"],
   additionalProperties: false
 };
 
@@ -120,8 +120,8 @@ Extract the following information from the text provided below. For each field:
 - Recipient's email address: Extract the complete email address
 - Recipient's company: Extract the company or organization name, if mentioned
 - Recipient's position: Extract the job title or position, if mentioned
-- Email objective: Determine the purpose (e.g., "schedule a demo", "follow up")
-- Content: Identify any specific content that should be included
+- Email subject: Extract the subject of the email
+- Email body: Extract the body of the email
 
 Text: ${text}
 
@@ -133,8 +133,8 @@ Return this information as structured data according to the schema.
     email: string;
     company: string;
     position: string;
-    objective: string;
-    content: string;
+    subject: string;
+    body: string;
   }>({
     prompt,
     schema: emailExtractionSchema,

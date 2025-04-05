@@ -15,8 +15,8 @@ interface ExtractedData {
   email: string;
   company?: string;
   position?: string;
-  objective?: string;
-  content?: string;
+  subject?: string;
+  body?: string;
 }
 
 export function AgentTester() {
@@ -28,60 +28,7 @@ export function AgentTester() {
 
   // Generate email content based on extracted data
   const generateEmailContent = (data: ExtractedData) => {
-    // Default to a general outreach template if no objective is specified
-    const objective = data.objective || 'connect and explore potential collaboration';
-    
-    // Set up the sender information
-    const senderName = 'Shubham Rasal'; // Replace with actual user info or get from profile
-    const senderCompany = 'Maximal Studios';
-    const senderPosition = 'Recruiter';
-    
-    // Generate email subject and body
-    let subject = '';
-    let body = '';
-    
-    if (objective.toLowerCase().includes('demo') || objective.toLowerCase().includes('product')) {
-      subject = `Demo request: ${senderCompany}'s solution for ${data.company || 'your company'}`;
-      body = `Hi ${data.name},
-
-I hope this email finds you well. My name is ${senderName} from ${senderCompany}, and I noticed ${data.company || 'your company'} is doing great work in the industry.
-
-Based on your role as ${data.position || 'a professional in your field'}, I thought you might be interested in seeing how our solution could help with ${objective}.
-
-${data.content || 'Would you be open to a quick 15-minute demo this week to see if it\'s a good fit?'}
-
-Best regards,
-${senderName}
-${senderPosition} | ${senderCompany}`;
-    } else if (objective.toLowerCase().includes('follow up') || objective.toLowerCase().includes('meeting')) {
-      subject = `Follow-up: ${data.company || 'our'} and ${senderCompany} collaboration`;
-      body = `Hi ${data.name},
-
-I hope you're doing well. I'm reaching out to follow up on our previous conversation about ${objective}.
-
-${data.content || 'I\'d love to schedule some time to discuss this further and explore how we can help your team achieve its goals.'}
-
-Are you available for a quick call this week?
-
-Best regards,
-${senderName}
-${senderPosition} | ${senderCompany}`;
-    } else {
-      subject = `${senderCompany}: ${objective} - opportunity for ${data.company || 'your company'}`;
-      body = `Hi ${data.name},
-
-I hope this email finds you well. I'm ${senderName} from ${senderCompany}.
-
-I'm reaching out because I believe we can help ${data.company || 'your company'} with ${objective}. ${data.position ? `Based on your role as ${data.position}, I thought you would be the right person to discuss this with.` : ''}
-
-${data.content || 'Would you be open to a brief conversation about how we might work together?'}
-
-Best regards,
-${senderName}
-${senderPosition} | ${senderCompany}`;
-    }
-    
-    return { subject, body };
+    return { subject: data.subject, body: data.body };
   };
 
   // Handle form submission
@@ -127,8 +74,8 @@ ${senderPosition} | ${senderCompany}`;
       setProcessingStep('sending');
       const result = await gmailSendTool({
         to: data.email,
-        subject: emailContent.subject,
-        body: emailContent.body,
+        subject: emailContent.subject || '',
+        body: emailContent.body || '',
       });
       
       if (result.success) {
@@ -225,8 +172,8 @@ ${senderPosition} | ${senderCompany}`;
               <li><span className="font-medium">Email:</span> {extractedData.email}</li>
               {extractedData.company && <li><span className="font-medium">Company:</span> {extractedData.company}</li>}
               {extractedData.position && <li><span className="font-medium">Position:</span> {extractedData.position}</li>}
-              {extractedData.objective && <li><span className="font-medium">Objective:</span> {extractedData.objective}</li>}
-              {extractedData.content && <li><span className="font-medium">Additional Content:</span> {extractedData.content}</li>}
+              {extractedData.subject && <li><span className="font-medium">Subject:</span> {extractedData.subject}</li>}
+              {extractedData.body && <li><span className="font-medium">Body:</span> {extractedData.body}</li>}
             </ul>
           </div>
         )}
