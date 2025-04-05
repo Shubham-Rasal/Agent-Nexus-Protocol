@@ -1,144 +1,143 @@
-import { isGoogleAuthenticated, getGoogleAccessToken } from '@/services/googleAuth';
-
 /**
- * Implementation of the Google Calendar tool
- * Creates a calendar event with Google Meet integration
+ * Google Calendar tool implementation
+ * 
+ * This tool allows creating events and listing upcoming events in Google Calendar
  */
+
 export const googleCalendarTool = async (params: {
-  title: string;
-  start: string;
-  end: string;
+  operation: 'create' | 'list';
+  summary?: string;
   description?: string;
   location?: string;
+  startDateTime?: string;
+  endDateTime?: string;
   attendees?: string[];
-  timezone?: string;
-  reminders?: { method: string; minutes: number }[];
-  allDay?: boolean;
-  addMeet?: boolean; // Whether to add Google Meet
-}): Promise<{ success: boolean; error?: string; data?: any }> => {
-  // Check if user is authenticated
-  if (!isGoogleAuthenticated()) {
-    return {
-      success: false,
-      error: 'Not authenticated with Google. Please connect your Google account first.'
-    };
-  }
-  
-  // Validate required parameters
-  if (!params.title) {
-    return { success: false, error: 'Event title is required.' };
-  }
-  
-  if (!params.start) {
-    return { success: false, error: 'Start time is required.' };
-  }
-  
-  if (!params.end) {
-    return { success: false, error: 'End time is required.' };
-  }
-  
+  maxResults?: number;
+  timeMin?: string;
+}) => {
   try {
-    // Format the request to Google Calendar API
-    const event: any = {
-      summary: params.title,
-      description: params.description || '',
-      location: params.location || '',
-      start: {},
-      end: {},
-      attendees: params.attendees ? params.attendees.map(email => {
-        // Check if the email contains optional marker (*)
-        const isOptional = email.includes('*');
-        // Remove any special markers from the email
-        const cleanEmail = email.replace(/[*]/g, '').trim();
-        
-        return {
-          email: cleanEmail,
-          optional: isOptional,
-          // By default, send notifications to attendees
-          responseStatus: 'needsAction'
-        };
-      }) : [],
-      reminders: {
-        useDefault: !params.reminders || params.reminders.length === 0,
-        overrides: params.reminders || []
-      }
-    };
+    const { operation } = params;
     
-    // Add conferenceData for Google Meet if requested (default to true)
-    const addMeet = params.addMeet !== false;
-    if (addMeet) {
-      event.conferenceData = {
-        createRequest: {
-          requestId: `meet_${Date.now()}`,
-          conferenceSolutionKey: { type: 'hangoutsMeet' }
-        }
-      };
-    }
-    
-    // Handle all-day events differently
-    if (params.allDay) {
-      // For all-day events, use date instead of dateTime
-      const startDate = new Date(params.start);
-      const endDate = new Date(params.end);
-      
-      // Format dates as YYYY-MM-DD for all-day events
-      event.start.date = startDate.toISOString().split('T')[0];
-      event.end.date = endDate.toISOString().split('T')[0];
-    } else {
-      // For time-specific events, use dateTime with timezone
-      event.start = {
-        dateTime: new Date(params.start).toISOString(),
-        timeZone: params.timezone || 'UTC'
-      };
-      event.end = {
-        dateTime: new Date(params.end).toISOString(),
-        timeZone: params.timezone || 'UTC'
+    // Verify Google auth is available (should be handled by the UI)
+    const isGoogleAuthed = localStorage.getItem('anp_google_auth');
+    if (!isGoogleAuthed) {
+      console.error('Google Calendar Tool: Authentication token not found in localStorage');
+      return {
+        success: false,
+        error: 'Google authentication required. Please connect your Google account.'
       };
     }
     
     // Get the access token
-    const token = getGoogleAccessToken();
-    if (!token) {
-      return {
-        success: false,
-        error: 'Failed to get access token. Please reconnect your Google account.'
-      };
-    }
+    const accessToken = localStorage.getItem('anp_google_auth');
     
-    // Make the actual API call to Google Calendar
-    const response = await fetch(
-      // Use conferenceDataVersion=1 to create a Google Meet
-      'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', 
-      {
+    if (operation === 'create') {
+      // Validate required fields for event creation
+      if (!params.summary) {
+        return {
+          success: false,
+          error: 'Event summary is required'
+        };
+      }
+      
+      if (!params.startDateTime || !params.endDateTime) {
+        return {
+          success: false,
+          error: 'Start and end date/time are required'
+        };
+      }
+      
+      // Prepare the event data
+      const eventData = {
+        summary: params.summary,
+        description: params.description,
+        location: params.location,
+        start: {
+          dateTime: new Date(params.startDateTime).toISOString(),
+          timeZone: 'UTC'
+        },
+        end: {
+          dateTime: new Date(params.endDateTime).toISOString(),
+          timeZone: 'UTC'
+        },
+        attendees: params.attendees ? params.attendees.map(email => ({ email })) : undefined,
+        // Add a Google Meet conference by default
+        conferenceData: {
+          createRequest: {
+            requestId: `calendar-tool-${Date.now()}`,
+            conferenceSolutionKey: { type: 'hangoutsMeet' }
+          }
+        }
+      };
+      
+      // Call the Google Calendar API to create the event
+      const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify(event)
+        body: JSON.stringify(eventData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Google Calendar API Error:', errorData);
+        return {
+          success: false,
+          error: errorData.error?.message || 'Failed to create calendar event'
+        };
       }
-    );
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      return { 
-        success: false, 
-        error: errorData.error?.message || 'Failed to create event' 
+      
+      const result = await response.json();
+      
+      return {
+        success: true,
+        data: result
+      };
+    } 
+    else if (operation === 'list') {
+      // Build the URL with query parameters
+      const maxResults = params.maxResults || 10;
+      const timeMin = params.timeMin || new Date().toISOString();
+      
+      const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=${maxResults}&timeMin=${encodeURIComponent(timeMin)}&orderBy=startTime&singleEvents=true`;
+      
+      // Call the Google Calendar API to list events
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Google Calendar API Error:', errorData);
+        return {
+          success: false,
+          error: errorData.error?.message || 'Failed to list calendar events'
+        };
+      }
+      
+      const result = await response.json();
+      
+      return {
+        success: true,
+        data: result
+      };
+    } 
+    else {
+      return {
+        success: false,
+        error: `Unsupported operation: ${operation}`
       };
     }
-    
-    // Parse the response data
-    const data = await response.json();
-    
-    return {
-      success: true,
-      data
-    };
   } catch (error) {
-    console.error('Error creating Google Calendar event:', error);
+    console.error('Google Calendar tool error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: `Error executing Google Calendar tool: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }; 

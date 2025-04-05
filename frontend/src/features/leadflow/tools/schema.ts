@@ -1,10 +1,13 @@
+export type ParameterType = 'string' | 'number' | 'boolean' | 'array' | 'object';
+
 export interface ToolParameter {
   id: string;
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+  type: ParameterType;
   description: string;
   required: boolean;
   defaultValue?: any;
+  options?: string[];
 }
 
 export interface Tool {

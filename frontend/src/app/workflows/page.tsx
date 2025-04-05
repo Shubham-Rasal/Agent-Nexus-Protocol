@@ -8,10 +8,10 @@ import { Workflow, WorkflowDomainType, WorkflowCapabilityType } from '@/features
 // Sample workflows for demonstration purposes
 const SAMPLE_WORKFLOWS: Workflow[] = [
   {
-    id: 'workflow_lead_gen',
-    name: 'Lead Generation',
-    description: 'Find potential leads and generate outreach strategies',
-    domains: [WorkflowDomainType.LEAD_GENERATION],
+    id: 'workflow_recruitment',
+    name: 'Recruitment Workflow',
+    description: 'Source, screen, and engage with potential candidates',
+    domains: [WorkflowDomainType.RECRUITMENT],
     capabilities: [
       WorkflowCapabilityType.AUTOMATION,
       WorkflowCapabilityType.ANALYSIS
@@ -19,8 +19,8 @@ const SAMPLE_WORKFLOWS: Workflow[] = [
     author: 'ANP Team',
     version: '1.0.0',
     isPublic: true,
-    requiredTools: ['web-search', 'company-database'],
-    tags: ['sales', 'outreach', 'prospecting'],
+    requiredTools: ['linkedin-search', 'talent-database'],
+    tags: ['recruiting', 'hiring', 'talent'],
     nodes: [
       {
         id: 'trigger_start',
@@ -37,11 +37,11 @@ const SAMPLE_WORKFLOWS: Workflow[] = [
         type: 'agent',
         position: { x: 100, y: 200 },
         data: {
-          label: 'Market Research',
+          label: 'Candidate Search',
           type: 'agent',
-          description: 'Research target companies',
+          description: 'Find potential candidates',
           config: {
-            agentId: 'agent_1'
+            agentId: 'agent_hr_recruiter'
           }
         }
       },
@@ -50,11 +50,11 @@ const SAMPLE_WORKFLOWS: Workflow[] = [
         type: 'agent',
         position: { x: 100, y: 300 },
         data: {
-          label: 'Lead Qualification',
+          label: 'Candidate Screening',
           type: 'agent',
-          description: 'Qualify leads based on criteria',
+          description: 'Screen candidates based on criteria',
           config: {
-            agentId: 'agent_2'
+            agentId: 'agent_hr_recruiter'
           }
         }
       }

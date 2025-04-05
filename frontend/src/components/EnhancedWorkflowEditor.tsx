@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, useContext, useImperativeHandle, forwardRef } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -53,7 +53,14 @@ import {
 } from 'lucide-react';
 
 // Import your workflow types
-import { Workflow, WorkflowNode, WorkflowEdge, NODE_TYPES } from '@/features/leadflow/workflows/schema';
+import { 
+  Workflow, 
+  WorkflowNode, 
+  WorkflowEdge, 
+  WorkflowDomainType,
+  WorkflowCapabilityType,
+  NODE_TYPES 
+} from '@/features/workflows/registry/types';
 import { PRESET_AGENTS } from '@/features/leadflow/agents/presets';
 import { PRESET_TOOLS } from '@/features/leadflow/tools/presets';
 import { generateId } from '@/components/WorkflowUtils';
@@ -84,11 +91,86 @@ import AgentNode from './nodes/AgentNode';
 import DelayNode from './nodes/DelayNode';
 
 // Sidebar Components
-import AgentCard from './sidebar/AgentCard';
 import ToolConfig from '@/components/tools/ToolConfig';
 
 // Import the TriggerSelector component
 import TriggerSelector from './triggers/TriggerSelector';
+
+// Import new registry types and methods
+import { agents } from '@/app/agents.json';
+import { workflowRegistry } from '@/features/workflows/registry/registry';
+
+// Import the editor context
+import { EditorContext } from '@/app/editor/layout';
+
+// Generic type for Tool
+interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  capabilities: string[];
+}
+
+// Custom Tool presets for the editor
+const EDITOR_TOOLS: Tool[] = [
+  {
+    id: 'email',
+    name: 'Email',
+    description: 'Send and receive emails',
+    capabilities: ['Communication', 'Notification']
+  },
+  {
+    id: 'calendar',
+    name: 'Calendar',
+    description: 'Manage calendar events',
+    capabilities: ['Scheduling', 'Reminders']
+  },
+  {
+    id: 'docs',
+    name: 'Documents',
+    description: 'Create and edit documents',
+    capabilities: ['Content', 'Collaboration']
+  },
+  {
+    id: 'spreadsheet',
+    name: 'Spreadsheet',
+    description: 'Work with tabular data',
+    capabilities: ['Data', 'Analysis']
+  }
+];
+
+// Custom AgentCard for the workflow editor
+const WorkflowAgentCard = ({ 
+  agent, 
+  onDragStart 
+}: { 
+  agent: { 
+    id: string; 
+    name: string; 
+    description: string; 
+    tools: string[]; 
+    knowledge_sources?: string[]; 
+    privacy_level?: string; 
+    stake?: number; 
+  };
+  onDragStart: (event: React.DragEvent<HTMLDivElement>) => void;
+}) => (
+  <div
+    className="border border-gray-200 rounded-md p-3 bg-white hover:shadow-md cursor-move"
+    draggable
+    onDragStart={onDragStart}
+  >
+    <div className="font-medium text-sm mb-1">{agent.name}</div>
+    <div className="text-xs text-gray-500 mb-2">{agent.description}</div>
+    <div className="flex flex-wrap gap-1">
+      {agent.tools.map((tool, idx) => (
+        <Badge key={idx} variant="outline" className="text-xs">
+          {tool}
+        </Badge>
+      ))}
+    </div>
+  </div>
+);
 
 // Define the custom node types
 const nodeTypes: NodeTypes = {
@@ -186,13 +268,17 @@ interface DraggableItemProps {
 
 const DraggableItem = ({ label, type, description, icon, onDragStart }: DraggableItemProps) => (
   <div
-    className="p-3 border border-gray-200 rounded-md bg-white hover:shadow-md cursor-move flex items-center gap-2"
+    className="flex items-start p-2 border border-gray-200 rounded-md hover:shadow-sm cursor-move bg-white"
     draggable
-    onDragStart={(event) => onDragStart(event, type)}
+    onDragStart={(event) => {
+      onDragStart(event, type);
+    }}
   >
-    {icon}
+    <div className="mr-2 mt-0.5">
+      {icon || <div className="w-4 h-4 rounded-full bg-gray-300" />}
+    </div>
     <div>
-      <div className="font-medium text-sm">{label}</div>
+      <div className="text-sm font-medium">{label}</div>
       {description && <div className="text-xs text-gray-500">{description}</div>}
     </div>
   </div>
@@ -248,7 +334,8 @@ interface EnhancedWorkflowEditorProps {
   onSave: (workflow: Workflow) => void;
 }
 
-const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) => {
+const FlowEditor = forwardRef<{ handleSave: () => void }, EnhancedWorkflowEditorProps>(
+  ({ initialWorkflow, onSave }, ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -425,6 +512,13 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
   const onDragStart = (event: React.DragEvent, nodeType: string) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
     event.dataTransfer.effectAllowed = 'move';
+      
+      // For regular nodes, also set some basic data
+      event.dataTransfer.setData('node/data', JSON.stringify({
+        type: nodeType,
+        label: event.currentTarget.querySelector('.text-sm')?.textContent || '',
+        description: event.currentTarget.querySelector('.text-xs')?.textContent || ''
+      }));
   };
 
   const onDrop = useCallback(
@@ -455,7 +549,143 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
       };
 
       switch (type) {
+          case 'agent':
+            try {
+              // Get the agent data from the separate data transfer item
+              const agentDataStr = event.dataTransfer.getData('agent/data');
+              if (agentDataStr) {
+                const agentData = JSON.parse(agentDataStr);
+                
+                newNode = {
+                  id: nodeId,
+                  type: 'agent',
+                  position,
+                  data: {
+                    label: agentData.name || 'New Agent',
+                    type: 'agent',
+                    description: agentData.description || 'Uses an AI agent',
+                    config: {
+                      agentId: agentData.id || '',
+                    },
+                    outputs: {
+                      response: 'The agent response',
+                      success: 'Whether the agent completed successfully',
+                      data: 'Data produced by the agent'
+                    },
+                    ...nodeCallbacks,
+                  },
+                };
+                break;
+              }
+            } catch (e) {
+              console.error('Error parsing agent data:', e);
+            }
+            
+            // Fallback if there was an error or missing data
+            newNode = {
+              id: nodeId,
+              type: 'agent',
+              position,
+              data: {
+                label: 'New Agent',
+                type: 'agent',
+                description: 'Uses an AI agent',
+                config: {
+                  agentId: '',
+                },
+                outputs: {
+                  response: 'The agent response',
+                  success: 'Whether the agent completed successfully',
+                  data: 'Data produced by the agent'
+                },
+                ...nodeCallbacks,
+              },
+            };
+            break;
+          case 'action':
+            try {
+              // Get the tool data from the separate data transfer item
+              const toolDataStr = event.dataTransfer.getData('tool/data');
+              if (toolDataStr) {
+                const toolData = JSON.parse(toolDataStr);
+                
+                newNode = {
+                  id: nodeId,
+                  type: 'action',
+                  position,
+                  data: {
+                    label: toolData.name || 'New Action',
+                    type: 'action',
+                    description: toolData.description || 'Performs an action',
+                    config: {
+                      toolId: toolData.id || '',
+                    },
+                    outputs: {
+                      status: 'The result status (success/failure)',
+                      result: 'The action result data',
+                      error: 'Any error that occurred'
+                    },
+                    ...nodeCallbacks,
+                  },
+                };
+                break;
+              }
+            } catch (e) {
+              console.error('Error parsing tool data:', e);
+            }
+            
+            // Fallback if there was an error or missing data
+            newNode = {
+              id: nodeId,
+              type: 'action',
+              position,
+              data: {
+                label: 'New Action',
+                type: 'action',
+                description: 'Performs an action',
+                config: {},
+                outputs: {
+                  status: 'The result status (success/failure)',
+                  result: 'The action result data',
+                  error: 'Any error that occurred'
+                },
+                ...nodeCallbacks,
+              },
+            };
+            break;
         case NODE_TYPES.TRIGGER:
+            try {
+              // Try to get node data from event
+              const nodeDataStr = event.dataTransfer.getData('node/data');
+              if (nodeDataStr) {
+                const nodeData = JSON.parse(nodeDataStr);
+                
+                newNode = {
+                  id: nodeId,
+                  type,
+                  position,
+                  data: {
+                    label: nodeData.label || 'New Trigger',
+                    type,
+                    description: nodeData.description || 'Triggered when an event occurs',
+                    config: {
+                      triggerType: 'manual',
+                    },
+                    outputs: {
+                      event: 'The triggered event',
+                      timestamp: 'When the event occurred',
+                      data: 'Data associated with the event'
+                    },
+                    ...nodeCallbacks,
+                  },
+                };
+                break;
+              }
+            } catch (e) {
+              console.error('Error parsing node data:', e);
+            }
+            
+            // Fallback if no data or error
           newNode = {
             id: nodeId,
             type,
@@ -487,26 +717,38 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
             },
           };
           break;
-        case NODE_TYPES.ACTION:
+          case NODE_TYPES.CONDITION:
+            try {
+              // Try to get node data from event
+              const nodeDataStr = event.dataTransfer.getData('node/data');
+              if (nodeDataStr) {
+                const nodeData = JSON.parse(nodeDataStr);
+                
           newNode = {
             id: nodeId,
             type,
             position,
             data: {
-              label: 'New Action',
+                    label: nodeData.label || 'New Condition',
               type,
-              description: 'Performs an action',
-              config: {},
+                    description: nodeData.description || 'Checks a condition',
+                    config: {
+                      condition: '',
+                    },
               outputs: {
-                status: 'The result status (success/failure)',
-                result: 'The action result data',
-                error: 'Any error that occurred'
+                      result: 'The evaluation result (true/false)',
+                      value: 'The evaluated value'
               },
               ...nodeCallbacks,
             },
           };
           break;
-        case NODE_TYPES.CONDITION:
+              }
+            } catch (e) {
+              console.error('Error parsing node data:', e);
+            }
+            
+            // Fallback if no data or error
           newNode = {
             id: nodeId,
             type,
@@ -527,14 +769,20 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
           };
           break;
         case NODE_TYPES.DELAY:
+            try {
+              // Try to get node data from event
+              const nodeDataStr = event.dataTransfer.getData('node/data');
+              if (nodeDataStr) {
+                const nodeData = JSON.parse(nodeDataStr);
+                
           newNode = {
             id: nodeId,
             type,
             position,
             data: {
-              label: 'New Delay',
+                    label: nodeData.label || 'New Delay',
               type,
-              description: 'Waits for a specified time',
+                    description: nodeData.description || 'Waits for a specified time',
               config: {
                 days: 1,
               },
@@ -546,54 +794,33 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
             },
           };
           break;
-        case NODE_TYPES.AGENT:
+              }
+            } catch (e) {
+              console.error('Error parsing node data:', e);
+            }
+            
+            // Fallback if no data or error
           newNode = {
             id: nodeId,
             type,
             position,
             data: {
-              label: 'New Agent',
+                label: 'New Delay',
               type,
-              description: 'Uses an AI agent',
+                description: 'Waits for a specified time',
               config: {
-                agentId: '',
+                  days: 1,
               },
               outputs: {
-                response: 'The agent response',
-                success: 'Whether the agent completed successfully',
-                data: 'Data produced by the agent'
+                  waited: 'The actual time waited',
+                  completed: 'Whether the delay completed successfully'
               },
               ...nodeCallbacks,
             },
           };
           break;
         default:
-          // For agent types
-          if (type.startsWith('agent_')) {
-            const agentId = type.replace('agent_', '');
-            const agent = PRESET_AGENTS.find(a => a.id === agentId);
-            newNode = {
-              id: nodeId,
-              type: NODE_TYPES.AGENT,
-              position,
-              data: {
-                label: agent?.name || 'Unknown Agent',
-                type: NODE_TYPES.AGENT,
-                description: agent?.description || '',
-                config: {
-                  agentId,
-                },
-                outputs: {
-                  response: 'The agent response',
-                  success: 'Whether the agent completed successfully', 
-                  data: 'Data produced by the agent'
-                },
-                ...nodeCallbacks,
-              },
-            };
-          } else {
             return;
-          }
       }
 
       setNodes((nds) => nds.concat(newNode));
@@ -684,50 +911,16 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
   
   // Update the renderSidebar function to modify what's shown when an edge is selected
   const renderSidebar = () => (
-    <div className="bg-white flex flex-col h-full">
-      <ScrollArea className="h-full">
-        <div className="p-4">
-          {selectedEdge ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Connection</h2>
-                <Button 
-                  onClick={() => setSelectedEdge(null)}
-                  variant="ghost" 
-                  size="sm"
-                >
-                  <PanelRight className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-200">
-                  <MoveHorizontal className="h-5 w-5 text-gray-500" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Connection Selected</h3>
-                  <p className="text-xs text-gray-500">
-                    {nodes.find(n => n.id === selectedEdge.source)?.data.label || 'Source'} → {nodes.find(n => n.id === selectedEdge.target)?.data.label || 'Target'}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  onClick={() => {
-                    setEdges(edges.filter(edge => edge.id !== selectedEdge.id));
-                    setSelectedEdge(null);
-                    setIsEdited(true);
-                  }}
-                  variant="destructive"
-                  className="flex-1"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Connection
-                </Button>
-              </div>
-            </div>
-          ) : selectedNode ? (
+      <div className="bg-white border-l border-gray-200 h-full overflow-auto">
+        <Tabs defaultValue="nodes" className="h-full flex flex-col">
+          <TabsList className="grid grid-cols-3 mx-4 mt-2">
+            <TabsTrigger value="nodes">Nodes</TabsTrigger>
+            <TabsTrigger value="agents">Agents</TabsTrigger>
+            <TabsTrigger value="tools">Tools</TabsTrigger>
+          </TabsList>
+          
+          <ScrollArea className="flex-1 p-4">
+            {selectedNode ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Node Settings</h2>
@@ -783,6 +976,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                         ...selectedNode,
                         data: { ...selectedNode.data, label: e.target.value }
                       });
+                        setIsEdited(true);
                     }}
                     className="mt-1"
                   />
@@ -809,12 +1003,13 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                         ...selectedNode,
                         data: { ...selectedNode.data, description: e.target.value }
                       });
+                        setIsEdited(true);
                     }}
                     className="mt-1"
                   />
                 </div>
                 
-                {/* Condition Node Settings - Enhanced with edge condition configuration */}
+                  {/* Condition Node Settings */}
                 {selectedNode.type === 'condition' && selectedNode.data.config && (
                   <div className="space-y-4">
                     <div>
@@ -850,13 +1045,14 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                               } 
                             }
                           });
+                            setIsEdited(true);
                         }}
                         className="mt-1"
                         placeholder="e.g. score >= 70"
                       />
                     </div>
                     
-                    {/* Output Conditions Section */}
+                      {/* Output Connections Section */}
                     <div className="pt-4 border-t">
                       <h4 className="text-sm font-medium mb-3">Output Connections</h4>
                       
@@ -980,6 +1176,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                             } 
                           }
                         });
+                          setIsEdited(true);
                       }}
                       className="mt-1"
                       min="0"
@@ -997,7 +1194,7 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                         value={selectedNode.data.config.agentId || ''}
                         onChange={(e) => {
                           const agentId = e.target.value;
-                          const agent = PRESET_AGENTS.find(a => a.id === agentId);
+                            const agent = agents.find(a => a.id === agentId);
                           
                           setNodes(nodes.map(node => {
                             if (node.id === selectedNode.id) {
@@ -1028,11 +1225,12 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                               label: agent ? agent.name : selectedNode.data.label
                             }
                           });
+                            setIsEdited(true);
                         }}
                         className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
                       >
                         <option value="">Select an agent</option>
-                        {PRESET_AGENTS.map(agent => (
+                          {agents.map(agent => (
                           <option key={agent.id} value={agent.id}>
                             {agent.name}
                           </option>
@@ -1044,14 +1242,11 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                       <div>
                         <Label>Available Skills</Label>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {PRESET_AGENTS.find(a => a.id === selectedNode.data.config.agentId)?.tools.map(toolId => {
-                            const tool = PRESET_TOOLS.find(t => t.id === toolId);
-                            return tool ? (
-                              <Badge key={tool.id} variant="outline" className="text-xs py-0 px-2">
-                                {tool.name}
+                            {agents.find(a => a.id === selectedNode.data.config.agentId)?.tools.map(tool => (
+                              <Badge key={tool} variant="outline" className="text-xs py-0 px-2">
+                                {tool}
                               </Badge>
-                            ) : null;
-                          })}
+                            ))}
                         </div>
                       </div>
                     )}
@@ -1061,43 +1256,179 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                 {/* Trigger Node Settings */}
                 {selectedNode.type === 'trigger' && (
                   <div className="space-y-4">
-                    <TriggerSelector 
-                      config={selectedNode.data.config || {}}
-                      onChange={(newConfig) => {
-                        // Update the node's config
+                      <div>
+                        <Label htmlFor="trigger-type">Trigger Type</Label>
+                        <select
+                          id="trigger-type"
+                          value={selectedNode.data.config?.triggerType || 'manual'}
+                          onChange={(e) => {
+                            const triggerType = e.target.value;
                         setNodes(nodes.map(node => {
                           if (node.id === selectedNode.id) {
                             return {
                               ...node,
                               data: { 
                                 ...node.data, 
-                                config: newConfig,
-                                // If this is a Gmail trigger and it's connected, update the label
-                                label: newConfig.triggerType === 'gmail' && newConfig.connected 
-                                  ? `Gmail: ${newConfig.userEmail?.split('@')[0] || 'Connected'}`
-                                  : node.data.label
+                                    config: { 
+                                      ...node.data.config, 
+                                      triggerType
+                                    }
                               }
                             };
                           }
                           return node;
                         }));
                         
-                        // Update the selected node with the new config
+                            // Update the selected node with the new trigger type
                         setSelectedNode({
                           ...selectedNode,
                           data: { 
                             ...selectedNode.data, 
-                            config: newConfig,
-                            // If this is a Gmail trigger and it's connected, update the label
-                            label: newConfig.triggerType === 'gmail' && newConfig.connected 
-                              ? `Gmail: ${newConfig.userEmail?.split('@')[0] || 'Connected'}`
-                              : selectedNode.data.label
-                          }
-                        });
-                        
+                                config: { 
+                                  ...selectedNode.data.config, 
+                                  triggerType
+                                }
+                              }
+                            });
+                            setIsEdited(true);
+                          }}
+                          className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                          <option value="manual">Manual Trigger</option>
+                          <option value="schedule">Schedule</option>
+                          <option value="gmail">Gmail</option>
+                          <option value="webhook">Webhook</option>
+                        </select>
+                      </div>
+                      
+                      {selectedNode.data.config?.triggerType === 'schedule' && (
+                        <div>
+                          <Label htmlFor="schedule-frequency">Frequency</Label>
+                          <select
+                            id="schedule-frequency"
+                            value={selectedNode.data.config.frequency || 'daily'}
+                            onChange={(e) => {
+                              const frequency = e.target.value;
+                              setNodes(nodes.map(node => {
+                                if (node.id === selectedNode.id) {
+                                  return {
+                                    ...node,
+                                    data: { 
+                                      ...node.data, 
+                                      config: { 
+                                        ...node.data.config, 
+                                        frequency
+                                      } 
+                                    }
+                                  };
+                                }
+                                return node;
+                              }));
+                              
+                              // Update the selected node with the new frequency
+                              setSelectedNode({
+                                ...selectedNode,
+                                data: { 
+                                  ...selectedNode.data, 
+                                  config: { 
+                                    ...selectedNode.data.config, 
+                                    frequency
+                                  } 
+                                }
+                              });
                         setIsEdited(true);
                       }}
-                    />
+                            className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring mt-1"
+                          >
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                          </select>
+                        </div>
+                      )}
+                      
+                      {selectedNode.data.config?.triggerType === 'gmail' && (
+                        <div className="space-y-3">
+                          <div>
+                            <Label htmlFor="gmail-query">Gmail Search Query</Label>
+                            <Input
+                              id="gmail-query"
+                              value={selectedNode.data.config.emailQuery || ''}
+                              onChange={(e) => {
+                                setNodes(nodes.map(node => {
+                                  if (node.id === selectedNode.id) {
+                                    return {
+                                      ...node,
+                                      data: { 
+                                        ...node.data, 
+                                        config: { 
+                                          ...node.data.config, 
+                                          emailQuery: e.target.value
+                                        } 
+                                      }
+                                    };
+                                  }
+                                  return node;
+                                }));
+                                
+                                // Update the selected node
+                                setSelectedNode({
+                                  ...selectedNode,
+                                  data: { 
+                                    ...selectedNode.data, 
+                                    config: { 
+                                      ...selectedNode.data.config, 
+                                      emailQuery: e.target.value
+                                    } 
+                                  }
+                                });
+                                setIsEdited(true);
+                              }}
+                              className="mt-1"
+                              placeholder="is:unread subject:(important OR urgent)"
+                            />
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="include-content"
+                              checked={selectedNode.data.config.includeParsedContent || false}
+                              onChange={(e) => {
+                                setNodes(nodes.map(node => {
+                                  if (node.id === selectedNode.id) {
+                                    return {
+                                      ...node,
+                                      data: { 
+                                        ...node.data, 
+                                        config: { 
+                                          ...node.data.config, 
+                                          includeParsedContent: e.target.checked
+                                        } 
+                                      }
+                                    };
+                                  }
+                                  return node;
+                                }));
+                                
+                                // Update the selected node
+                                setSelectedNode({
+                                  ...selectedNode,
+                                  data: { 
+                                    ...selectedNode.data, 
+                                    config: { 
+                                      ...selectedNode.data.config, 
+                                      includeParsedContent: e.target.checked
+                                    } 
+                                  }
+                                });
+                                setIsEdited(true);
+                              }}
+                            />
+                            <Label htmlFor="include-content">Include Parsed Content</Label>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 )}
                 
@@ -1123,153 +1454,150 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
                 </div>
               </div>
             </div>
-          ) : (
-            <>
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-semibold">Workflow</h2>
+            ) : selectedEdge ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Connection</h2>
                   <Button 
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    onClick={() => setSelectedEdge(null)}
                     variant="ghost" 
                     size="sm"
                   >
                     <PanelRight className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="space-y-2">
-            <div>
-                    <Label htmlFor="workflow-name">Name</Label>
-              <Input
-                id="workflow-name"
-                      value={workflowName}
-                      onChange={(e) => setWorkflowName(e.target.value)}
-                className="mt-1"
-              />
+                
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-200">
+                    <MoveHorizontal className="h-5 w-5 text-gray-500" />
             </div>
             <div>
-              <Label htmlFor="workflow-description">Description</Label>
-              <Input
-                id="workflow-description"
-                      value={workflowDescription}
-                      onChange={(e) => setWorkflowDescription(e.target.value)}
-                className="mt-1"
-              />
-                  </div>
+                    <h3 className="font-medium">Connection Selected</h3>
+                    <p className="text-xs text-gray-500">
+                      {nodes.find(n => n.id === selectedEdge.source)?.data.label || 'Source'} → {nodes.find(n => n.id === selectedEdge.target)?.data.label || 'Target'}
+                    </p>
             </div>
           </div>
           
-              <div className="space-y-2 mb-4">
+                <div className="flex gap-2 pt-4">
               <Button 
-                onClick={handleSave} 
-                variant="default" 
-                  className="w-full"
-                disabled={!isEdited}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-              <Button 
-                onClick={handleRunWorkflow} 
-                variant="outline"
-                  className="w-full"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Run
-              </Button>
-                <div className="flex gap-2">
-              <Button 
-                onClick={handleExport} 
-                variant="outline"
+                    onClick={() => {
+                      setEdges(edges.filter(edge => edge.id !== selectedEdge.id));
+                      setSelectedEdge(null);
+                      setIsEdited(true);
+                    }}
+                    variant="destructive"
                     className="flex-1"
               >
-                <FileDown className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button 
-                onClick={handleImport} 
-                variant="outline"
-                    className="flex-1"
-              >
-                <FileUp className="h-4 w-4 mr-2" />
-                Import
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Connection
               </Button>
             </div>
           </div>
-              
-              <Tabs defaultValue="nodes" className="flex flex-col">
-                <TabsList className="w-full">
-                  <TabsTrigger value="nodes" className="flex-1">Nodes</TabsTrigger>
-                  <TabsTrigger value="agents" className="flex-1">Agents</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="nodes" className="overflow-hidden">
-                  <div className="mt-2">
-                    <NodeCategory title="Flow Control">
+            ) : (
+              <>
+                <TabsContent value="nodes" className="mt-2 h-full">
+                  <div className="space-y-4">
+                    <NodeCategory title="Triggers">
                       <DraggableItem
-                        label="Trigger"
-                        type={NODE_TYPES.TRIGGER}
-                        description="Starts the workflow"
-                        icon={<GitBranch className="h-5 w-5 text-orange-500" />}
-                        onDragStart={onDragStart}
-                      />
-                      <DraggableItem
-                        label="Condition"
-                        type={NODE_TYPES.CONDITION}
-                        description="Branch based on conditions"
-                        icon={<MoveHorizontal className="h-5 w-5 text-blue-500" />}
-                        onDragStart={onDragStart}
-                      />
-                      <DraggableItem
-                        label="Delay"
-                        type={NODE_TYPES.DELAY}
-                        description="Wait for a specified time"
-                        icon={<Clock className="h-5 w-5 text-purple-500" />}
+                        label="Start Trigger"
+                        type="trigger"
+                        description="Starting point for the workflow"
+                        icon={<Play className="h-4 w-4 text-green-600" />}
                         onDragStart={onDragStart}
                       />
                     </NodeCategory>
                     
-                    <NodeCategory title="Processing">
+                    <NodeCategory title="Flow Control">
                       <DraggableItem
-                        label="Action"
-                        type={NODE_TYPES.ACTION}
-                        description="Perform an action"
-                        icon={<Settings className="h-5 w-5 text-green-500" />}
+                        label="Condition"
+                        type="condition"
+                        description="Branch based on conditions"
+                        icon={<GitBranch className="h-4 w-4 text-blue-600" />}
                         onDragStart={onDragStart}
                       />
                       <DraggableItem
-                        label="Agent"
-                        type={NODE_TYPES.AGENT}
-                        description="Use an AI agent"
-                        icon={<BrainCircuit className="h-5 w-5 text-purple-500" />}
+                        label="Delay"
+                        type="delay"
+                        description="Wait for a specified time"
+                        icon={<Clock className="h-4 w-4 text-orange-600" />}
                         onDragStart={onDragStart}
                       />
                     </NodeCategory>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="agents" className="mt-2 h-full space-y-3">
+                  <div className="grid grid-cols-1 gap-3">
+                    {agents.map((agent) => (
+                      <WorkflowAgentCard
+                        key={agent.id}
+                        agent={{
+                          id: agent.id,
+                          name: agent.name,
+                          description: agent.description,
+                          tools: agent.tools,
+                          knowledge_sources: agent.knowledge_sources,
+                          privacy_level: agent.privacy_level,
+                          stake: agent.stake,
+                        }}
+                        onDragStart={(event) => {
+                          event.dataTransfer.setData('application/reactflow', 'agent');
+                          event.dataTransfer.setData('agent/data', JSON.stringify({
+                            id: agent.id,
+                            name: agent.name,
+                            description: agent.description,
+                            tools: agent.tools
+                          }));
+                        }}
+                      />
+                    ))}
         </div>
                 </TabsContent>
                 
-                <TabsContent value="agents" className="overflow-hidden">
-                  <div className="space-y-3 mt-2">
-                    {PRESET_AGENTS.map((agent) => (
-                      <div 
-                        key={agent.id}
+                <TabsContent value="tools" className="mt-2 h-full space-y-3">
+                  <div className="grid grid-cols-1 gap-3">
+                    {EDITOR_TOOLS.map((tool) => (
+                      <div
+                        key={tool.id}
+                        className="border border-gray-200 rounded-md p-3 bg-white hover:shadow-md cursor-move"
                         draggable
-                        onDragStart={(event) => onDragStart(event, `agent_${agent.id}`)}
-                        className="cursor-move"
+                        onDragStart={(event) => {
+                          event.dataTransfer.setData('application/reactflow', 'action');
+                          event.dataTransfer.setData('tool/data', JSON.stringify({
+                            id: tool.id,
+                            name: tool.name,
+                            description: tool.description,
+                            capabilities: tool.capabilities
+                          }));
+                        }}
                       >
-                        <AgentCard agent={agent} showTools={true} />
+                        <div className="font-medium text-sm mb-1">{tool.name}</div>
+                        <div className="text-xs text-gray-500 mb-2">{tool.description}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {tool.capabilities.map((capability, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {capability}
+                            </Badge>
+                          ))}
+                        </div>
               </div>
                     ))}
             </div>
                 </TabsContent>
-                
-               
-              </Tabs>
             </>
         )}
-      </div>
       </ScrollArea>
+        </Tabs>
     </div>
   );
+
+    // Make handleSave available via ref
+    useImperativeHandle(ref, () => ({
+      handleSave: () => {
+        handleSave();
+      }
+    }));
 
   return (
     <ResizablePanelGroup
@@ -1328,12 +1656,29 @@ const FlowEditor = ({ initialWorkflow, onSave }: EnhancedWorkflowEditorProps) =>
       )}
     </ResizablePanelGroup>
   );
-};
+  }
+);
 
 export function EnhancedWorkflowEditor(props: EnhancedWorkflowEditorProps) {
+  const { saveWorkflow, triggerSave } = useContext(EditorContext);
+  
+  // Create a ref to the FlowEditor component's handleSave function
+  const flowEditorRef = useRef<{ handleSave: () => void } | null>(null);
+  
+  // Effect to trigger save when the save button is clicked in the layout
+  useEffect(() => {
+    if (flowEditorRef.current) {
+      flowEditorRef.current.handleSave();
+    }
+  }, [triggerSave]);
+  
   return (
     <ReactFlowProvider>
-      <FlowEditor {...props} />
+      <FlowEditor 
+        ref={flowEditorRef}
+        initialWorkflow={props.initialWorkflow} 
+        onSave={props.onSave} 
+      />
     </ReactFlowProvider>
   );
 } 

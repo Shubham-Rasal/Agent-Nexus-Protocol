@@ -21,7 +21,8 @@ import {
   Star,
   Clock,
   PlusCircle,
-  Lightbulb
+  Lightbulb,
+  Users
 } from 'lucide-react';
 
 const domainIcons: Record<string, React.ReactNode> = {
@@ -32,6 +33,7 @@ const domainIcons: Record<string, React.ReactNode> = {
   data_analysis: <Database className="h-4 w-4" />,
   general: <Layers className="h-4 w-4" />,
   custom: <PlusCircle className="h-4 w-4" />,
+  recruitment: <Users className="h-4 w-4" />,
 };
 
 const domainLabels: Record<string, string> = {
@@ -42,6 +44,7 @@ const domainLabels: Record<string, string> = {
   data_analysis: 'Data Analysis',
   general: 'General Purpose',
   custom: 'Custom',
+  recruitment: 'Recruitment',
 };
 
 interface WorkflowSelectorProps {

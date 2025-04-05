@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import GoogleCalendarTool from '@/components/tools/GoogleCalendarTool';
 
 // Map of category IDs to their icons
 const CATEGORY_ICONS: Record<string, any> = {
@@ -28,6 +29,7 @@ const CATEGORY_ICONS: Record<string, any> = {
   storage: Database,
   calendar: Calendar,
   analysis: BarChart2,
+  contact: UserPlus,
 };
 
 // Custom icons for specific tools
@@ -58,8 +60,8 @@ export default function ToolBuilderPage() {
   }, [selectedTool?.id]);
 
   const filteredTools = selectedCategory === 'all' 
-    ? PRESET_TOOLS 
-    : PRESET_TOOLS.filter(tool => tool.category === selectedCategory);
+    ? [...PRESET_TOOLS]
+    : [...PRESET_TOOLS].filter(tool => tool.category === selectedCategory);
 
   const handleToolClick = (tool: Tool) => {
     setToolConfig({});
@@ -203,6 +205,69 @@ export default function ToolBuilderPage() {
       ...prev,
       [key]: value
     }));
+  };
+
+  // Check if we need to show a custom tool component or the default parameter form
+  const renderToolTester = () => {
+    if (selectedTool?.id === TOOL_ID_GMAIL) {
+      return (
+        <GmailSendTool 
+          config={toolConfig} 
+          onChange={setToolConfig} 
+          onTest={setTestResult} 
+        />
+      );
+
+    } else if (selectedTool?.id === TOOL_ID_AKAVE) {
+      // Render Akave tool UI
+      // ... existing Akave storage tool UI ...
+    } else if (selectedTool?.id === TOOL_ID_CSV) {
+      // Render CSV tool UI
+      // ... existing CSV processor tool UI ...
+    } else if (selectedTool?.id === TOOL_ID_CALENDAR) {
+      // Render Calendar tool UI
+      return (
+        <GoogleCalendarTool 
+          config={toolConfig} 
+          onChange={setToolConfig} 
+        />
+      );
+    } else {
+      // Render default parameter form
+      return (
+        <div className="space-y-4">
+          {selectedTool?.parameters && selectedTool.parameters.map(param => (
+            <div key={param.id} className="space-y-2">
+              <Label htmlFor={param.id}>{param.name}{param.required && ' *'}</Label>
+              <Input
+                id={param.id}
+                placeholder={`Enter ${param.name.toLowerCase()}`}
+                value={toolConfig[param.id] || ''}
+                onChange={(e) => updateConfig(param.id, e.target.value)}
+              />
+              <p className="text-xs text-gray-500">{param.description}</p>
+            </div>
+          ))}
+          
+          {selectedTool?.parameters && selectedTool.parameters.length > 0 && (
+            <Button 
+              onClick={handleTest}
+              disabled={isTesting}
+              className="w-full mt-4"
+            >
+              {isTesting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                <>Test Tool</>
+              )}
+            </Button>
+          )}
+        </div>
+      );
+    }
   };
 
   return (
@@ -383,757 +448,13 @@ export default function ToolBuilderPage() {
                     </div>
                   </div>
                   
-                  {/* Tool testing section for Akave Storage */}
-                  {selectedTool?.id === TOOL_ID_AKAVE && (
-                    <div className="border rounded-md p-4 mt-6">
-                      <h3 className="text-lg font-medium mb-4">Test Akave Storage</h3>
-                      
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="bucketName">Bucket Name</Label>
-                          <Input
-                            id="bucketName"
-                            placeholder="myBucket"
-                            value={toolConfig.bucketName || ''}
-                            onChange={(e) => updateConfig('bucketName', e.target.value)}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="operation">Operation</Label>
-                          <Select 
-                            value={toolConfig.operation || 'list'} 
-                            onValueChange={(value: string) => {
-                              updateConfig('operation', value);
-                              // Reset file data when changing operations
-                              if (value !== 'upload') {
-                                setToolConfig(prev => ({
-                                  ...prev,
-                                  fileData: undefined,
-                                  fileType: undefined,
-                                  createBucket: undefined
-                                }));
-                              }
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select operation" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="list">List Files</SelectItem>
-                              <SelectItem value="info">File Info</SelectItem>
-                              <SelectItem value="download">Download File</SelectItem>
-                              <SelectItem value="upload">Upload File</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        {/* Upload specific UI */}
-                        {toolConfig.operation === 'upload' && (
-                          <>
-                            <div className="space-y-2">
-                              <Label htmlFor="fileName">File Name</Label>
-                              <Input
-                                id="fileName"
-                                placeholder="myFile.txt"
-                                value={toolConfig.fileName || ''}
-                                onChange={(e) => updateConfig('fileName', e.target.value)}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="fileUpload">Upload File</Label>
-                              <div className="border rounded-md p-4 bg-gray-50">
-                                <input
-                                  type="file"
-                                  id="fileUpload"
-                                  className="hidden"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      // Update fileName if it's not already set
-                                      if (!toolConfig.fileName) {
-                                        updateConfig('fileName', file.name);
-                                      }
-                                      
-                                      // Convert file to base64
-                                      const reader = new FileReader();
-                                      reader.readAsDataURL(file);
-                                      reader.onload = () => {
-                                        setToolConfig(prev => ({
-                                          ...prev,
-                                          fileData: reader.result as string,
-                                          fileType: file.type
-                                        }));
-                                      };
-                                    }
-                                  }}
-                                />
-                                
-                                {!toolConfig.fileData ? (
-                                  <div className="text-center py-6">
-                                    <FileUp className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                                    <Button 
-                                      variant="outline" 
-                                      onClick={() => document.getElementById('fileUpload')?.click()}
-                                      className="mb-2"
-                                    >
-                                      Select File
-                                    </Button>
-                                    <p className="text-xs text-gray-500">Supported file types: Any</p>
-                                  </div>
-                                ) : (
-                                  <div className="bg-white p-3 rounded border">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-3">
-                                        <FileIcon className="h-5 w-5 text-blue-500" />
-                                        <div>
-                                          <p className="text-sm font-medium">{toolConfig.fileName}</p>
-                                        </div>
-                                      </div>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm"
-                                        onClick={() => {
-                                          setToolConfig(prev => ({
-                                            ...prev,
-                                            fileData: undefined,
-                                            fileType: undefined
-                                          }));
-                                          // Reset the file input
-                                          const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
-                                          if (fileInput) fileInput.value = '';
-                                        }}
-                                      >
-                                        Change
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center space-x-2 mt-2">
-                              <input
-                                type="checkbox"
-                                id="createBucket"
-                                checked={toolConfig.createBucket || false}
-                                onChange={(e) => updateConfig('createBucket', e.target.checked.toString())}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              />
-                              <Label htmlFor="createBucket" className="text-sm">
-                                Create bucket if it doesn't exist
-                              </Label>
-                            </div>
-                            
-                            <p className="text-xs text-gray-500 mt-1">
-                              <FolderPlus className="h-3 w-3 inline-block mr-1" />
-                              If checked, the system will create the bucket if it doesn't already exist
-                            </p>
-                          </>
-                        )}
-                        
-                        {/* Info and Download specific UI (existing code) */}
-                        {(toolConfig.operation === 'info' || toolConfig.operation === 'download') && (
-                          <div className="space-y-2">
-                            <Label htmlFor="fileName">File Name</Label>
-                            <Input
-                              id="fileName"
-                              placeholder="myFile.txt"
-                              value={toolConfig.fileName || ''}
-                              onChange={(e) => updateConfig('fileName', e.target.value)}
-                            />
-                          </div>
-                        )}
-                        
-                        <Button 
-                          onClick={handleTest} 
-                          disabled={
-                            isTesting || 
-                            !toolConfig.bucketName || 
-                            ((toolConfig.operation === 'info' || toolConfig.operation === 'download') && !toolConfig.fileName) ||
-                            (toolConfig.operation === 'upload' && (!toolConfig.fileName || !toolConfig.fileData))
-                          }
-                          className="w-full"
-                        >
-                          {isTesting ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              {toolConfig.operation === 'upload' ? 'Uploading...' : 'Testing...'}
-                            </>
-                          ) : (
-                            <>
-                              {toolConfig.operation === 'list' && <FileText className="mr-2 h-4 w-4" />}
-                              {toolConfig.operation === 'info' && <FileIcon className="mr-2 h-4 w-4" />}
-                              {toolConfig.operation === 'download' && <FileDown className="mr-2 h-4 w-4" />}
-                              {toolConfig.operation === 'upload' && <Upload className="mr-2 h-4 w-4" />}
-                              {toolConfig.operation === 'upload' ? 'Upload File' : 
-                                toolConfig.operation === 'list' ? 'List Files' : 
-                                toolConfig.operation === 'info' ? 'Get File Info' : 'Download File'}
-                            </>
-                          )}
-                        </Button>
-                        
-                        {testResult && (
-                          <Card className={`${testResult.success ? 'bg-green-50 border-green-200' : 'bg-rose-50 border-rose-200'} mt-4`}>
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-3">
-                                {testResult.success ? (
-                                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                                ) : (
-                                  <AlertCircle className="h-5 w-5 text-rose-500 mt-0.5" />
-                                )}
-                                <div className="flex-1">
-                                  <p className={`text-sm ${testResult.success ? 'text-green-800' : 'text-rose-800'} mb-2`}>
-                                    {testResult.success 
-                                      ? `${toolConfig.operation === 'upload' ? 'File uploaded successfully!' : 'Operation completed successfully.'}`
-                                      : `Operation failed: ${testResult.error}`}
-                                  </p>
-                                  
-                                  {testResult.success && testResult.data && (
-                                    <div>
-                                      {toolConfig.operation === 'list' && (
-                                        <div className="bg-white p-2 rounded border border-green-200 text-xs overflow-auto max-h-60">
-                                          <pre>{JSON.stringify(testResult.data, null, 2)}</pre>
-                                        </div>
-                                      )}
-                                      
-                                      {toolConfig.operation === 'info' && (
-                                        <div className="bg-white p-2 rounded border border-green-200 text-xs overflow-auto max-h-60">
-                                          <pre>{JSON.stringify(testResult.data, null, 2)}</pre>
-                                        </div>
-                                      )}
-                                      
-                                      {toolConfig.operation === 'upload' && (
-                                        <div className="bg-white p-2 rounded border border-green-200 text-xs overflow-auto max-h-60">
-                                          <div className="flex items-center gap-2 mb-2">
-                                            <FileIcon className="h-4 w-4 text-green-600" />
-                                            <span className="font-medium">{testResult.data.fileName}</span>
-                                          </div>
-                                          <pre>{JSON.stringify(testResult.data, null, 2)}</pre>
-                                        </div>
-                                      )}
-                                      
-                                      {toolConfig.operation === 'download' && downloadUrl && (
-                                        <Button size="sm" onClick={handleDownload} variant="outline" className="mt-2">
-                                          <FileDown className="mr-2 h-4 w-4" />
-                                          Download {toolConfig.fileName}
-                                        </Button>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Tool testing section for Google Calendar */}
-                  {selectedTool?.id === TOOL_ID_CALENDAR && (
-                    <div className="border rounded-md p-4 mt-6">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <CalendarIcon className="h-5 w-5 text-blue-500" />
-                        <h3 className="text-lg font-medium">Google Calendar & Meet</h3>
-                      </div>
-                      
-                      {!isAuthenticated ? (
-                        <div className="text-center py-6">
-                          <div className="flex justify-center space-x-2 mb-4">
-                            <CalendarIcon className="h-12 w-12 text-blue-400" />
-                            <Video className="h-12 w-12 text-blue-400" />
-                          </div>
-                          <h3 className="text-lg font-medium mb-2">Connect Google Calendar</h3>
-                          <p className="text-sm text-gray-500 mb-4">
-                            You need to connect your Google account to create calendar events and meetings.
-                          </p>
-                          <Button onClick={handleConnect} variant="default">
-                            Connect Google Account
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="title">Event Title</Label>
-                            <Input
-                              id="title"
-                              placeholder="Team Meeting"
-                              value={toolConfig.title || ''}
-                              onChange={(e) => updateConfig('title', e.target.value)}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center space-x-2 my-4 border p-3 rounded-md bg-blue-50">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-2">
-                                <Video className="h-4 w-4 text-blue-600" />
-                                <Label htmlFor="addMeet" className="font-medium text-blue-800">Google Meet Videoconference</Label>
-                              </div>
-                              <p className="text-xs text-gray-600 ml-6 mt-1">Add a Google Meet link to this calendar event</p>
-                            </div>
-                            <div className="flex items-center">
-                              <input
-                                id="addMeet"
-                                type="checkbox"
-                                className="mr-2 h-4 w-4"
-                                checked={toolConfig.addMeet !== false} // Default to true
-                                onChange={(e) => updateConfig('addMeet', e.target.checked.toString())}
-                              />
-                              <Label htmlFor="addMeet">Enabled</Label>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="start">Start Time</Label>
-                              <Input
-                                id="start"
-                                type="datetime-local"
-                                value={toolConfig.start || ''}
-                                onChange={(e) => updateConfig('start', e.target.value)}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="end">End Time</Label>
-                              <Input
-                                id="end"
-                                type="datetime-local"
-                                value={toolConfig.end || ''}
-                                onChange={(e) => updateConfig('end', e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="location">Location</Label>
-                            <Input
-                              id="location"
-                              placeholder="Office Room 101"
-                              value={toolConfig.location || ''}
-                              onChange={(e) => updateConfig('location', e.target.value)}
-                            />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                              id="description"
-                              placeholder="Event details and agenda..."
-                              value={toolConfig.description || ''}
-                              onChange={(e) => updateConfig('description', e.target.value)}
-                              rows={3}
-                            />
-                          </div>
-                          
-                          {/* Attendees section with improved UI */}
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <Label htmlFor="attendees" className="font-medium">Attendees</Label>
-                              <Badge variant="outline" className="text-xs">Optional</Badge>
-                            </div>
-                            
-                            <div className="rounded-md border p-3 bg-gray-50">
-                              <div className="flex items-center mb-2 text-sm">
-                                <UserPlus className="h-4 w-4 mr-2 text-gray-500" />
-                                <span>Add people to invite to this event</span>
-                              </div>
-                              
-                              <Textarea
-                                id="attendees"
-                                placeholder="Enter email addresses separated by commas or new lines:
-example@gmail.com
-*optional@gmail.com (add * for optional attendees)
-another@company.com"
-                                value={Array.isArray(toolConfig.attendees) ? toolConfig.attendees.join(', ') : toolConfig.attendees || ''}
-                                onChange={(e) => {
-                                  // Process the input to handle both comma-separated and line-break separated emails
-                                  const inputValue = e.target.value;
-                                  updateConfig('attendees', inputValue);
-                                }}
-                                rows={3}
-                                className="mt-1"
-                              />
-                              
-                              <p className="text-xs text-gray-500 mt-2">
-                                Attendees will receive an email invitation and can RSVP to your event. 
-                                Add an asterisk (*) before an email to mark that person as an optional attendee.
-                                Example: *optional@gmail.com
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <Button 
-                            onClick={handleTest}
-                            disabled={isTesting || !toolConfig.title || !toolConfig.start || !toolConfig.end}
-                            className="w-full"
-                          >
-                            {isTesting ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Creating Event...
-                              </>
-                            ) : (
-                              <>
-                                {toolConfig.addMeet !== false ? (
-                                  <>
-                                    <Video className="mr-2 h-4 w-4" />
-                                    Create Event with Meet
-                                  </>
-                                ) : (
-                                  <>
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    Create Calendar Event
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </Button>
-                          
-                          {testResult && (
-                            <Card className={`${testResult.success ? 'bg-green-50 border-green-200' : 'bg-rose-50 border-rose-200'} mt-4`}>
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-3">
-                                  {testResult.success ? (
-                                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                                  ) : (
-                                    <AlertCircle className="h-5 w-5 text-rose-500 mt-0.5" />
-                                  )}
-                                  <div className="flex-1">
-                                    <p className={`text-sm ${testResult.success ? 'text-green-800' : 'text-rose-800'} mb-2`}>
-                                      {testResult.success 
-                                        ? 'Event created successfully!' 
-                                        : `Failed to create event: ${testResult.error}`}
-                                    </p>
-                                    
-                                    {testResult.success && testResult.data && (
-                                      <div className="space-y-3 mt-3">
-                                        <div>
-                                          <h4 className="text-sm font-medium flex items-center">
-                                            <Calendar className="h-4 w-4 mr-2" />
-                                            Event Details
-                                          </h4>
-                                          <p className="text-sm mt-1">{testResult.data.summary}</p>
-                                          
-                                          <div className="flex items-center mt-2 gap-2 text-xs text-gray-500">
-                                            <Clock className="h-3 w-3" />
-                                            <span>
-                                              {new Date(testResult.data.start.dateTime).toLocaleString()} - {new Date(testResult.data.end.dateTime).toLocaleString()}
-                                            </span>
-                                          </div>
-                                          
-                                          {testResult.data.attendees && testResult.data.attendees.length > 0 && (
-                                            <div className="mt-3">
-                                              <h4 className="text-sm font-medium flex items-center">
-                                                <UserPlus className="h-4 w-4 mr-2 text-blue-500" />
-                                                Attendees ({testResult.data.attendees.length})
-                                              </h4>
-                                              <div className="mt-2 space-y-1">
-                                                {testResult.data.attendees.map((attendee: any, index: number) => (
-                                                  <div key={index} className="flex items-center text-xs bg-blue-50 rounded-full py-1 px-3 w-fit">
-                                                    <span>{attendee.email}</span>
-                                                    {attendee.optional && (
-                                                      <Badge variant="outline" className="ml-1 text-[10px] py-0 h-4">Optional</Badge>
-                                                    )}
-                                                    {!attendee.optional && (
-                                                      <Badge variant="default" className="ml-1 text-[10px] py-0 h-4 bg-blue-500">Required</Badge>
-                                                    )}
-                                                    {attendee.responseStatus === 'accepted' && <CheckCircle className="h-3 w-3 ml-2 text-green-500" />}
-                                                  </div>
-                                                ))}
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                        
+                  {/* Tool testing section */}
                                         <Separator />
                                         
-                                        <div>
-                                          <h4 className="text-sm font-medium flex items-center">
-                                            <Video className="h-4 w-4 mr-2" />
-                                            Google Calendar Link
-                                          </h4>
-                                          
-                                          <div className="bg-white p-2 rounded border border-green-200 mt-2 flex items-center justify-between">
-                                            <code className="text-xs text-blue-600 overflow-auto max-w-[250px]">{testResult.data.hangoutLink}</code>
-                                            <Button 
-                                              size="sm" 
-                                              variant="ghost"
-                                              className="h-6 w-6 p-0 flex-shrink-0"
-                                              onClick={() => {
-                                                navigator.clipboard.writeText(testResult.data.hangoutLink);
-                                              }}
-                                            >
-                                              <LinkIcon className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </div>
-                      )}
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-3">Test Tool</h3>
+                    {renderToolTester()}
                     </div>
-                  )}
-                  
-                  {/* Tool testing section for Gmail Send */}
-                  {selectedTool?.id === TOOL_ID_GMAIL && (
-                    <>
-                      <Separator />
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Test Tool</h3>
-                        
-                        {!isAuthenticated ? (
-                          <Card className="bg-amber-50 border-amber-200">
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-3">
-                                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
-                                <div className="flex-1">
-                                  <p className="text-sm text-amber-800 mb-2">
-                                    You need to connect your Gmail account to use this tool.
-                                  </p>
-                                  <Button onClick={handleConnect} size="sm">
-                                    <Mail className="mr-2 h-4 w-4" />
-                                    Connect Gmail
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="to">To</Label>
-                              <Input
-                                id="to"
-                                placeholder="recipient@example.com"
-                                value={toolConfig.to || ''}
-                                onChange={(e) => updateConfig('to', e.target.value)}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="subject">Subject</Label>
-                              <Input
-                                id="subject"
-                                placeholder="Email subject"
-                                value={toolConfig.subject || ''}
-                                onChange={(e) => updateConfig('subject', e.target.value)}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="body">Body</Label>
-                              <Textarea
-                                id="body"
-                                placeholder="Email body"
-                                rows={4}
-                                value={toolConfig.body || ''}
-                                onChange={(e) => updateConfig('body', e.target.value)}
-                                className="resize-y"
-                              />
-                            </div>
-                            
-                            <Button 
-                              onClick={handleTest}
-                              disabled={isTesting || !toolConfig.to}
-                              className="w-full"
-                            >
-                              {isTesting ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Sending Test Email...
-                                </>
-                              ) : (
-                                <>
-                                  <Mail className="mr-2 h-4 w-4" />
-                                  Send Test Email
-                                </>
-                              )}
-                            </Button>
-                            
-                            {testResult && (
-                              <Card className={`${testResult.success ? 'bg-green-50 border-green-200' : 'bg-rose-50 border-rose-200'}`}>
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-3">
-                                    {testResult.success ? (
-                                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                                    ) : (
-                                      <AlertCircle className="h-5 w-5 text-rose-500 mt-0.5" />
-                                    )}
-                                    <div>
-                                      <p className={`text-sm ${testResult.success ? 'text-green-800' : 'text-rose-800'}`}>
-                                        {testResult.success 
-                                          ? 'Test email sent successfully!' 
-                                          : `Failed to send test email: ${testResult.error}`}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                  
-                  {/* Tool testing section for CSV Processor */}
-                  {selectedTool?.id === TOOL_ID_CSV && (
-                    <div className="border rounded-md p-4 mt-6">
-                      <h3 className="text-lg font-medium mb-4">Test CSV Processor</h3>
-                      
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="inputUrl">CSV Input URL</Label>
-                          <Input
-                            id="inputUrl"
-                            placeholder="https://example.com/data.csv"
-                            value={toolConfig.inputUrl || ''}
-                            onChange={(e) => updateConfig('inputUrl', e.target.value)}
-                          />
-                          <p className="text-xs text-gray-500">
-                            URL to a publicly accessible CSV file that needs to be processed
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="systemPrompt">Transformation Instructions</Label>
-                          <Textarea
-                            id="systemPrompt"
-                            placeholder="Describe how you want the CSV data to be transformed..."
-                            value={toolConfig.systemPrompt || ''}
-                            onChange={(e) => updateConfig('systemPrompt', e.target.value)}
-                            rows={5}
-                            className="resize-y"
-                          />
-                          <p className="text-xs text-gray-500">
-                            <Code className="h-3 w-3 inline-block mr-1" />
-                            Provide clear instructions for how the CSV data should be transformed
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="outputFormat">Output Format</Label>
-                            <Select
-                              value={toolConfig.outputFormat || 'csv'}
-                              onValueChange={(value: string) => updateConfig('outputFormat', value)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select output format" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="csv">CSV</SelectItem>
-                                <SelectItem value="json">JSON</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="maxRows">Max Rows</Label>
-                            <Input
-                              id="maxRows"
-                              type="number"
-                              placeholder="1000"
-                              min="1"
-                              max="10000"
-                              value={toolConfig.maxRows || '1000'}
-                              onChange={(e) => updateConfig('maxRows', e.target.value)}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="model">LLM Model</Label>
-                          <Select
-                            value={toolConfig.model || 'llama3.1:8b'}
-                            onValueChange={(value: string) => updateConfig('model', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select LLM model" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="llama3.1:8b">Llama 3.1 (8B)</SelectItem>
-                              <SelectItem value="llama3.1:70b">Llama 3.1 (70B)</SelectItem>
-                              <SelectItem value="mixtral:8x7b">Mixtral 8x7B</SelectItem>
-                              <SelectItem value="mistral:7b">Mistral 7B</SelectItem>
-                              <SelectItem value="gemma:7b">Gemma 7B</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <Button
-                          onClick={handleTest}
-                          disabled={isTesting || !toolConfig.inputUrl || !toolConfig.systemPrompt}
-                          className="w-full"
-                        >
-                          {isTesting ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Processing CSV Data...
-                            </>
-                          ) : (
-                            <>
-                              {toolConfig.outputFormat === 'json' ? <FileJson className="mr-2 h-4 w-4" /> : <FileText className="mr-2 h-4 w-4" />}
-                              Transform CSV Data
-                            </>
-                          )}
-                        </Button>
-
-                        {testResult && (
-                          <Card className={`${testResult.success ? 'bg-green-50 border-green-200' : 'bg-rose-50 border-rose-200'} mt-4`}>
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-3">
-                                {testResult.success ? (
-                                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                                ) : (
-                                  <AlertCircle className="h-5 w-5 text-rose-500 mt-0.5" />
-                                )}
-                                <div className="flex-1">
-                                  <p className={`text-sm ${testResult.success ? 'text-green-800' : 'text-rose-800'} mb-2`}>
-                                    {testResult.success
-                                      ? 'CSV data transformed successfully!'
-                                      : `Error: ${testResult.error}`}
-                                  </p>
-
-                                  {testResult.success && testResult.data && (
-                                    <>
-                                      <div className="mt-3 mb-2">
-                                        <p className="text-sm font-medium text-gray-700">Preview:</p>
-                                      </div>
-                                      <div className="bg-white p-2 rounded border border-green-200 text-xs overflow-auto max-h-60 font-mono">
-                                        {typeof testResult.data === 'string' ? (
-                                          // Preview for CSV data - show first 10 lines
-                                          <pre>{testResult.data.split('\n').slice(0, 10).join('\n')}</pre>
-                                        ) : (
-                                          // Preview for JSON data - show first 10 items
-                                          <pre>{JSON.stringify(testResult.data.slice(0, 10), null, 2)}</pre>
-                                        )}
-                                      </div>
-                                      
-                                      {downloadUrl && (
-                                        <Button size="sm" onClick={handleDownload} variant="outline" className="mt-4">
-                                          <FileDown className="mr-2 h-4 w-4" />
-                                          Download {toolConfig.outputFormat === 'json' ? 'JSON' : 'CSV'} Result
-                                        </Button>
-                                      )}
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        )}
-                      </div>
-                    </div>
-                  )}
                   
                   <Separator />
                   

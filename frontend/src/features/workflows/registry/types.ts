@@ -8,6 +8,7 @@ export enum WorkflowDomainType {
   DATA_ANALYSIS = 'data_analysis',
   GENERAL = 'general',
   CUSTOM = 'custom',
+  RECRUITMENT = 'recruitment',
 }
 
 export enum WorkflowCapabilityType {
