@@ -40,12 +40,14 @@ interface GoogleCalendarToolProps {
   };
   onChange?: (config: any) => void;
   testMode?: boolean;
+  onTest?: (result: any) => void;
 }
 
 export default function GoogleCalendarTool({ 
   config, 
   onChange, 
-  testMode 
+  testMode, 
+  onTest 
 }: GoogleCalendarToolProps) {
   const [summary, setSummary] = useState(config?.summary || '');
   const [description, setDescription] = useState(config?.description || '');
@@ -157,6 +159,11 @@ export default function GoogleCalendarTool({
         setError(response.error || 'Failed to execute Google Calendar tool');
       } else {
         setResult(response.data);
+      }
+      
+      // Call onTest callback if provided
+      if (onTest) {
+        onTest(response);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');

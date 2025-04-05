@@ -269,23 +269,45 @@ export const sendGmailEmail = async (emailData: {
   
   try {
     // Format the email according to RFC 5322
-    const message = [
+    // IMPORTANT: The empty line between headers and body is crucial
+    const headers = [
       `To: ${emailData.to}`,
       emailData.cc ? `Cc: ${emailData.cc}` : '',
       emailData.bcc ? `Bcc: ${emailData.bcc}` : '',
       `Subject: ${emailData.subject}`,
       'Content-Type: text/html; charset=utf-8',
-      '',
-      emailData.body
-    ]
-      .filter(line => line !== '') // Remove empty lines (like cc/bcc if not provided)
-      .join('\r\n');
+      'MIME-Version: 1.0',
+    ].filter(line => line !== ''); // Remove empty lines (like cc/bcc if not provided)
     
-    // Encode the email in base64 URL-safe format
-    const encodedMessage = btoa(message)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
+    // Build the full message with an explicit empty line between headers and body
+    const message = headers.join('\r\n') + '\r\n\r\n' + emailData.body;
+    
+    console.log('Email message structure:', {
+      headersCount: headers.length,
+      bodyLength: emailData.body.length,
+      totalLength: message.length
+    });
+    
+    // Encode the email in base64 URL-safe format with proper Unicode support
+    // First convert string to UTF-8, then encode in base64
+    let encodedMessage;
+    try {
+      // Use TextEncoder for UTF-8 encoding before base64 encoding
+      const encoder = new TextEncoder();
+      const uint8array = encoder.encode(message);
+      encodedMessage = btoa(
+        Array.from(uint8array, byte => String.fromCharCode(byte)).join('')
+      )
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    } catch (encodeError) {
+      console.error('Error encoding email message:', encodeError);
+      return {
+        success: false,
+        error: 'Failed to encode email message. Please check for special characters.'
+      };
+    }
     
     // Send the email via Gmail API
     const response = await fetch('https://www.googleapis.com/gmail/v1/users/me/messages/send', {
@@ -301,6 +323,7 @@ export const sendGmailEmail = async (emailData: {
     
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('Gmail API error response:', errorData);
       return { 
         success: false, 
         error: errorData.error?.message || 'Failed to send email' 

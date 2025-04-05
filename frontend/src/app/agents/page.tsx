@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { AGENT_MODELS, STORAGE_PROVIDERS } from '@/features/leadflow/agents/schema';
 import { PRESET_TOOLS } from '@/features/leadflow/tools/presets';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AgentTester } from '@/features/emailOutreach/AgentTester';
 
 // Define TypeScript interfaces
 interface Agent {
@@ -40,15 +41,18 @@ interface Tool {
 export default function AgentManagerPage() {
   const [agents, setAgents] = useState<Agent[]>(PRESET_AGENTS);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [showTester, setShowTester] = useState(false);
 
   // Function to handle clicking on an agent card
   const handleAgentClick = (agent: Agent) => {
     setSelectedAgent(agent);
+    setShowTester(false); // Reset tester visibility when selecting a new agent
   };
 
   // Function to close the sidebar
   const closeSidebar = () => {
     setSelectedAgent(null);
+    setShowTester(false);
   };
 
   // Helper to get the model name instead of just the ID
@@ -69,83 +73,86 @@ export default function AgentManagerPage() {
   };
 
   return (
-    <div className={`space-y-6 transition-all duration-300 ${selectedAgent ? 'pr-[33.333%]' : ''}`}>
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Agent Manager</h1>
-          <p className="text-gray-500">Create and manage AI agents for your workflows</p>
+    <div className="flex">
+      {/* Main content */}
+      <div className={`flex-1 space-y-6 transition-all duration-300 ${selectedAgent ? 'pr-[33.333%]' : ''}`}>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Agent Manager</h1>
+            <p className="text-gray-500">Create and manage AI agents for your workflows</p>
+          </div>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Agent
+          </Button>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Create New Agent
-        </Button>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {agents.map(agent => (
+            <Card 
+              key={agent.id} 
+              className="hover:shadow-md transition-shadow cursor-pointer" 
+              onClick={() => handleAgentClick(agent)}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex justify-between">
+                  <CardTitle className="text-lg">{agent.name}</CardTitle>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        // Settings functionality would go here
+                      }}
+                    >
+                      <Settings className="h-4 w-4 text-gray-500" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        // Delete functionality would go here
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-gray-500" />
+                    </Button>
+                  </div>
+                </div>
+                <CardDescription>{agent.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Model:</span>
+                    <span className="font-medium">{getModelName(agent.model)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Storage:</span>
+                    <span className="font-medium">{getStorageName(agent.storageProvider)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Tools:</span>
+                    <span className="font-medium">{agent.tools.length}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {agent.tools.map(tool => (
+                      <Badge key={tool} variant="secondary" className="text-xs">
+                        {tool}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {agents.map(agent => (
-          <Card 
-            key={agent.id} 
-            className="hover:shadow-md transition-shadow cursor-pointer" 
-            onClick={() => handleAgentClick(agent)}
-          >
-            <CardHeader className="pb-2">
-              <div className="flex justify-between">
-                <CardTitle className="text-lg">{agent.name}</CardTitle>
-                <div className="flex gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
-                      // Settings functionality would go here
-                    }}
-                  >
-                    <Settings className="h-4 w-4 text-gray-500" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
-                      // Delete functionality would go here
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 text-gray-500" />
-                  </Button>
-                </div>
-              </div>
-              <CardDescription>{agent.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Model:</span>
-                  <span className="font-medium">{getModelName(agent.model)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Storage:</span>
-                  <span className="font-medium">{getStorageName(agent.storageProvider)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Tools:</span>
-                  <span className="font-medium">{agent.tools.length}</span>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {agent.tools.map(tool => (
-                    <Badge key={tool} variant="secondary" className="text-xs">
-                      {tool}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Agent Details Sidebar */}
+      {/* Agent Details Sidebar - Only shows when an agent is selected */}
       {selectedAgent && (
         <div className="w-1/3 border-l bg-white transition-all duration-300 transform h-screen fixed top-0 right-0 overflow-y-auto shadow-lg z-50">
           <ScrollArea className="h-screen">
@@ -221,8 +228,25 @@ export default function AgentManagerPage() {
                 
                 <div className="border-t pt-6 mt-6 flex gap-3">
                   <Button className="flex-1">Edit Agent</Button>
-                  <Button variant="outline" className="flex-1">Use in Workflow</Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => setShowTester(!showTester)}
+                  >
+                    {showTester ? 'Hide Test Interface' : 'Test Agent'}
+                  </Button>
                 </div>
+                
+                {/* Test Interface - only visible when showTester is true */}
+                {showTester && (
+                  <div className="border-t pt-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-3">Quick Test</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Describe who you want to email and we'll automatically extract the information and send it.
+                    </p>
+                    <AgentTester />
+                  </div>
+                )}
               </div>
             </div>
           </ScrollArea>

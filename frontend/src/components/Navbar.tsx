@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, GitBranch, FileEdit, Settings, Home } from 'lucide-react';
+import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -43,6 +43,20 @@ export function Navbar() {
                 isActive={pathname === '/editor'}
               >
                 Workflow Editor
+              </NavLink>
+              <NavLink 
+                href="/tools" 
+                icon={<Wrench className="h-5 w-5" />}
+                isActive={pathname === '/tools'}
+              >
+                Tools
+              </NavLink>
+              <NavLink 
+                href="/agents" 
+                icon={<User className="h-5 w-5" />}
+                isActive={pathname === '/agents'}
+              >
+                Agents
               </NavLink>
             </div>
           </div>
