@@ -38,13 +38,6 @@ export function Navbar() {
                 Workflows
               </NavLink>
               <NavLink 
-                href="/editor" 
-                icon={<FileEdit className="h-5 w-5" />}
-                isActive={pathname === '/editor'}
-              >
-                Workflow Editor
-              </NavLink>
-              <NavLink 
                 href="/tools" 
                 icon={<Wrench className="h-5 w-5" />}
                 isActive={pathname === '/tools'}

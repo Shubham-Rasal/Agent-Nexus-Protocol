@@ -22,6 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import GoogleCalendarTool from '@/components/tools/GoogleCalendarTool';
+import AkaveStorageTool from '@/components/tools/AkaveStorageTool';
+import CSVProcessorTool from '@/components/tools/CSVProcessorTool';
 
 // Map of category IDs to their icons
 const CATEGORY_ICONS: Record<string, any> = {
@@ -220,10 +222,22 @@ export default function ToolBuilderPage() {
 
     } else if (selectedTool?.id === TOOL_ID_AKAVE) {
       // Render Akave tool UI
-      // ... existing Akave storage tool UI ...
+      return (
+        <AkaveStorageTool
+          config={toolConfig}
+          onChange={setToolConfig}
+          onTest={setTestResult}
+        />
+      );
     } else if (selectedTool?.id === TOOL_ID_CSV) {
       // Render CSV tool UI
-      // ... existing CSV processor tool UI ...
+      return (
+        <CSVProcessorTool
+          config={toolConfig}
+          onChange={setToolConfig}
+          onTest={setTestResult}
+        />
+      );
     } else if (selectedTool?.id === TOOL_ID_CALENDAR) {
       // Render Calendar tool UI
       return (

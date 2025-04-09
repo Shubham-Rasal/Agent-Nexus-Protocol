@@ -106,8 +106,8 @@ ${JSON.stringify(parsedData, null, 2)}`;
     // Step 4: Call the Lilypad LLM API using the same approach as in route.ts
     let transformedData;
     try {
-      const API_URL = process.env.NEXT_PUBLIC_LILYPAD_API_URL || "https://anura-testnet.lilypad.tech/api/v1/chat/completions";
-      const API_TOKEN = process.env.NEXT_PUBLIC_LILYPAD_API_KEY || process.env.LILYPAD_API_TOKEN;
+      const API_URL = "https://anura-testnet.lilypad.tech/api/v1/chat/completions";
+      const API_TOKEN = process.env.NEXT_PUBLIC_LILYPAD_API_KEY;
       
       if (!API_TOKEN) {
         return { success: false, error: 'Lilypad API key is not configured' };

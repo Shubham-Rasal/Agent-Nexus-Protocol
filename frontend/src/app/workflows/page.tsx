@@ -1,228 +1,92 @@
 'use client';
 
-import { useEffect } from 'react';
-import { EnhancedMultiAgentChat } from '@/components/EnhancedMultiAgentChat';
-import { workflowRegistry } from '@/features/workflows/registry/registry';
-import { Workflow, WorkflowDomainType, WorkflowCapabilityType } from '@/features/workflows/registry/types';
-
-// Sample workflows for demonstration purposes
-const SAMPLE_WORKFLOWS: Workflow[] = [
-  {
-    id: 'workflow_recruitment',
-    name: 'Recruitment Workflow',
-    description: 'Source, screen, and engage with potential candidates',
-    domains: [WorkflowDomainType.RECRUITMENT],
-    capabilities: [
-      WorkflowCapabilityType.AUTOMATION,
-      WorkflowCapabilityType.ANALYSIS
-    ],
-    author: 'ANP Team',
-    version: '1.0.0',
-    isPublic: true,
-    requiredTools: ['linkedin-search', 'talent-database'],
-    tags: ['recruiting', 'hiring', 'talent'],
-    nodes: [
-      {
-        id: 'trigger_start',
-        type: 'trigger',
-        position: { x: 100, y: 100 },
-        data: {
-          label: 'Start',
-          type: 'trigger',
-          description: 'Workflow start'
-        }
-      },
-      {
-        id: 'agent_research',
-        type: 'agent',
-        position: { x: 100, y: 200 },
-        data: {
-          label: 'Candidate Search',
-          type: 'agent',
-          description: 'Find potential candidates',
-          config: {
-            agentId: 'agent_hr_recruiter'
-          }
-        }
-      },
-      {
-        id: 'agent_qualify',
-        type: 'agent',
-        position: { x: 100, y: 300 },
-        data: {
-          label: 'Candidate Screening',
-          type: 'agent',
-          description: 'Screen candidates based on criteria',
-          config: {
-            agentId: 'agent_hr_recruiter'
-          }
-        }
-      }
-    ],
-    edges: [
-      {
-        id: 'edge_1',
-        source: 'trigger_start',
-        target: 'agent_research'
-      },
-      {
-        id: 'edge_2',
-        source: 'agent_research',
-        target: 'agent_qualify'
-      }
-    ]
-  },
-  {
-    id: 'workflow_research',
-    name: 'Market Research',
-    description: 'Conduct comprehensive market research and competitive analysis',
-    domains: [WorkflowDomainType.RESEARCH],
-    capabilities: [
-      WorkflowCapabilityType.ANALYSIS,
-      WorkflowCapabilityType.GENERATION
-    ],
-    author: 'ANP Team',
-    version: '1.0.0',
-    isPublic: true,
-    requiredTools: ['web-search', 'market-data'],
-    tags: ['market analysis', 'competition', 'trends'],
-    nodes: [
-      {
-        id: 'trigger_start',
-        type: 'trigger',
-        position: { x: 100, y: 100 },
-        data: {
-          label: 'Start',
-          type: 'trigger',
-          description: 'Workflow start'
-        }
-      },
-      {
-        id: 'agent_market',
-        type: 'agent',
-        position: { x: 100, y: 200 },
-        data: {
-          label: 'Market Overview',
-          type: 'agent',
-          description: 'Generate market overview',
-          config: {
-            agentId: 'agent_1'
-          }
-        }
-      },
-      {
-        id: 'agent_competitors',
-        type: 'agent',
-        position: { x: 100, y: 300 },
-        data: {
-          label: 'Competitor Analysis',
-          type: 'agent',
-          description: 'Analyze competitors',
-          config: {
-            agentId: 'agent_2'
-          }
-        }
-      }
-    ],
-    edges: [
-      {
-        id: 'edge_1',
-        source: 'trigger_start',
-        target: 'agent_market'
-      },
-      {
-        id: 'edge_2',
-        source: 'agent_market',
-        target: 'agent_competitors'
-      }
-    ]
-  },
-  {
-    id: 'workflow_content',
-    name: 'Content Creation',
-    description: 'Generate ideas and create content for various platforms',
-    domains: [WorkflowDomainType.CONTENT_CREATION],
-    capabilities: [
-      WorkflowCapabilityType.GENERATION,
-      WorkflowCapabilityType.INTERACTION
-    ],
-    author: 'ANP Team',
-    version: '1.0.0',
-    isPublic: true,
-    requiredTools: ['text-generator', 'image-search'],
-    tags: ['content', 'social media', 'blog'],
-    nodes: [
-      {
-        id: 'trigger_start',
-        type: 'trigger',
-        position: { x: 100, y: 100 },
-        data: {
-          label: 'Start',
-          type: 'trigger',
-          description: 'Workflow start'
-        }
-      },
-      {
-        id: 'agent_ideation',
-        type: 'agent',
-        position: { x: 100, y: 200 },
-        data: {
-          label: 'Content Ideation',
-          type: 'agent',
-          description: 'Generate content ideas',
-          config: {
-            agentId: 'agent_1'
-          }
-        }
-      },
-      {
-        id: 'agent_creation',
-        type: 'agent',
-        position: { x: 100, y: 300 },
-        data: {
-          label: 'Content Creation',
-          type: 'agent',
-          description: 'Create content based on ideas',
-          config: {
-            agentId: 'agent_2'
-          }
-        }
-      }
-    ],
-    edges: [
-      {
-        id: 'edge_1',
-        source: 'trigger_start',
-        target: 'agent_ideation'
-      },
-      {
-        id: 'edge_2',
-        source: 'agent_ideation',
-        target: 'agent_creation'
-      }
-    ]
-  }
-];
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { GitBranch } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { PRESET_WORKFLOWS } from '@/features/workflows/presets';
+import { Workflow } from '@/features/workflows/registry/types';
+import { WorkflowViewer } from '@/components/WorkflowViewer';
 
 export default function WorkflowsPage() {
-  // Register sample workflows on component mount
-  useEffect(() => {
-    // Check if workflows are already registered
-    const existingWorkflows = workflowRegistry.listWorkflows();
-    
-    if (existingWorkflows.length === 0) {
-      // Register sample workflows
-      SAMPLE_WORKFLOWS.forEach(workflow => {
-        workflowRegistry.registerWorkflow(workflow);
-      });
-      
-      console.log('Sample workflows registered');
-    }
-  }, []);
-  
+  const router = useRouter();
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
+
   return (
-    <div className="h-[calc(100vh-4rem)] w-full">
-      <EnhancedMultiAgentChat />
+    <div className="h-[calc(100vh-4rem)] grid grid-cols-[350px_1fr]">
+      {/* Sidebar with workflow list */}
+      <div className="border-r border-gray-200">
+        <div className="p-4">
+          <h1 className="text-2xl font-bold">Workflows</h1>
+          <p className="text-gray-500">View available automation workflows</p>
+        </div>
+        
+        <ScrollArea className="h-[calc(100vh-10rem)]">
+          <div className="space-y-4 p-4 pt-0">
+            {PRESET_WORKFLOWS.map(workflow => (
+              <Card 
+                key={workflow.id} 
+                className={`hover:shadow-md transition-shadow cursor-pointer ${
+                  selectedWorkflow?.id === workflow.id ? 'ring-2 ring-blue-500' : ''
+                }`}
+                onClick={() => setSelectedWorkflow(workflow)}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                      <GitBranch className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{workflow.name}</CardTitle>
+                      <CardDescription className="mt-1">{workflow.description}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1">
+                      {workflow.domains.map((domain, index) => (
+                        <Badge key={index} variant="secondary">
+                          {domain}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {workflow.capabilities.map((capability, index) => (
+                        <Badge key={index} variant="outline">
+                          {capability}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Version:</span>
+                      <span className="font-medium">{workflow.version}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Author:</span>
+                      <span className="font-medium">{workflow.author}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Main content area with workflow viewer */}
+      <div className="overflow-hidden">
+        {selectedWorkflow ? (
+          <WorkflowViewer workflow={selectedWorkflow} />
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            Select a workflow to view its details
+          </div>
+        )}
+      </div>
     </div>
   );
 } 

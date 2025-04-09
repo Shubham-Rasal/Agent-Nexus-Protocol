@@ -2,17 +2,6 @@ import { Agent } from './schema';
 
 export const PRESET_AGENTS: Agent[] = [
   {
-    id: 'agent_hr_recruiter',
-    name: 'Talent Scout AI',
-    description: 'AI recruiter that sources, screens and engages with candidates',
-    model: 'gpt-4',
-    storageProvider: 'mongodb',
-    tools: ['linkedin-search', 'resume-parser', 'diversity-scorer'],
-    createdAt: '2023-10-10T09:30:00Z',
-    updatedAt: '2023-10-10T09:30:00Z',
-    systemPrompt: 'You are a recruitment specialist. Your task is to source potential candidates, screen resumes, and identify top talent that matches job requirements while maintaining diversity and inclusion standards.',
-  },
-  {
     id: 'lead-qualifier',
     name: 'Lead Qualifier',
     description: 'Qualifies leads based on criteria and assigns a score',
@@ -55,16 +44,5 @@ export const PRESET_AGENTS: Agent[] = [
     createdAt: '2023-10-20T11:15:00Z',
     updatedAt: '2023-10-20T11:15:00Z',
     systemPrompt: 'You are a data analysis expert. Your purpose is to examine customer and lead data, identify patterns and trends, and generate actionable insights to improve sales and marketing strategies.',
-  },
-  {
-    id: 'follow-up-manager',
-    name: 'Follow-up Manager',
-    description: 'Manages follow-up communications with leads',
-    model: 'gpt-3.5-turbo',
-    storageProvider: 'redis',
-    tools: ['gmail-send', 'google-meet'],
-    createdAt: '2023-10-22T13:40:00Z',
-    updatedAt: '2023-10-22T13:40:00Z',
-    systemPrompt: 'You are a follow-up specialist. Your job is to maintain contact with potential customers who have shown interest but have not yet converted, providing them with relevant information and encouragement to move forward in the sales process.',
   }
 ]; 

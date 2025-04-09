@@ -13,8 +13,9 @@ import {
 import { Edit, Trash2, Copy, Info } from 'lucide-react';
 
 const TriggerNode = ({ data, selected }: NodeProps) => {
-  // Determine if this is a Gmail trigger
+  // Determine if this is a Gmail trigger or text message trigger
   const isGmailTrigger = data.config?.triggerType === 'gmail';
+  const isTextTrigger = data.config?.triggerType === 'text';
   
   return (
     <ContextMenu>
@@ -30,10 +31,10 @@ const TriggerNode = ({ data, selected }: NodeProps) => {
             <div>
               <div className="font-semibold">{data.label}</div>
               <div className="text-xs text-gray-500">{data.description}</div>
-              {isGmailTrigger && (
+              {(isGmailTrigger || isTextTrigger) && (
                 <div className="mt-1 flex items-center">
                   <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full">
-                    Gmail
+                    {isGmailTrigger ? 'Gmail' : 'Text Message'}
                   </span>
                 </div>
               )}

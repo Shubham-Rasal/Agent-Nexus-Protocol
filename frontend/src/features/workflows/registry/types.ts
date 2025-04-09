@@ -119,7 +119,6 @@ export const NODE_TYPES = {
   TRIGGER: 'trigger',
   ACTION: 'action',
   CONDITION: 'condition',
-  DELAY: 'delay',
   AGENT: 'agent',
   INPUT: 'input',
   OUTPUT: 'output',

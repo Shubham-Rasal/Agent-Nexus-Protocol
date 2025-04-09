@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import AgentCreationFeature from '@/components/AgentCreationFeature';
 import { EmailOutreachAgentCard } from '@/components/sidebar/EmailOutreachAgentCard';
+import { DataAnalyzerAgentCard } from '@/components/sidebar/DataAnalyzerAgentCard';
 
 export default function Home() {
   return (
@@ -57,6 +58,7 @@ export default function Home() {
           <div className="w-full md:w-80 flex-shrink-0">
             <div className="sticky top-20">
               <h2 className="text-lg font-semibold mb-4">Quick Tools</h2>
+              <DataAnalyzerAgentCard />
               <EmailOutreachAgentCard />
               
               {/* Add more tool components here as needed */}

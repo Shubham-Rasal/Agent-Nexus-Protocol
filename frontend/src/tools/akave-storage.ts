@@ -97,7 +97,11 @@ export const akaveStorageTool = async (params: {
           }
           
           // Decode base64 data
-          const binaryData = atob(params.fileData.split(',')[1] || params.fileData);
+          if (!params.fileData) {
+            throw new Error('File data is required');
+          }
+          const base64Data = params.fileData.split(',')[1] || params.fileData;
+          const binaryData = atob(base64Data);
           const array = new Uint8Array(binaryData.length);
           for (let i = 0; i < binaryData.length; i++) {
             array[i] = binaryData.charCodeAt(i);
@@ -129,7 +133,8 @@ export const akaveStorageTool = async (params: {
           console.error('File upload error:', uploadError);
           return {
             success: false,
-            error: uploadError.response?.data?.message || 'File upload failed: ' + uploadError.message
+            error: (uploadError as { response?: { data?: { message?: string } }, message?: string })
+              .response?.data?.message || 'File upload failed: ' + (uploadError as Error).message
           };
         }
         

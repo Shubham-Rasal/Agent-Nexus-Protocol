@@ -3,13 +3,15 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Settings, Trash2, X, BrainCircuit, Wrench } from 'lucide-react';
+import { Plus, Settings, Trash2, X, BrainCircuit, Wrench, Briefcase } from 'lucide-react';
 import { PRESET_AGENTS } from '@/features/leadflow/agents/presets';
 import { Badge } from '@/components/ui/badge';
 import { AGENT_MODELS, STORAGE_PROVIDERS } from '@/features/leadflow/agents/schema';
 import { PRESET_TOOLS } from '@/features/leadflow/tools/presets';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AgentTester } from '@/features/emailOutreach/AgentTester';
+import { DynamicAgentTester } from '@/features/agentTesting/DynamicAgentTester';
+import { EmailOutreachAgentCard } from '@/components/sidebar/EmailOutreachAgentCard';
+import { DataAnalyzerAgentCard } from '@/components/sidebar/DataAnalyzerAgentCard';
 
 // Define TypeScript interfaces
 interface Agent {
@@ -42,17 +44,28 @@ export default function AgentManagerPage() {
   const [agents, setAgents] = useState<Agent[]>(PRESET_AGENTS);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showTester, setShowTester] = useState(false);
+  const [showUtilities, setShowUtilities] = useState(false);
 
   // Function to handle clicking on an agent card
   const handleAgentClick = (agent: Agent) => {
     setSelectedAgent(agent);
     setShowTester(false); // Reset tester visibility when selecting a new agent
+    setShowUtilities(false); // Hide utilities when an agent is selected
   };
 
   // Function to close the sidebar
   const closeSidebar = () => {
     setSelectedAgent(null);
     setShowTester(false);
+    setShowUtilities(false);
+  };
+
+  // Function to toggle utilities sidebar
+  const toggleUtilitiesSidebar = () => {
+    setShowUtilities(!showUtilities);
+    if (!showUtilities) {
+      setSelectedAgent(null); // Deselect any selected agent when showing utilities
+    }
   };
 
   // Helper to get the model name instead of just the ID
@@ -75,16 +88,22 @@ export default function AgentManagerPage() {
   return (
     <div className="flex">
       {/* Main content */}
-      <div className={`flex-1 space-y-6 transition-all duration-300 ${selectedAgent ? 'pr-[33.333%]' : ''}`}>
+      <div className={`flex-1 space-y-6 transition-all duration-300 ${selectedAgent || showUtilities ? 'pr-[33.333%]' : ''}`}>
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">Agent Manager</h1>
             <p className="text-gray-500">Create and manage AI agents for your workflows</p>
           </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Agent
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={toggleUtilitiesSidebar}>
+              <Briefcase className="h-4 w-4 mr-2" />
+              Utility Agents
+            </Button>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Agent
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -152,8 +171,8 @@ export default function AgentManagerPage() {
         </div>
       </div>
 
-      {/* Agent Details Sidebar - Only shows when an agent is selected */}
-      {selectedAgent && (
+      {/* Sidebar - Either shows agent details or utility agents */}
+      {(selectedAgent || showUtilities) && (
         <div className="w-1/3 border-l bg-white transition-all duration-300 transform h-screen fixed top-0 right-0 overflow-y-auto shadow-lg z-50">
           <ScrollArea className="h-screen">
             <div className="p-6">
@@ -165,89 +184,106 @@ export default function AgentManagerPage() {
                 <X className="h-6 w-6" />
               </button>
 
-              <div className="pt-6">
-                {/* Agent header with icon */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
-                    <BrainCircuit className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
-                    <p className="text-gray-500">{selectedAgent.description}</p>
-                  </div>
-                </div>
-                
-                {/* Agent details section */}
-                <div className="space-y-6">
-                  <div className="border-t pt-4">
-                    <h3 className="text-lg font-semibold mb-3">Configuration</h3>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Model:</span>
-                        <Badge variant="outline" className="px-3 py-1">
-                          {getModelName(selectedAgent.model)}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Storage Provider:</span>
-                        <Badge variant="outline" className="px-3 py-1">
-                          {getStorageName(selectedAgent.storageProvider)}
-                        </Badge>
-                      </div>
-                      {selectedAgent.systemPrompt && (
-                        <div className="pt-2">
-                          <h4 className="font-medium mb-2">System Prompt:</h4>
-                          <div className="bg-gray-50 p-3 rounded-md text-sm">
-                            {selectedAgent.systemPrompt}
-                          </div>
-                        </div>
-                      )}
+              {selectedAgent ? (
+                // Agent details content
+                <div className="pt-6">
+                  {/* Agent header with icon */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
+                      <BrainCircuit className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
+                      <p className="text-gray-500">{selectedAgent.description}</p>
                     </div>
                   </div>
                   
-                  <div className="border-t pt-4">
-                    <h3 className="text-lg font-semibold mb-3">Tools & Capabilities</h3>
-                    <div className="space-y-3">
-                      {selectedAgent.tools.map(toolId => {
-                        const tool = getToolDetails(toolId);
-                        return tool ? (
-                          <div key={toolId} className="flex items-start bg-gray-50 p-3 rounded-md">
-                            <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                              <Wrench className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <div className="font-medium">{tool.name}</div>
-                              <div className="text-sm text-gray-500">{tool.description}</div>
+                  {/* Agent details section */}
+                  <div className="space-y-6">
+                    <div className="border-t pt-4">
+                      <h3 className="text-lg font-semibold mb-3">Configuration</h3>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Model:</span>
+                          <Badge variant="outline" className="px-3 py-1">
+                            {getModelName(selectedAgent.model)}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Storage Provider:</span>
+                          <Badge variant="outline" className="px-3 py-1">
+                            {getStorageName(selectedAgent.storageProvider)}
+                          </Badge>
+                        </div>
+                        {selectedAgent.systemPrompt && (
+                          <div className="pt-2">
+                            <h4 className="font-medium mb-2">System Prompt:</h4>
+                            <div className="bg-gray-50 p-3 rounded-md text-sm">
+                              {selectedAgent.systemPrompt}
                             </div>
                           </div>
-                        ) : null;
-                      })}
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <h3 className="text-lg font-semibold mb-3">Tools & Capabilities</h3>
+                      <div className="space-y-3">
+                        {selectedAgent.tools.map(toolId => {
+                          const tool = getToolDetails(toolId);
+                          return tool ? (
+                            <div key={toolId} className="flex items-start bg-gray-50 p-3 rounded-md">
+                              <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                                <Wrench className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="font-medium">{tool.name}</div>
+                                <div className="text-sm text-gray-500">{tool.description}</div>
+                              </div>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="border-t pt-6 mt-6 flex gap-3">
-                  <Button className="flex-1">Edit Agent</Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => setShowTester(!showTester)}
-                  >
-                    {showTester ? 'Hide Test Interface' : 'Test Agent'}
-                  </Button>
-                </div>
-                
-                {/* Test Interface - only visible when showTester is true */}
-                {showTester && (
-                  <div className="border-t pt-6 mt-6">
-                    <h3 className="text-lg font-semibold mb-3">Quick Test</h3>
-                    <p className="text-sm text-gray-500 mb-4">
-                      Describe who you want to email and we'll automatically extract the information and send it.
-                    </p>
-                    <AgentTester />
+                  
+                  <div className="border-t pt-6 mt-6 flex gap-3">
+                    <Button className="flex-1">Edit Agent</Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setShowTester(!showTester)}
+                    >
+                      {showTester ? 'Hide Test Interface' : 'Test Agent'}
+                    </Button>
                   </div>
-                )}
-              </div>
+                  
+                  {/* Test Interface - only visible when showTester is true */}
+                  {showTester && (
+                    <div className="border-t pt-6 mt-6">
+                      <DynamicAgentTester agent={selectedAgent} />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Utility agents content
+                <div className="pt-6">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                      <Briefcase className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Utility Agents</h2>
+                      <p className="text-gray-500">Specialized tools that help with common tasks</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <DataAnalyzerAgentCard />
+                    <EmailOutreachAgentCard />
+                  </div>
+                </div>
+              )}
             </div>
           </ScrollArea>
         </div>

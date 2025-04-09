@@ -116,7 +116,6 @@ export function createLeadGenerationWorkflow(): Workflow {
  */
 export function createFollowUpWorkflow(): Workflow {
   const triggerId = generateId('trigger');
-  const delayId = generateId('delay');
   const agentId = generateId('agent');
   const conditionId = generateId('condition');
   const emailId = generateId('agent');
@@ -140,22 +139,9 @@ export function createFollowUpWorkflow(): Workflow {
         },
       },
       {
-        id: delayId,
-        type: NODE_TYPES.DELAY,
-        position: { x: 100, y: 225 },
-        data: {
-          label: '2 Day Delay',
-          type: NODE_TYPES.DELAY,
-          description: 'Waits 2 days before taking action',
-          config: {
-            days: 2,
-          },
-        },
-      },
-      {
         id: agentId,
         type: NODE_TYPES.AGENT,
-        position: { x: 100, y: 350 },
+        position: { x: 100, y: 225 },
         data: {
           label: 'Follow-up Manager',
           type: NODE_TYPES.AGENT,
@@ -168,7 +154,7 @@ export function createFollowUpWorkflow(): Workflow {
       {
         id: conditionId,
         type: NODE_TYPES.CONDITION,
-        position: { x: 100, y: 475 },
+        position: { x: 100, y: 350 },
         data: {
           label: 'Max Attempts?',
           type: NODE_TYPES.CONDITION,
@@ -181,7 +167,7 @@ export function createFollowUpWorkflow(): Workflow {
       {
         id: emailId,
         type: NODE_TYPES.AGENT,
-        position: { x: 300, y: 600 },
+        position: { x: 300, y: 475 },
         data: {
           label: 'Email Notification',
           type: NODE_TYPES.AGENT,
@@ -196,11 +182,6 @@ export function createFollowUpWorkflow(): Workflow {
       {
         id: generateId('edge'),
         source: triggerId,
-        target: delayId,
-      },
-      {
-        id: generateId('edge'),
-        source: delayId,
         target: agentId,
       },
       {
@@ -211,14 +192,8 @@ export function createFollowUpWorkflow(): Workflow {
       {
         id: generateId('edge'),
         source: conditionId,
-        target: triggerId,
-        label: 'Yes',
-      },
-      {
-        id: generateId('edge'),
-        source: conditionId,
         target: emailId,
-        label: 'No',
+        label: 'Yes',
       },
     ],
     createdAt: new Date().toISOString(),
