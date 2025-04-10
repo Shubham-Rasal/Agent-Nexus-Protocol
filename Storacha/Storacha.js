@@ -9,7 +9,7 @@ import path from 'path';
 const app = express();
 const port = process.env.PORT || 3000;
 
-console.log(`Environment Variables: ${JSON.stringify(process.env)}`);
+// console.log(`Environment Variables: ${JSON.stringify(process.env)}`);
 
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
