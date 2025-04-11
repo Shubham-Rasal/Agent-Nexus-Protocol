@@ -1,220 +1,58 @@
 {
   "relationships": [
     {
-      "source": "agent_legal_gdpr",
-      "target": "agent_tech_patent",
+      "source": "lead-qualifier",
+      "target": "email-outreach",
       "type": "collaboration",
       "strength": 0.85,
-      "description": "IP compliance partnership",
+      "description": "Lead qualification to email outreach pipeline",
       "queries_processed": 1240,
       "success_rate": 0.92
     },
     {
-      "source": "agent_legal_gdpr",
-      "target": "agent_ai_ethics",
-      "type": "collaboration",
+      "source": "lead-qualifier",
+      "target": "data-analyzer",
+      "type": "dependency",
       "strength": 0.78,
-      "description": "AI regulation compliance",
+      "description": "Lead data analysis support",
       "queries_processed": 980,
       "success_rate": 0.89
     },
     {
-      "source": "agent_finance_aml",
-      "target": "agent_crypto_tax",
+      "source": "email-outreach",
+      "target": "meeting-scheduler",
       "type": "collaboration",
       "strength": 0.91,
-      "description": "Crypto compliance team",
+      "description": "Email to meeting conversion",
       "queries_processed": 2180,
       "success_rate": 0.95
     },
     {
-      "source": "agent_finance_aml",
-      "target": "agent_cyber_threat",
+      "source": "meeting-scheduler",
+      "target": "data-analyzer",
       "type": "dependency",
       "strength": 0.72,
-      "description": "Security monitoring",
+      "description": "Meeting analytics and optimization",
       "queries_processed": 670,
       "success_rate": 0.86
     },
     {
-      "source": "agent_health_trial",
-      "target": "agent_cyber_threat",
-      "type": "dependency",
+      "source": "data-analyzer",
+      "target": "email-outreach",
+      "type": "collaboration",
       "strength": 0.88,
-      "description": "Patient data security",
+      "description": "Email campaign optimization",
       "queries_processed": 520,
       "success_rate": 0.94
     },
     {
-      "source": "agent_health_trial",
-      "target": "agent_legal_gdpr",
-      "type": "dependency",
+      "source": "data-analyzer",
+      "target": "lead-qualifier",
+      "type": "collaboration",
       "strength": 0.81,
-      "description": "Patient privacy compliance",
+      "description": "Lead scoring optimization",
       "queries_processed": 1480,
       "success_rate": 0.91
-    },
-    {
-      "source": "agent_tech_patent",
-      "target": "agent_ai_ethics",
-      "type": "collaboration",
-      "strength": 0.76,
-      "description": "Ethical IP development",
-      "queries_processed": 590,
-      "success_rate": 0.88
-    },
-    {
-      "source": "agent_supplychain",
-      "target": "agent_cyber_threat",
-      "type": "dependency",
-      "strength": 0.79,
-      "description": "Supply chain security",
-      "queries_processed": 840,
-      "success_rate": 0.85
-    },
-    {
-      "source": "agent_hr_recruiter",
-      "target": "agent_ai_ethics",
-      "type": "dependency",
-      "strength": 0.82,
-      "description": "Bias prevention",
-      "queries_processed": 1120,
-      "success_rate": 0.90
-    },
-    {
-      "source": "agent_crypto_tax",
-      "target": "agent_tech_patent",
-      "type": "collaboration",
-      "strength": 0.68,
-      "description": "Blockchain IP protection",
-      "queries_processed": 430,
-      "success_rate": 0.79
-    },
-    {
-      "source": "agent_ai_ethics",
-      "target": "agent_fake_news",
-      "type": "collaboration",
-      "strength": 0.87,
-      "description": "Truth validation partnership",
-      "queries_processed": 1560,
-      "success_rate": 0.93
-    },
-    {
-      "source": "agent_cyber_threat",
-      "target": "agent_fake_news",
-      "type": "dependency", 
-      "strength": 0.74,
-      "description": "Disinformation security",
-      "queries_processed": 920,
-      "success_rate": 0.83
-    },
-    {
-      "source": "agent_realestate",
-      "target": "agent_insurance",
-      "type": "collaboration",
-      "strength": 0.83,
-      "description": "Property risk assessment",
-      "queries_processed": 780,
-      "success_rate": 0.89
-    },
-    {
-      "source": "agent_music_ip",
-      "target": "agent_tech_patent",
-      "type": "dependency",
-      "strength": 0.77,
-      "description": "Copyright technology",
-      "queries_processed": 630,
-      "success_rate": 0.86
-    },
-    {
-      "source": "agent_food_safety",
-      "target": "agent_supplychain",
-      "type": "dependency",
-      "strength": 0.89,
-      "description": "Food supply verification",
-      "queries_processed": 1050,
-      "success_rate": 0.92
-    },
-    {
-      "source": "agent_energy_grid",
-      "target": "agent_cyber_threat",
-      "type": "dependency",
-      "strength": 0.93,
-      "description": "Grid security monitoring",
-      "queries_processed": 2240,
-      "success_rate": 0.96
-    },
-    {
-      "source": "agent_auto_repair",
-      "target": "agent_insurance",
-      "type": "collaboration",
-      "strength": 0.71,
-      "description": "Repair cost validation",
-      "queries_processed": 890,
-      "success_rate": 0.82
-    },
-    {
-      "source": "agent_agriculture",
-      "target": "agent_food_safety",
-      "type": "collaboration",
-      "strength": 0.86,
-      "description": "Farm-to-table safety",
-      "queries_processed": 1340,
-      "success_rate": 0.91
-    },
-    {
-      "source": "agent_education",
-      "target": "agent_ai_ethics",
-      "type": "dependency",
-      "strength": 0.75,
-      "description": "Academic ethics",
-      "queries_processed": 680,
-      "success_rate": 0.87
-    },
-    {
-      "source": "agent_travel",
-      "target": "agent_legal_gdpr",
-      "type": "dependency",
-      "strength": 0.80,
-      "description": "Travel data compliance",
-      "queries_processed": 960,
-      "success_rate": 0.88
-    },
-    {
-      "source": "agent_retail",
-      "target": "agent_supplychain",
-      "type": "dependency",
-      "strength": 0.84,
-      "description": "Retail supply integrity",
-      "queries_processed": 1870,
-      "success_rate": 0.90
-    },
-    {
-      "source": "agent_insurance",
-      "target": "agent_legal_gdpr",
-      "type": "dependency",
-      "strength": 0.78,
-      "description": "Claims data compliance",
-      "queries_processed": 1230,
-      "success_rate": 0.85
-    },
-    {
-      "source": "agent_cyber_threat",
-      "target": "agent_insurance",
-      "type": "collaboration",
-      "strength": 0.82,
-      "description": "Cyber insurance risk",
-      "queries_processed": 1660,
-      "success_rate": 0.89
-    },
-    {
-      "source": "agent_fake_news",
-      "target": "agent_education",
-      "type": "collaboration",
-      "strength": 0.79,
-      "description": "Academic integrity",
-      "queries_processed": 910,
-      "success_rate": 0.86
     }
   ]
 } 

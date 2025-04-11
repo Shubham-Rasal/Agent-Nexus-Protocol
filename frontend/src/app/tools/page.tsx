@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PRESET_TOOLS } from '@/features/leadflow/tools/presets';
-import { TOOL_CATEGORIES, Tool } from '@/features/leadflow/tools/schema';
+import { PRESET_TOOLS } from '@/features/tools/presets';
+import { TOOL_CATEGORIES, Tool } from '@/features/tools/schema';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 

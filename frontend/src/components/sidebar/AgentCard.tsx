@@ -3,8 +3,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BrainCircuit, Wrench } from 'lucide-react';
-import { Agent } from '@/features/leadflow/agents/schema';
-import { PRESET_TOOLS } from '@/features/leadflow/tools/presets';
+import { Agent } from '@/features/agents/schema';
+import { PRESET_TOOLS } from '@/features/tools/presets';
 
 interface AgentCardProps {
   agent: Agent;

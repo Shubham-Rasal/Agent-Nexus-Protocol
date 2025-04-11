@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { agents } from '@/app/agents.json';
+import { PRESET_AGENTS } from '@/features/agents/presets';
 import { relationships } from '@/app/relationships.json';
 
-type AgentInfo = (typeof agents)[0];
+type AgentInfo = (typeof PRESET_AGENTS)[0];
 
 type SubTask = {
   id: string;
@@ -61,7 +61,7 @@ async function decomposeTask(query: string): Promise<any[]> {
     const API_TOKEN = process.env.LILYPAD_API_TOKEN;
 
     // Get available agents for context
-    const availableAgents = agents.map(agent => ({
+    const availableAgents = PRESET_AGENTS.map(agent => ({
       id: agent.id,
       name: agent.name,
       expertise: agent.description
@@ -247,7 +247,7 @@ function buildAgentGraph() {
   const graph: Record<string, { agent: AgentInfo, connections: Record<string, number> }> = {};
   
   // Initialize graph with all agents
-  for (const agent of agents) {
+  for (const agent of PRESET_AGENTS) {
     graph[agent.id] = {
       agent,
       connections: {}
@@ -279,7 +279,7 @@ function rankAgentsForTask(
   const taskWords = new Set(task.toLowerCase().split(/\W+/).filter(w => w.length > 3));
   
   // Score each agent
-  const scoredAgents = agents
+  const scoredAgents = PRESET_AGENTS
     .filter(agent => !assignedAgents.has(agent.id)) // Exclude already assigned agents
     .map(agent => {
       // 1. Calculate semantic match based on word overlap
@@ -304,8 +304,9 @@ function rankAgentsForTask(
       const semanticScore = taskWords.size > 0 ? overlapScore / taskWords.size : 0;
       
       // 2. Calculate stake score (normalized to 0-1)
-      const maxStake = 5000; // Assumed maximum stake
-      const stakeScore = agent.stake / maxStake;
+      // Use the number of tools as a proxy for agent capability instead of stake
+      const maxTools = Math.max(...PRESET_AGENTS.map(a => a.tools.length));
+      const stakeScore = agent.tools.length / (maxTools || 1);
       
       // 3. Calculate relationship score with already assigned agents
       let relationshipScore = 0;

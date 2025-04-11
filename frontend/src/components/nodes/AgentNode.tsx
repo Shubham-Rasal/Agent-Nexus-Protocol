@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { BrainCircuit } from 'lucide-react';
-import { PRESET_AGENTS } from '@/features/leadflow/agents/presets';
+import { PRESET_AGENTS } from '@/features/agents/presets';
 import { 
   ContextMenu,
   ContextMenuContent,
