@@ -138,8 +138,9 @@ class PersonInfoAgent {
     const url = `https://www.googleapis.com/customsearch/v1?key=${this.googleAPiKeySearch}&cx=${this.searchEngineId}&q=${query}&num=${numResults}`;
     console.log(`Searching for ${name} at ${url}`);
     
-    const cotFilePath = await this._saveComponent("cot", `Searching for ${name}`, `search_${name}`);
-    await this._uploadFile(cotFilePath, "cot");
+    const searchLog = `Started search for information about ${name} using Google Custom Search API.\nQuery: "${name} biography information"\nEndpoint: ${url}\nTimestamp: ${new Date().toISOString()}`;
+    const searchLogPath = await this._saveComponent("metadata", searchLog, `search_log_${name}`);
+    await this._uploadFile(searchLogPath, "metadata");
 
     try {
       const response = await axios.get(url);
@@ -206,15 +207,37 @@ class PersonInfoAgent {
     await this._uploadFile(inputFilePath, "input");
 
     const context = this.index.map((doc, i) => `Source ${i + 1}: ${doc.source}\n${doc.content}`).join("\n\n");
-    const prompt = `Using the following context about ${this.currentPerson}, answer this: ${query}\n\n${context}`;
-    const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(prompt);
-    const answer = result.response.text();
+    
+    // First, get the chain of thought (reasoning process)
+    const cotPrompt = `Using the following context about ${this.currentPerson}, think step by step to answer this question: ${query}
 
-    const outputFilePath = await this._saveComponent("output", answer, `answer_${this.currentPerson}`);
+Context:
+${context}
+
+I want you to walk through your reasoning process in detail before providing a final answer. Consider relevant information from the sources, evaluate contradicting evidence if any, and explain how you're forming your conclusion. Start with "Let me think through this step by step:" and end with "Final answer:"`;
+
+    const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const cotResult = await model.generateContent(cotPrompt);
+    const chainOfThought = cotResult.response.text();
+    
+    // Save the chain of thought
+    const cotFilePath = await this._saveComponent("cot", chainOfThought, `reasoning_${this.currentPerson}`);
+    await this._uploadFile(cotFilePath, "cot");
+    
+    // Extract the final answer (assuming it comes after "Final answer:")
+    let finalAnswer = chainOfThought;
+    if (chainOfThought.includes("Final answer:")) {
+      finalAnswer = chainOfThought.split("Final answer:")[1].trim();
+    }
+    
+    // Save the final answer
+    const outputFilePath = await this._saveComponent("output", finalAnswer, `answer_${this.currentPerson}`);
     await this._uploadFile(outputFilePath, "output");
     
-    return answer;
+    return {
+      chainOfThought,
+      finalAnswer
+    };
   }
 
   async _saveComponent(fileType, content, identifier) {
@@ -326,16 +349,23 @@ class PersonInfoAgent {
     
     const person = "Albert Einstein";
     await agent.createKnowledgeBase(person);
-    const answer = await agent.answerQuery("What was Einstein's biggest contribution to science?");
-    console.log("Answer:", answer);
     
-    // Get files from database for this person
-    const personFiles = await agent.getFilesByPerson(person);
-    console.log(`Files related to ${person} (${personFiles.length}):`);
-    console.table(personFiles.map(file => ({
+    const query = "What was Einstein's biggest contribution to science?";
+    const { chainOfThought, finalAnswer } = await agent.answerQuery(query);
+    
+    console.log("\n--- Chain of Thought ---");
+    console.log(chainOfThought);
+    
+    console.log("\n--- Final Answer ---");
+    console.log(finalAnswer);
+    
+    // Get all CoT files
+    const cotFiles = await agent.getFilesByType("cot");
+    console.log(`\nChain of Thought files (${cotFiles.length}):`);
+    console.table(cotFiles.map(file => ({
       filename: file.filename,
       cid: file.cid,
-      type: file.file_type,
+      person: file.person,
       timestamp: file.timestamp
     })));
     
