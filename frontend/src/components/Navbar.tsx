@@ -12,16 +12,13 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <span className="text-purple-600 font-bold text-xl">ANP</span>
-            </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <NavLink 
                 href="/" 
                 icon={<Home className="h-5 w-5" />}
                 isActive={pathname === '/'}
               >
-                Home
+              <span className="text-purple-600 font-bold text-xl">ANP</span>
               </NavLink>
               <NavLink 
                 href="/chat" 

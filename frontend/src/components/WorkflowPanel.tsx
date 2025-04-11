@@ -71,12 +71,12 @@ export default function WorkflowPanel({
       <SheetContent className="sm:max-w-md overflow-y-auto border-l border-gray-200">
         <SheetHeader className="mb-5">
           <SheetTitle className="flex items-center">
-            <Wand2 className="h-5 w-5 mr-2 text-purple-600" />
+            <Wand2 className="h-5 w-5 mr-2" />
             Agent Workflow
           </SheetTitle>
         </SheetHeader>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full p-4">
           <TabsList className="w-full grid grid-cols-3 bg-gray-100">
             <TabsTrigger value="workflow" className="flex items-center gap-1.5 data-[state=active]:bg-white data-[state=active]:text-purple-700">
               <GitBranch className="h-4 w-4" />
@@ -92,7 +92,7 @@ export default function WorkflowPanel({
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="workflow" className="mt-4 space-y-5">
+          <TabsContent value="workflow" className="mt-4 space-y-5 ">
             {allTasks.length > 0 ? (
               <>
                 <TaskRouter />
@@ -106,10 +106,10 @@ export default function WorkflowPanel({
                         <Badge variant="secondary">{taskCounts.pending} Pending</Badge>
                       )}
                       {taskCounts.inProgress > 0 && (
-                        <Badge variant="info">{taskCounts.inProgress} Working</Badge>
+                        <Badge variant="default">{taskCounts.inProgress} Working</Badge>
                       )}
                       {taskCounts.completed > 0 && (
-                        <Badge variant="success">{taskCounts.completed} Done</Badge>
+                        <Badge variant="default">{taskCounts.completed} Done</Badge>
                       )}
                     </div>
                   </div>
@@ -150,7 +150,7 @@ export default function WorkflowPanel({
                     
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {task.agent?.knowledge_sources?.map((source: string, i: number) => (
-                        <Badge key={i} variant="purple" className="text-xs">
+                        <Badge key={i} variant="default" className="text-xs">
                           {source.split(':')[0]}
                         </Badge>
                       )) || <Badge variant="secondary" className="text-xs">No knowledge sources</Badge>}
@@ -234,8 +234,8 @@ export default function WorkflowPanel({
                           <p className="text-xs font-medium truncate">{task.agent?.name?.split(' ')[0] || 'Unknown Agent'}</p>
                           <Badge 
                             variant={
-                              task.status === 'completed' ? 'success' : 
-                              task.status === 'in-progress' ? 'info' : 'secondary'
+                              task.status === 'completed' ? 'default' : 
+                              task.status === 'in-progress' ? 'default' : 'secondary'
                             }
                             className="mt-1 text-[10px] px-1.5 py-0"
                           >

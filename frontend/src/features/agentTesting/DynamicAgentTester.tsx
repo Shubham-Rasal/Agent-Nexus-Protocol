@@ -2,6 +2,7 @@
 
 import { AgentTester } from '@/features/emailOutreach/AgentTester';
 import { DataAnalyzerAgent } from '@/features/dataAnalyzer/DataAnalyzerAgent';
+import { MeetingSchedulerTester } from '@/features/agents/meeting/MeetingSchedulerTester';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BrainCircuit, Mail, FileSpreadsheet, Globe, Calendar, Database } from 'lucide-react';
@@ -78,6 +79,9 @@ export function DynamicAgentTester({ agent }: DynamicAgentTesterProps) {
       case 'data':
         // Render the full version of the data analyzer with all features including storage
         return <DataAnalyzerAgent />;
+      case 'scheduler':
+        // Use the dedicated Meeting Scheduler Tester
+        return <MeetingSchedulerTester />;
       default:
         // Generic testing interface for other agent types
         return (

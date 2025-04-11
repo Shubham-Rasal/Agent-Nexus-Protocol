@@ -285,8 +285,8 @@ export default function ToolBuilderPage() {
   };
 
   return (
-    <div className={`space-y-6 transition-all duration-300 ${selectedTool ? 'mr-[33.333%]' : ''}`}>
-      <div className="flex justify-between items-center">
+    <div className={`space-y-6 p-8 transition-all duration-300 ${selectedTool ? 'mr-[33.333%]' : ''}`}>
+      <div className="flex justify-between items-center gap-2">
         <div>
           <h1 className="text-2xl font-bold">Tool Builder</h1>
           <p className="text-gray-500">Create and manage tools for your agents</p>
@@ -297,8 +297,8 @@ export default function ToolBuilderPage() {
         </Button>
       </div>
 
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="mb-6">
+      <Tabs className='' value={selectedCategory} onValueChange={setSelectedCategory}>
+        <TabsList className="mb-6 gap-2 p-1 m-2">
           <TabsTrigger value="all" className="min-w-20">All Tools</TabsTrigger>
           {TOOL_CATEGORIES.map(category => (
             <TabsTrigger key={category.id} value={category.id} className="min-w-20">
@@ -361,7 +361,7 @@ export default function ToolBuilderPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Authentication:</span>
-                        <Badge variant={tool.requiresAuth ? "warning" : "success"}>
+                        <Badge variant={tool.requiresAuth ? "destructive" : "default"}>
                           {tool.requiresAuth ? 'Required' : 'Not Required'}
                         </Badge>
                       </div>
@@ -399,7 +399,7 @@ export default function ToolBuilderPage() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold">{selectedTool.name}</h2>
-                    <Badge variant={selectedTool.requiresAuth ? "warning" : "success"} className="mt-1">
+                    <Badge variant={selectedTool.requiresAuth ? "destructive" : "default"} className="mt-1">
                       {selectedTool.requiresAuth ? 'Authentication Required' : 'No Authentication Required'}
                     </Badge>
                     {selectedTool.name.includes('DEPRECATED') && (

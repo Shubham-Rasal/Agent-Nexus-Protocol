@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Settings, Trash2, X, BrainCircuit, Wrench, Briefcase } from 'lucide-react';
+import { Plus, Settings, Trash2, X, BrainCircuit, Wrench, Briefcase, Calendar } from 'lucide-react';
 import { PRESET_AGENTS } from '@/features/agents/presets';
 import { Badge } from '@/components/ui/badge';
 import { AGENT_MODELS, STORAGE_PROVIDERS } from '@/features/agents/schema';
@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DynamicAgentTester } from '@/features/agentTesting/DynamicAgentTester';
 import { EmailOutreachAgentCard } from '@/components/sidebar/EmailOutreachAgentCard';
 import { DataAnalyzerAgentCard } from '@/components/sidebar/DataAnalyzerAgentCard';
+import { toast } from 'sonner';
 
 // Define TypeScript interfaces
 interface Agent {
@@ -45,6 +46,17 @@ export default function AgentManagerPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showTester, setShowTester] = useState(false);
   const [showUtilities, setShowUtilities] = useState(false);
+  
+  // Define a meeting scheduler agent for testing
+  const meetingSchedulerAgent: Agent = {
+    id: 'meeting-scheduler',
+    name: 'Meeting Scheduler',
+    description: 'Schedule meetings using natural language inputs',
+    model: 'gpt-4',
+    storageProvider: 'google-calendar',
+    tools: ['google-calendar'],
+    systemPrompt: 'You are a helpful assistant that schedules meetings based on natural language requests.'
+  };
 
   // Function to handle clicking on an agent card
   const handleAgentClick = (agent: Agent) => {
@@ -68,6 +80,13 @@ export default function AgentManagerPage() {
     }
   };
 
+  // Function to show meeting scheduler in sidebar
+  const showMeetingSchedulerSidebar = () => {
+    setSelectedAgent(meetingSchedulerAgent);
+    setShowTester(true); // Automatically show the tester for the meeting scheduler
+    setShowUtilities(false);
+  };
+
   // Helper to get the model name instead of just the ID
   const getModelName = (modelId: string) => {
     const model = AGENT_MODELS.find((m: Model) => m.id === modelId);
@@ -86,7 +105,7 @@ export default function AgentManagerPage() {
   };
 
   return (
-    <div className="flex">
+    <div className="flex p-8">
       {/* Main content */}
       <div className={`flex-1 space-y-6 transition-all duration-300 ${selectedAgent || showUtilities ? 'pr-[33.333%]' : ''}`}>
         <div className="flex justify-between items-center">
@@ -95,11 +114,13 @@ export default function AgentManagerPage() {
             <p className="text-gray-500">Create and manage AI agents for your workflows</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={toggleUtilitiesSidebar}>
-              <Briefcase className="h-4 w-4 mr-2" />
-              Utility Agents
-            </Button>
-            <Button>
+            <Button onClick={() => {
+              toast("Coming soon!", {
+                description: "Agent creation will be available in a future update.",
+                className: "text-black",
+              })
+             
+            }}>
               <Plus className="h-4 w-4 mr-2" />
               Create New Agent
             </Button>
@@ -279,6 +300,22 @@ export default function AgentManagerPage() {
                   </div>
                   
                   <div className="space-y-6">
+                    <Card 
+                      className="hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={showMeetingSchedulerSidebar}
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                            <Calendar className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Meeting Scheduler</CardTitle>
+                            <CardDescription>Schedule meetings using natural language</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </Card>
                     <DataAnalyzerAgentCard />
                     <EmailOutreachAgentCard />
                   </div>

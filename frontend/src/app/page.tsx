@@ -54,16 +54,7 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Sidebar with Tool Components */}
-          <div className="w-full md:w-80 flex-shrink-0">
-            <div className="sticky top-20">
-              <h2 className="text-lg font-semibold mb-4">Quick Tools</h2>
-              <DataAnalyzerAgentCard />
-              <EmailOutreachAgentCard />
-              
-              {/* Add more tool components here as needed */}
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>

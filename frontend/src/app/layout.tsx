@@ -34,7 +34,7 @@ export default function RootLayout({
           <main className="w-full flex-1">
             {children}
           </main>
-          <Toaster />
+          <Toaster className="text-black" />
         </div>
       </body>
     </html>

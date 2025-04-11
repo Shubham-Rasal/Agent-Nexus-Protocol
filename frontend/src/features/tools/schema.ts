@@ -46,7 +46,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   },
   {
     id: 'analysis',
-    name: 'Data Analysis',
+    name: 'Data',
     description: 'Tools for analyzing and processing data',
   },
 ]; 

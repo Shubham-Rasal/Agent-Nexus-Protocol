@@ -29,7 +29,7 @@ export const PRESET_AGENTS: Agent[] = [
     description: 'Schedules sales calls and demos with qualified leads',
     model: 'claude-3-sonnet',
     storageProvider: 'postgresql',
-    tools: ['google-meet', 'gmail-send'],
+    tools: ['google-calender'],
     createdAt: '2023-10-18T16:20:00Z',
     updatedAt: '2023-10-18T16:20:00Z',
     systemPrompt: 'You are a meeting scheduling assistant. Your role is to coordinate and schedule meetings between our sales team and potential clients, finding optimal times that work for all participants.',
