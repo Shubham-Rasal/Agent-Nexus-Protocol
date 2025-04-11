@@ -31,13 +31,6 @@ export function Navbar() {
                 Chat
               </NavLink>
               <NavLink 
-                href="/workflows" 
-                icon={<GitBranch className="h-5 w-5" />}
-                isActive={pathname === '/workflows'}
-              >
-                Workflows
-              </NavLink>
-              <NavLink 
                 href="/tools" 
                 icon={<Wrench className="h-5 w-5" />}
                 isActive={pathname === '/tools'}
@@ -79,18 +72,18 @@ export function Navbar() {
             Chat
           </MobileNavLink>
           <MobileNavLink 
-            href="/workflows" 
-            icon={<GitBranch className="h-5 w-5" />}
-            isActive={pathname === '/workflows'}
+            href="/tools" 
+            icon={<Wrench className="h-5 w-5" />}
+            isActive={pathname === '/tools'}
           >
-            Workflows
+            Tools
           </MobileNavLink>
           <MobileNavLink 
-            href="/editor" 
-            icon={<FileEdit className="h-5 w-5" />}
-            isActive={pathname === '/editor'}
+            href="/agents" 
+            icon={<User className="h-5 w-5" />}
+            isActive={pathname === '/agents'}
           >
-            Editor
+            Agents
           </MobileNavLink>
         </div>
       </div>

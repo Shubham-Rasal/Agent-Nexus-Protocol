@@ -33,6 +33,7 @@
     "d3": "^7.9.0",
     "d3-force": "^3.0.0",
     "date-fns": "^4.1.0",
+    "llamaindex": "^0.9.17",
     "lucide-react": "^0.485.0",
     "next": "15.2.4",
     "next-themes": "^0.4.6",
