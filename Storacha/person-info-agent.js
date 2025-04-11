@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { JSDOM } from "jsdom";
 import FormData from "form-data";
+import sqlite3 from "sqlite3";
+import { open } from "sqlite";
 
 // Load environment variables
 dotenv.config();
@@ -14,10 +16,8 @@ const STORAGE_COMPONENTS = [
   "input",
   "output",
   "cot",
-  "code_artifacts",
   "web_data",
   "metadata",
-  "index_data",
 ];
 
 const BASE_DIR = "data_store";
@@ -25,28 +25,121 @@ STORAGE_COMPONENTS.forEach((component) => {
   fs.mkdirSync(path.join(BASE_DIR, component), { recursive: true });
 });
 
+// Database path
+const DB_PATH = path.join(BASE_DIR, "files.db");
+
+class FileDatabase {
+  constructor() {
+    this.db = null;
+  }
+
+  async initialize() {
+    // Open the database
+    this.db = await open({
+      filename: DB_PATH,
+      driver: sqlite3.Database
+    });
+
+    // Create simplified file table
+    await this.db.exec(`
+      CREATE TABLE IF NOT EXISTS files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT NOT NULL,
+        cid TEXT NOT NULL,
+        file_type TEXT NOT NULL,
+        person TEXT NOT NULL,
+        timestamp TEXT NOT NULL
+      );
+    `);
+  }
+
+  async addFile(fileInfo) {
+    try {
+      const { filename, cid, fileType, person, timestamp } = fileInfo;
+
+      await this.db.run(
+        `INSERT INTO files (filename, cid, file_type, person, timestamp) VALUES (?, ?, ?, ?, ?)`,
+        [filename, cid, fileType, person, timestamp]
+      );
+      
+      return true;
+    } catch (error) {
+      console.error("Error adding file to database:", error);
+      return false;
+    }
+  }
+
+  async getFilesByCID(cid) {
+    try {
+      return await this.db.all(`SELECT * FROM files WHERE cid = ?`, [cid]);
+    } catch (error) {
+      console.error("Error getting files by CID:", error);
+      return [];
+    }
+  }
+
+  async getFilesByPerson(person) {
+    try {
+      return await this.db.all(`SELECT * FROM files WHERE person = ?`, [person]);
+    } catch (error) {
+      console.error("Error getting files by person:", error);
+      return [];
+    }
+  }
+
+  async getFilesByType(fileType) {
+    try {
+      return await this.db.all(`SELECT * FROM files WHERE file_type = ?`, [fileType]);
+    } catch (error) {
+      console.error("Error getting files by type:", error);
+      return [];
+    }
+  }
+
+  async getAllFiles() {
+    try {
+      return await this.db.all(`SELECT * FROM files ORDER BY timestamp DESC`);
+    } catch (error) {
+      console.error("Error getting all files:", error);
+      return [];
+    }
+  }
+
+  async close() {
+    if (this.db) {
+      await this.db.close();
+    }
+  }
+}
+
 class PersonInfoAgent {
   constructor(googleApiKey, googleAPiKeySearch, searchEngineId, uploadApiUrl) {
     this.googleApiKey = googleApiKey;
     this.googleAPiKeySearch = googleAPiKeySearch;
     this.searchEngineId = searchEngineId;
-    this.uploadApiUrl = uploadApiUrl || 'http://127.0.0.1:3000/upload'; // Default to local server if not provided
+    this.uploadApiUrl = uploadApiUrl || 'http://127.0.0.1:3000/upload';
     this.genAI = new GoogleGenerativeAI(googleApiKey);
     this.sessionId = new Date().toISOString().replace(/[:.]/g, "_");
     this.currentPerson = null;
     this.webData = [];
     this.index = null;
     this.uploadedFiles = [];
+    this.db = new FileDatabase();
+  }
+
+  async initialize() {
+    await this.db.initialize();
   }
 
   async searchPerson(name, numResults = 5) {
     this.currentPerson = name;
+    
     const query = encodeURIComponent(`${name} biography information`);
     const url = `https://www.googleapis.com/customsearch/v1?key=${this.googleAPiKeySearch}&cx=${this.searchEngineId}&q=${query}&num=${numResults}`;
     console.log(`Searching for ${name} at ${url}`);
     
     const cotFilePath = await this._saveComponent("cot", `Searching for ${name}`, `search_${name}`);
-    await this._uploadFile(cotFilePath);
+    await this._uploadFile(cotFilePath, "cot");
 
     try {
       const response = await axios.get(url);
@@ -57,13 +150,13 @@ class PersonInfoAgent {
       }));
       
       const webDataFilePath = await this._saveComponent("web_data", JSON.stringify(results, null, 2), `search_results_${name}`);
-      await this._uploadFile(webDataFilePath);
+      await this._uploadFile(webDataFilePath, "web_data");
       
       return results;
     } catch (err) {
       const errorMsg = `Error searching for ${name}: ${err.message}`;
       const errorFilePath = await this._saveComponent("web_data", errorMsg, `search_error_${name}`);
-      await this._uploadFile(errorFilePath);
+      await this._uploadFile(errorFilePath, "web_data");
       
       console.error(errorMsg);
       return [];
@@ -96,12 +189,12 @@ class PersonInfoAgent {
       docs.push({ source, content: pageContent });
       
       const contentFilePath = await this._saveComponent("web_data", pageContent.slice(0, 1000), `content_${i}_${personName}`);
-      await this._uploadFile(contentFilePath);
+      await this._uploadFile(contentFilePath, "web_data");
     }
 
     this.index = docs;
-    const indexFilePath = await this._saveComponent("index_data", JSON.stringify(docs, null, 2), `index_${personName}`);
-    await this._uploadFile(indexFilePath);
+    const indexFilePath = await this._saveComponent("metadata", JSON.stringify(docs, null, 2), `index_${personName}`);
+    await this._uploadFile(indexFilePath, "metadata");
   }
 
   async answerQuery(query) {
@@ -110,7 +203,7 @@ class PersonInfoAgent {
     }
     
     const inputFilePath = await this._saveComponent("input", query, `query_${this.currentPerson}`);
-    await this._uploadFile(inputFilePath);
+    await this._uploadFile(inputFilePath, "input");
 
     const context = this.index.map((doc, i) => `Source ${i + 1}: ${doc.source}\n${doc.content}`).join("\n\n");
     const prompt = `Using the following context about ${this.currentPerson}, answer this: ${query}\n\n${context}`;
@@ -119,43 +212,30 @@ class PersonInfoAgent {
     const answer = result.response.text();
 
     const outputFilePath = await this._saveComponent("output", answer, `answer_${this.currentPerson}`);
-    await this._uploadFile(outputFilePath);
+    await this._uploadFile(outputFilePath, "output");
     
     return answer;
   }
 
-  async _saveComponent(componentType, content, identifier) {
+  async _saveComponent(fileType, content, identifier) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "_");
     const filename = `${timestamp}_${identifier}.txt`;
-    const filepath = path.join(BASE_DIR, componentType, filename);
+    const filepath = path.join(BASE_DIR, fileType, filename);
     
     // Ensure the directory exists
     await fs.promises.mkdir(path.dirname(filepath), { recursive: true });
     
     // Write the file
     await fs.promises.writeFile(filepath, content);
-
-    const metadata = {
-      timestamp: new Date().toISOString(),
-      componentType,
-      identifier,
-      person: this.currentPerson,
-      sessionId: this.sessionId,
-      filePath: filepath,
-    };
-    
-    const metaPath = path.join(BASE_DIR, "metadata", `${timestamp}_${identifier}_meta.json`);
-    await fs.promises.mkdir(path.dirname(metaPath), { recursive: true });
-    await fs.promises.writeFile(metaPath, JSON.stringify(metadata, null, 2));
     
     return filepath;
   }
 
-  async _uploadFile(filePath) {
+  async _uploadFile(filePath, fileType) {
     try {
       console.log(`Uploading file: ${filePath}`);
       
-      // Create form data using a different approach
+      // Create form data
       const form = new FormData();
       
       // Use a readable stream for the file
@@ -174,12 +254,19 @@ class PersonInfoAgent {
       console.log(`File uploaded successfully: ${filePath}`);
       console.log(`Response: ${JSON.stringify(response.data)}`);
       
-      // Store upload information
-      this.uploadedFiles.push({
-        filePath,
+      // Store file info
+      const fileInfo = {
+        filename: path.basename(filePath),
         cid: response.data.cid,
+        fileType,
+        person: this.currentPerson,
         timestamp: new Date().toISOString()
-      });
+      };
+      
+      this.uploadedFiles.push(fileInfo);
+      
+      // Store in database
+      await this.db.addFile(fileInfo);
       
       return response.data;
     } catch (error) {
@@ -196,6 +283,26 @@ class PersonInfoAgent {
   getUploadedFiles() {
     return this.uploadedFiles;
   }
+  
+  // Get all files from the database for a specific person
+  async getFilesByPerson(person) {
+    return await this.db.getFilesByPerson(person);
+  }
+  
+  // Get all files from the database for a specific type
+  async getFilesByType(fileType) {
+    return await this.db.getFilesByType(fileType);
+  }
+  
+  // Get all files from the database
+  async getAllFiles() {
+    return await this.db.getAllFiles();
+  }
+  
+  // Close database connection
+  async cleanup() {
+    await this.db.close();
+  }
 }
 
 // Example usage
@@ -211,12 +318,30 @@ class PersonInfoAgent {
     process.exit(1);
   }
   
-  const agent = new PersonInfoAgent(googleApiKey, googleAPiKeySearch, searchEngineId, uploadApiUrl);
-  const person = "Albert Einstein";
-  await agent.createKnowledgeBase(person);
-  const answer = await agent.answerQuery("What was Einstein's biggest contribution to science?");
-  console.log("Answer:", answer);
-  
-  // Display all uploaded files
-  console.log("Uploaded files:", JSON.stringify(agent.getUploadedFiles(), null, 2));
+  try {
+    const agent = new PersonInfoAgent(googleApiKey, googleAPiKeySearch, searchEngineId, uploadApiUrl);
+    
+    // Initialize the database
+    await agent.initialize();
+    
+    const person = "Albert Einstein";
+    await agent.createKnowledgeBase(person);
+    const answer = await agent.answerQuery("What was Einstein's biggest contribution to science?");
+    console.log("Answer:", answer);
+    
+    // Get files from database for this person
+    const personFiles = await agent.getFilesByPerson(person);
+    console.log(`Files related to ${person} (${personFiles.length}):`);
+    console.table(personFiles.map(file => ({
+      filename: file.filename,
+      cid: file.cid,
+      type: file.file_type,
+      timestamp: file.timestamp
+    })));
+    
+    // Proper cleanup
+    await agent.cleanup();
+  } catch (error) {
+    console.error("Error in main process:", error);
+  }
 })();

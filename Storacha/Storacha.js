@@ -1,4 +1,5 @@
 import express from 'express';
+import axios from 'axios';
 import multer from 'multer';
 import fs from 'fs/promises';
 import { create } from '@web3-storage/w3up-client';
@@ -79,6 +80,59 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error uploading file',
+      error: error.message
+    });
+  }
+});
+
+
+// Handle file download by CID and filename
+app.get('/download/:cid/:filename', async (req, res) => {
+  try {
+    const { cid, filename } = req.params;
+
+    console.log(`Download request received for CID: ${cid} and filename: ${filename}`);
+    
+    if (!cid || !filename) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'CID and filename are required' 
+      });
+    }
+    
+    console.log(`Attempting to download file: ${filename} with CID: ${cid}`);
+    
+    // Construct the IPFS gateway URL
+    const gatewayUrl = `https://${cid}.ipfs.w3s.link/${filename}`;
+    console.log(`Gateway URL: ${gatewayUrl}`);
+    
+    try {
+      // Fetch the file from the IPFS gateway
+      const response = await axios({
+        method: 'get',
+        url: gatewayUrl,
+        responseType: 'stream'
+      });
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', response.headers['content-type'] || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      // Pipe the file stream to the response
+      response.data.pipe(res);
+    } catch (error) {
+      console.error('Error fetching file from IPFS gateway:', error);
+      return res.status(404).json({
+        success: false,
+        message: 'File not found or error accessing the file',
+        error: error.message
+      });
+    }
+  } catch (error) {
+    console.error('Error processing download request:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error downloading file',
       error: error.message
     });
   }
