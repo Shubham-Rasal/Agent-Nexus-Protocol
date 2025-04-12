@@ -30,7 +30,7 @@ export default function AgentCreationFeature() {
           
           <Link href="/agents/create">
             <Button className="px-6">
-              Create Your Agent
+              Go to Agents
             </Button>
           </Link>
         </div>

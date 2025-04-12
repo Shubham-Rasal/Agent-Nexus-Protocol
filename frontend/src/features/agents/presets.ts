@@ -2,17 +2,6 @@ import { Agent } from './schema';
 
 export const PRESET_AGENTS: Agent[] = [
   {
-    id: 'lead-qualifier',
-    name: 'Lead Qualifier',
-    description: 'Qualifies leads based on criteria and assigns a score',
-    model: 'gpt-4',
-    storageProvider: 'local',
-    tools: ['data-aggregate', 'csv-processor'],
-    createdAt: '2023-10-12T14:30:00Z',
-    updatedAt: '2023-10-12T14:30:00Z',
-    systemPrompt: 'You are a lead qualification assistant. Your task is to analyze lead data, score potential customers based on established criteria, and provide recommendations for follow-up actions.',
-  },
-  {
     id: 'email-outreach',
     name: 'Email Outreach Agent',
     description: 'Sends personalized email sequences to leads',
@@ -44,5 +33,16 @@ export const PRESET_AGENTS: Agent[] = [
     createdAt: '2023-10-20T11:15:00Z',
     updatedAt: '2023-10-20T11:15:00Z',
     systemPrompt: 'You are a data analysis expert. Your purpose is to examine customer and lead data, identify patterns and trends, and generate actionable insights to improve sales and marketing strategies.',
+  },
+  {
+    id: 'gmail-assistant',
+    name: 'Gmail Assistant',
+    description: 'Creates and sends emails using templates and contact search',
+    model: 'gpt-4o-mini',
+    storageProvider: 'local',
+    tools: ['gmail-send', 'contact-search', 'email-template', 'meeting-scheduler'],
+    createdAt: '2024-04-12T14:30:00Z',
+    updatedAt: '2024-04-12T14:45:00Z',
+    systemPrompt: 'You are a Gmail assistant. Your role is to help create and send emails, search for contacts, generate email content from templates, and schedule meetings. You should interpret natural language requests to perform these tasks efficiently.',
   }
 ]; 

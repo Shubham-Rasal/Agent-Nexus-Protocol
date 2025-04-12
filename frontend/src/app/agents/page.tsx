@@ -3,16 +3,16 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Settings, Trash2, X, BrainCircuit, Wrench, Briefcase, Calendar } from 'lucide-react';
+import { Plus, Settings, Trash2, X, BrainCircuit, Wrench, Briefcase, Calendar, Brain, UserCheck } from 'lucide-react';
 import { PRESET_AGENTS } from '@/features/agents/presets';
 import { Badge } from '@/components/ui/badge';
 import { AGENT_MODELS, STORAGE_PROVIDERS } from '@/features/agents/schema';
 import { PRESET_TOOLS } from '@/features/tools/presets';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DynamicAgentTester } from '@/features/agentTesting/DynamicAgentTester';
-import { EmailOutreachAgentCard } from '@/components/sidebar/EmailOutreachAgentCard';
 import { DataAnalyzerAgentCard } from '@/components/sidebar/DataAnalyzerAgentCard';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 // Define TypeScript interfaces
 interface Agent {
@@ -23,6 +23,8 @@ interface Agent {
   storageProvider: string;
   tools: string[];
   systemPrompt?: string;
+  isCustom?: boolean;
+  customRoute?: string;
 }
 
 interface Model {
@@ -42,7 +44,23 @@ interface Tool {
 }
 
 export default function AgentManagerPage() {
-  const [agents, setAgents] = useState<Agent[]>(PRESET_AGENTS);
+  // Add Lead Qualifier agent to the preset agents
+  const allAgents = [
+    ...PRESET_AGENTS,
+    {
+      id: 'lead-qualifier',
+      name: 'Lead Qualifier',
+      description: 'Qualify leads based on contact information',
+      model: 'gpt-4o-mini',
+      storageProvider: 'local',
+      tools: ['lead-qualification'],
+      systemPrompt: 'You are a lead qualification assistant. Your task is to analyze lead contact information, determine if the lead is qualified based on having valid contact methods, and provide recommendations for follow-up actions.',
+      isCustom: true,
+      customRoute: '/agents/lead-qualifier'
+    }
+  ];
+  
+  const [agents, setAgents] = useState<Agent[]>(allAgents);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showTester, setShowTester] = useState(false);
   const [showUtilities, setShowUtilities] = useState(false);
@@ -56,6 +74,17 @@ export default function AgentManagerPage() {
     storageProvider: 'google-calendar',
     tools: ['google-calendar'],
     systemPrompt: 'You are a helpful assistant that schedules meetings based on natural language requests.'
+  };
+
+  // Define a research assistant agent for testing
+  const researchAssistantAgent: Agent = {
+    id: 'research-agent',
+    name: 'Research Assistant',
+    description: 'Search the web for information on any topic',
+    model: 'gpt-4o-mini',
+    storageProvider: 'local',
+    tools: ['web-search'],
+    systemPrompt: 'You are a research assistant. Your job is to find and summarize accurate information on any topic. Search the web to gather facts, then present your findings in a well-organized, objective, and easy-to-understand format.'
   };
 
   // Function to handle clicking on an agent card
@@ -84,6 +113,13 @@ export default function AgentManagerPage() {
   const showMeetingSchedulerSidebar = () => {
     setSelectedAgent(meetingSchedulerAgent);
     setShowTester(true); // Automatically show the tester for the meeting scheduler
+    setShowUtilities(false);
+  };
+
+  // Function to show research assistant in sidebar
+  const showResearchAssistantSidebar = () => {
+    setSelectedAgent(researchAssistantAgent);
+    setShowTester(true); // Automatically show the tester for the research assistant
     setShowUtilities(false);
   };
 
@@ -116,8 +152,7 @@ export default function AgentManagerPage() {
           <div className="flex gap-2">
             <Button onClick={() => {
               toast("Coming soon!", {
-                description: "Agent creation will be available in a future update.",
-                className: "text-black",
+                description: "Agent creation will be available in a future update."
               })
              
             }}>
@@ -132,7 +167,7 @@ export default function AgentManagerPage() {
             <Card 
               key={agent.id} 
               className="hover:shadow-md transition-shadow cursor-pointer" 
-              onClick={() => handleAgentClick(agent)}
+              onClick={() => agent.isCustom && agent.customRoute ? null : handleAgentClick(agent)}
             >
               <CardHeader className="pb-2">
                 <div className="flex justify-between">
@@ -185,6 +220,25 @@ export default function AgentManagerPage() {
                       </Badge>
                     ))}
                   </div>
+                  
+                  {/* Add an Open Agent button for custom agents with routes */}
+                  {agent.isCustom && agent.customRoute && (
+                    <div className="pt-2">
+                      <Link href={agent.customRoute}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Open Agent
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -316,8 +370,25 @@ export default function AgentManagerPage() {
                         </div>
                       </CardHeader>
                     </Card>
+
+                    <Card 
+                      className="hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={showResearchAssistantSidebar}
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                            <Brain className="h-5 w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Research Assistant</CardTitle>
+                            <CardDescription>Search the web for information on any topic</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </Card>
+
                     <DataAnalyzerAgentCard />
-                    <EmailOutreachAgentCard />
                   </div>
                 </div>
               )}

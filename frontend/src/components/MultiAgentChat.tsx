@@ -55,14 +55,7 @@ export default function MultiAgentChat() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
-  // Common query terms for autocomplete
-  const commonTerms = [
-    "GDPR compliance", "data protection", "privacy policy", "data breach", "consent management",
-    "legal requirements", "data processing", "user rights", "data subject access request",
-    "regulatory frameworks", "data retention", "security measures", "compliance audit",
-    "personal data", "information security", "cross-border data transfer", "data minimization",
-    "privacy by design", "impact assessment", "accountability principle", "legitimate interest"
-  ];
+
   
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -255,11 +248,11 @@ export default function MultiAgentChat() {
   }, [messages]);
 
   // When tasks are added, open the workflow panel
-  useEffect(() => {
-    if (activeTasks.length > 0) {
-      setWorkflowPanelOpen(true);
-    }
-  }, [activeTasks.length]);
+  // useEffect(() => {
+  //   if (activeTasks.length > 0) {
+  //     setWorkflowPanelOpen(true);
+  //   }
+  // }, [activeTasks.length]);
 
   // Focus on input field when component mounts
   useEffect(() => {
@@ -872,21 +865,7 @@ export default function MultiAgentChat() {
                   e.target.style.height = 'auto';
                   e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`;
                   
-                  // Generate suggestions based on input
-                  if (e.target.value.trim().length > 2) {
-                    const lastWord = e.target.value.split(' ').pop()?.toLowerCase() || '';
-                    if (lastWord.length >= 3) {
-                      const matchingSuggestions = commonTerms
-                        .filter(term => term.toLowerCase().includes(lastWord))
-                        .slice(0, 3); // Limit to 3 suggestions
-                      setSuggestions(matchingSuggestions);
-                      setActiveSuggestion(-1);
-                    } else {
-                      setSuggestions([]);
-                    }
-                  } else {
-                    setSuggestions([]);
-                  }
+                  
                 }}
                 onKeyDown={(e) => {
                   // Handle suggestion navigation with arrow keys

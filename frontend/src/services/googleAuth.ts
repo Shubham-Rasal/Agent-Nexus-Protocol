@@ -9,6 +9,8 @@ const SCOPES = [
   'https://www.googleapis.com/auth/userinfo.email', // For user info
   'https://www.googleapis.com/auth/calendar',       // For Google Calendar access
   'https://www.googleapis.com/auth/calendar.events', // For managing calendar events
+  'https://www.googleapis.com/auth/calendar.events.readonly', // For reading calendar events
+  'https://www.googleapis.com/auth/calendar.addons.execute', // For calendar add-ons
 ];
 
 // Store tokens in localStorage with these keys
@@ -260,8 +262,10 @@ export const sendGmailEmail = async (emailData: {
   body: string;
   cc?: string;
   bcc?: string;
+  authToken?: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> => {
-  const accessToken = getGoogleAccessToken();
+  // Use provided auth token or get from localStorage
+  const accessToken = emailData.authToken || getGoogleAccessToken();
   
   if (!accessToken) {
     return { success: false, error: 'Not authenticated with Google' };
@@ -342,4 +346,204 @@ export const sendGmailEmail = async (emailData: {
       error: String(error) 
     };
   }
-}; 
+};
+
+/**
+ * Creates a draft email using Gmail API
+ */
+export const createGmailDraft = async (emailData: {
+  to: string;
+  subject: string;
+  body: string;
+  cc?: string;
+  bcc?: string;
+}): Promise<{ success: boolean; draftId?: string; error?: string }> => {
+  const accessToken = getGoogleAccessToken();
+  
+  if (!accessToken) {
+    return { success: false, error: 'Not authenticated with Google' };
+  }
+  
+  try {
+    // Format the email according to RFC 5322
+    // IMPORTANT: The empty line between headers and body is crucial
+    const headers = [
+      `To: ${emailData.to}`,
+      emailData.cc ? `Cc: ${emailData.cc}` : '',
+      emailData.bcc ? `Bcc: ${emailData.bcc}` : '',
+      `Subject: ${emailData.subject}`,
+      'Content-Type: text/html; charset=utf-8',
+      'MIME-Version: 1.0',
+    ].filter(line => line !== ''); // Remove empty lines (like cc/bcc if not provided)
+    
+    // Build the full message with an explicit empty line between headers and body
+    const message = headers.join('\r\n') + '\r\n\r\n' + emailData.body;
+    
+    console.log('Draft email message structure:', {
+      headersCount: headers.length,
+      bodyLength: emailData.body.length,
+      totalLength: message.length
+    });
+    
+    // Encode the email in base64 URL-safe format with proper Unicode support
+    // First convert string to UTF-8, then encode in base64
+    let encodedMessage;
+    try {
+      // Use TextEncoder for UTF-8 encoding before base64 encoding
+      const encoder = new TextEncoder();
+      const uint8array = encoder.encode(message);
+      encodedMessage = btoa(
+        Array.from(uint8array, byte => String.fromCharCode(byte)).join('')
+      )
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    } catch (encodeError) {
+      console.error('Error encoding draft email message:', encodeError);
+      return {
+        success: false,
+        error: 'Failed to encode draft email message. Please check for special characters.'
+      };
+    }
+    
+    // Create the draft email via Gmail API
+    const response = await fetch('https://www.googleapis.com/gmail/v1/users/me/drafts', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: {
+          raw: encodedMessage
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Gmail API draft error response:', errorData);
+      return { 
+        success: false, 
+        error: errorData.error?.message || 'Failed to create draft email' 
+      };
+    }
+    
+    const responseData = await response.json();
+    return { 
+      success: true, 
+      draftId: responseData.id 
+    };
+  } catch (error) {
+    console.error('Error creating draft email:', error);
+    return { 
+      success: false, 
+      error: String(error) 
+    };
+  }
+};
+
+/**
+ * Creates a calendar event using Google Calendar API
+ */
+export const createCalendarEvent = async (eventData: {
+  title: string;
+  description?: string;
+  startDateTime: string;
+  endDateTime: string;
+  attendees: string[];
+  location?: string;
+  timeZone?: string;
+  authToken?: string;
+}): Promise<{ 
+  success: boolean; 
+  eventId?: string; 
+  eventLink?: string; 
+  meetLink?: string; 
+  raw?: any;
+  error?: string 
+}> => {
+  // Use provided auth token or get from localStorage
+  const accessToken = eventData.authToken || getGoogleAccessToken();
+  
+  if (!accessToken) {
+    return { success: false, error: 'Not authenticated with Google' };
+  }
+  
+  try {
+    // Format the calendar event
+    const event = {
+      summary: eventData.title,
+      location: eventData.location || 'Google Meet',
+      description: eventData.description || '',
+      start: {
+        dateTime: eventData.startDateTime,
+        timeZone: eventData.timeZone || 'UTC',
+      },
+      end: {
+        dateTime: eventData.endDateTime,
+        timeZone: eventData.timeZone || 'UTC',
+      },
+      attendees: eventData.attendees.map(email => ({ email })),
+      // Request Google Meet conference data
+      conferenceData: {
+        createRequest: {
+          requestId: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          conferenceSolutionKey: { 
+            type: 'hangoutsMeet' 
+          }
+        }
+      }
+    };
+    
+    console.log('Calendar event structure:', {
+      title: eventData.title,
+      startTime: eventData.startDateTime,
+      endTime: eventData.endDateTime,
+      attendeesCount: eventData.attendees.length
+    });
+    
+    // Create the calendar event via Google Calendar API
+    const response = await fetch(
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', 
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(event)
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Google Calendar API error response:', errorData);
+      return { 
+        success: false, 
+        error: errorData.error?.message || 'Failed to create calendar event' 
+      };
+    }
+    
+    const responseData = await response.json();
+    
+    // Extract relevant information from the response
+    const eventId = responseData.id;
+    const eventLink = responseData.htmlLink;
+    const meetLink = responseData.conferenceData?.entryPoints?.[0]?.uri || null;
+    
+    return { 
+      success: true, 
+      eventId: eventId,
+      eventLink: eventLink,
+      meetLink: meetLink,
+      raw: responseData  // Include raw response for debugging
+    };
+  } catch (error) {
+    console.error('Error creating calendar event:', error);
+    return { 
+      success: false, 
+      error: String(error) 
+    };
+  }
+};

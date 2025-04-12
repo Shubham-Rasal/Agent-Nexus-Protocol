@@ -2,11 +2,26 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User } from 'lucide-react';
+import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 export function Navbar() {
   const pathname = usePathname();
+  const [showAgentDropdown, setShowAgentDropdown] = useState(false);
   
+  const navigation = [
+    {
+      name: 'Task Router',
+      href: '/task-router',
+      icon: SplitSquareVertical,
+      current: pathname === '/task-router',
+    },
+  ];
+
+  const toggleAgentDropdown = () => {
+    setShowAgentDropdown(!showAgentDropdown);
+  };
+
   return (
     <nav className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,6 +56,27 @@ export function Navbar() {
               >
                 Agents
               </NavLink>
+              <NavLink 
+                href="/network" 
+                icon={<Users className="h-5 w-5" />}
+                isActive={pathname === '/network'}
+              >
+                Network
+              </NavLink>
+              <NavLink 
+                href="/leadgen" 
+                icon={<UserCheck className="h-5 w-5" />}
+                isActive={pathname === '/leadgen'}
+              >
+                Lead Gen
+              </NavLink>
+              <NavLink 
+                href="/task-router" 
+                icon={<SplitSquareVertical className="h-5 w-5" />}
+                isActive={pathname === '/task-router'}
+              >
+                Task Router
+              </NavLink>
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -53,7 +89,7 @@ export function Navbar() {
       
       {/* Mobile navigation */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe">
-        <div className="grid grid-cols-4 h-16">
+        <div className="grid grid-cols-6 h-16">
           <MobileNavLink 
             href="/" 
             icon={<Home className="h-5 w-5" />}
@@ -78,9 +114,23 @@ export function Navbar() {
           <MobileNavLink 
             href="/agents" 
             icon={<User className="h-5 w-5" />}
-            isActive={pathname === '/agents'}
+            isActive={pathname.startsWith('/agents')}
           >
             Agents
+          </MobileNavLink>
+          <MobileNavLink 
+            href="/leadgen" 
+            icon={<UserCheck className="h-5 w-5" />}
+            isActive={pathname === '/leadgen'}
+          >
+            Lead Gen
+          </MobileNavLink>
+          <MobileNavLink 
+            href="/task-router" 
+            icon={<SplitSquareVertical className="h-5 w-5" />}
+            isActive={pathname === '/task-router'}
+          >
+            Tasks
           </MobileNavLink>
         </div>
       </div>

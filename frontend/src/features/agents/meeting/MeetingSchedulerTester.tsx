@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Loader2, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
 import { isGoogleAuthenticated, initiateGoogleAuth } from '@/services/googleAuth';
-import { MeetingSchedulerAgent, type MeetingResponse } from '@/features/agents/meeting/agent';
+import { MeetingSchedulerAgent, type MeetingResponse } from './agent';
 
 // This component follows the same pattern as other agent testers but with meeting scheduler functionality
 export function MeetingSchedulerTester() {
@@ -48,12 +48,12 @@ export function MeetingSchedulerTester() {
 
     try {
       // First, get structured format from natural language
-      const structuredResponse = await fetch('/api/agents/meeting-scheduler', {
+      const structuredResponse = await fetch('/api/agents/gmail', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ message: prompt }),
       });
 
       const structuredData = await structuredResponse.json();

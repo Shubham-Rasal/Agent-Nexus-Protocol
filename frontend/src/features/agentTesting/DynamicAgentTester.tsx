@@ -3,6 +3,8 @@
 import { AgentTester } from '@/features/emailOutreach/AgentTester';
 import { DataAnalyzerAgent } from '@/features/dataAnalyzer/DataAnalyzerAgent';
 import { MeetingSchedulerTester } from '@/features/agents/meeting/MeetingSchedulerTester';
+import { LeadQualifierAgent } from '@/features/leadQualifier/LeadQualifierAgent';
+import { GmailAssistantTester } from '@/features/agents/gmail/GmailAssistantTester';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BrainCircuit, Mail, FileSpreadsheet, Globe, Calendar, Database } from 'lucide-react';
@@ -32,7 +34,12 @@ export function DynamicAgentTester({ agent }: DynamicAgentTesterProps) {
 
   // Get agent type based on ID or tools
   const getAgentType = () => {
-    if (agent.id === 'email-outreach' || agent.tools.includes('gmail-send')) {
+    if (agent.id === 'gmail-assistant' || 
+       (agent.tools.includes('gmail-send') && 
+        agent.tools.includes('meeting-scheduler') && 
+        agent.tools.includes('contact-search'))) {
+      return 'gmail';
+    } else if (agent.id === 'email-outreach' || agent.tools.includes('gmail-send')) {
       return 'email';
     } else if (agent.id === 'data-analyzer' || 
                (agent.tools.includes('csv-processor') && agent.tools.includes('akave-storage'))) {
@@ -53,6 +60,8 @@ export function DynamicAgentTester({ agent }: DynamicAgentTesterProps) {
     const type = getAgentType();
     
     switch (type) {
+      case 'gmail':
+        return <Mail className="h-5 w-5 text-violet-500" />;
       case 'email':
         return <Mail className="h-5 w-5 text-blue-500" />;
       case 'data':
@@ -74,6 +83,9 @@ export function DynamicAgentTester({ agent }: DynamicAgentTesterProps) {
     const type = getAgentType();
     
     switch (type) {
+      case 'gmail':
+        // Use the new Gmail Assistant Tester
+        return <GmailAssistantTester />;
       case 'email':
         return <AgentTester />;
       case 'data':
@@ -82,6 +94,9 @@ export function DynamicAgentTester({ agent }: DynamicAgentTesterProps) {
       case 'scheduler':
         // Use the dedicated Meeting Scheduler Tester
         return <MeetingSchedulerTester />;
+      case 'qualifier':
+        // Use the dedicated Lead Qualifier Agent
+        return <LeadQualifierAgent />;
       default:
         // Generic testing interface for other agent types
         return (
@@ -126,6 +141,8 @@ export function DynamicAgentTester({ agent }: DynamicAgentTesterProps) {
     const type = getAgentType();
     
     switch (type) {
+      case 'gmail':
+        return "This agent can create and send emails, schedule meetings, and search for contacts using natural language instructions.";
       case 'email':
         return "This agent can analyze natural language descriptions to extract contact information and send personalized emails.";
       case 'data':

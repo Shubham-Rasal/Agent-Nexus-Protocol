@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { meetingRequestSchema } from '@/features/agents/meeting/schema';
+import { meetingScheduler } from '@/features/agents/gmail/meeting-scheduler';
+import { OpenAI } from 'llamaindex';
 
 function parseRelativeTime(timeStr: string): string {
   const now = new Date();
@@ -65,114 +66,74 @@ function parseRelativeTime(timeStr: string): string {
   return nextHour.toISOString();
 }
 
-function validateAndEnhanceMeetingRequest(request: any): any {
-  // Ensure duration is a number
-  if (typeof request.duration === 'string') {
-    request.duration = parseInt(request.duration);
-  }
-  if (!request.duration || isNaN(request.duration)) {
-    request.duration = 30; // Default to 30 minutes
-  }
+function formatTimeForDisplay(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
 
-  // Parse and validate start time
-  try {
-    const parsedTime = parseRelativeTime(request.startTime);
-    request.startTime = parsedTime;
-  } catch (error) {
-    // If time parsing fails, use next available slot
-    const nextHour = new Date();
-    nextHour.setHours(nextHour.getHours() + 1);
-    nextHour.setMinutes(0);
-    nextHour.setSeconds(0);
-    nextHour.setMilliseconds(0);
-    request.startTime = nextHour.toISOString();
-  }
+function formatDateForCalendar(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
+}
 
-  // Ensure attendees is an array
-  if (typeof request.attendees === 'string') {
-    request.attendees = request.attendees.split(/[,;\s]+/).filter(Boolean);
-  }
-  if (!Array.isArray(request.attendees)) {
-    request.attendees = [];
-  }
+function formatTimeForCalendar(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toTimeString().split(' ')[0].substring(0, 5); // Returns HH:MM format
+}
 
-  // Ensure summary exists
-  if (!request.summary) {
-    request.summary = 'Meeting';
-  }
-
-  return request;
+function getEndTime(startTimeIso: string, durationMinutes: number): string {
+  const startTime = new Date(startTimeIso);
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+  return endTime.toISOString();
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt } = await request.json();
+    // Get the request body
+    const body = await request.json();
     
-    if (!prompt) {
-      return NextResponse.json({ error: 'No prompt provided' }, { status: 400 });
+    // Check for auth token
+    const authToken = body.authToken;
+    if (!authToken) {
+      return NextResponse.json(
+        { error: 'Authentication token is required' },
+        { status: 401 }
+      );
     }
-
-    // Call Lilypad LLM to parse the natural language request
-    const API_URL = "https://anura-testnet.lilypad.tech/api/v1/chat/completions";
-    const API_TOKEN = process.env.NEXT_PUBLIC_LILYPAD_API_KEY;
-
-    if (!API_TOKEN) {
-      throw new Error("LILYPAD_API_TOKEN environment variable is not set");
-    }
-
-    const systemMessage = `You are an AI assistant that extracts meeting information from natural language requests.
-    Extract the meeting details according to the provided schema. If a specific time is not mentioned, use the next available time slot.
-    If duration is not specified, default to 30 minutes.
-    For the startTime field, return a descriptive string like "in 3 hours", "tomorrow at 2pm", or "at 3pm".
-    The schema is: ${JSON.stringify(meetingRequestSchema, null, 2)}`;
-
-    const messages = [
-      {
-        role: "system",
-        content: systemMessage
-      },
-      {
-        role: "user",
-        content: prompt
-      }
-    ];
-
-    const llmResponse = await fetch(API_URL, {
-      method: "POST",
+    
+    // Forward the request to the Gmail agent endpoint with the auth token
+    const response = await fetch(new URL('/api/agents/gmail', request.url), {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${API_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}` // Pass token in headers
       },
-      body: JSON.stringify({
-        model: "deepscaler:1.5b",
-        messages,
-        max_tokens: 1000,
-        temperature: 0.2,
-        response_format: { type: "json_object" }
+      body: JSON.stringify({ 
+        message: body.message || `Schedule a meeting ${body.title ? `titled "${body.title}"` : ''}`,
+        authToken: authToken // Also include in body for flexibility
       }),
     });
-
-    if (!llmResponse.ok) {
-      throw new Error(`Lilypad API request failed with status ${llmResponse.status}`);
-    }
-
-    const result = await llmResponse.json();
     
-    if (!result.choices?.[0]?.message?.content) {
-      throw new Error("Invalid response from Lilypad API");
-    }
-
-    // Parse and validate the structured meeting request
-    const rawMeetingRequest = JSON.parse(result.choices[0].message.content);
-    const meetingRequest = validateAndEnhanceMeetingRequest(rawMeetingRequest);
-
-    return NextResponse.json({ success: true, data: meetingRequest });
-
+    // Forward the response back
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('Error in meeting scheduler structured output:', error);
+    console.error('Error forwarding to Gmail agent:', error);
+    
+    let errorMessage = 'An error occurred forwarding the request';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unknown error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
