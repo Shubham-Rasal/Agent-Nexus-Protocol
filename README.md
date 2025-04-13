@@ -80,7 +80,7 @@ npm run dev
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/LICENSE) file for details.
 
 ## 🏆 Hackathon Details
 
