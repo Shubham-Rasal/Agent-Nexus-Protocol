@@ -30,7 +30,7 @@ export function Navbar() {
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <NavLink 
                 href="/" 
-                icon={<Home className="h-5 w-5" />}
+                icon={""}
                 isActive={pathname === '/'}
               >
               <span className="text-purple-600 font-bold text-xl">ANP</span>

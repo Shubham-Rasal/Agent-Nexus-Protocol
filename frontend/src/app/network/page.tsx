@@ -9,6 +9,12 @@ export default function NetworkPage() {
     width: 1000,
     height: 600,
   });
+  const [networkData, setNetworkData] = useState({
+    agents: [],
+    relationships: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // Update dimensions on window resize
   useEffect(() => {
@@ -30,6 +36,73 @@ export default function NetworkPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Fetch network data
+  useEffect(() => {
+    const fetchNetworkData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch agents data
+        const agentsResponse = await fetch('/api/network/agents');
+        if (!agentsResponse.ok) {
+          throw new Error('Failed to fetch agents data');
+        }
+        const agentsData = await agentsResponse.json();
+        
+        // Fetch relationships data
+        const relationshipsResponse = await fetch('/api/network/relationships');
+        if (!relationshipsResponse.ok) {
+          throw new Error('Failed to fetch relationships data');
+        }
+        const relationshipsData = await relationshipsResponse.json();
+        
+        setNetworkData({
+          agents: agentsData.agents || [],
+          relationships: relationshipsData.relationships || []
+        });
+        setError('');
+      } catch (err) {
+        console.error('Error fetching network data:', err);
+        setError('Failed to load network data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNetworkData();
+  }, []);
+
+  // Refresh network data after changes
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      // Fetch agents data
+      const agentsResponse = await fetch('/api/network/agents');
+      if (!agentsResponse.ok) {
+        throw new Error('Failed to fetch agents data');
+      }
+      const agentsData = await agentsResponse.json();
+      
+      // Fetch relationships data
+      const relationshipsResponse = await fetch('/api/network/relationships');
+      if (!relationshipsResponse.ok) {
+        throw new Error('Failed to fetch relationships data');
+      }
+      const relationshipsData = await relationshipsResponse.json();
+      
+      setNetworkData({
+        agents: agentsData.agents || [],
+        relationships: relationshipsData.relationships || []
+      });
+      setError('');
+    } catch (err) {
+      console.error('Error refreshing network data:', err);
+      setError('Failed to refresh network data. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="py-8">
       <h1 className="text-3xl font-bold mb-2 text-center">Agent Network</h1>
@@ -38,7 +111,36 @@ export default function NetworkPage() {
       </p>
       
       <div className="bg-white p-4 rounded-lg shadow-md">
-        <NetworkGraph width={dimensions.width} height={dimensions.height} />
+        {loading && (
+          <div className="flex justify-center items-center" style={{ height: dimensions.height }}>
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+              <p>Loading network data...</p>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="text-center text-red-500 py-8">
+            <p>{error}</p>
+            <button 
+              onClick={refreshData}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+        
+        {!loading && !error && (
+          <NetworkGraph 
+            width={dimensions.width} 
+            height={dimensions.height} 
+            initialAgents={networkData.agents}
+            initialRelationships={networkData.relationships}
+            onSave={refreshData}
+          />
+        )}
       </div>
 
       <div className="mt-8 max-w-3xl mx-auto">
@@ -55,7 +157,7 @@ export default function NetworkPage() {
             <li>• <strong>Node Size:</strong> Corresponds to the agent's stake in the network</li>
             <li>• <strong>Node Color:</strong> Indicates the agent's privacy level</li>
             <li>• <strong>Edges:</strong> Show relationships between agents</li>
-            <li>• <strong>Edge Type:</strong> Collaboration (blue) or Dependency (purple)</li>
+            <li>• <strong>Edge Type:</strong> Collaboration (blue), Dependency (purple), or Competition (pink)</li>
             <li>• <strong>Edge Thickness:</strong> Represents relationship strength</li>
           </ul>
         </div>
@@ -63,6 +165,7 @@ export default function NetworkPage() {
           <p>
             <strong>Interaction Tips:</strong> Drag nodes to rearrange, hover over nodes and edges for details, 
             use the filters to highlight specific relationship types, and zoom/pan to explore the network.
+            Click "Edit Network" to modify agent stakes, edit relationship properties, or create new relationships.
           </p>
         </div>
       </div>

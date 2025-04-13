@@ -53,6 +53,15 @@
       "description": "Lead scoring optimization",
       "queries_processed": 1480,
       "success_rate": 0.91
+    },
+    {
+      "source": "general_purpose",
+      "target": "lead-qualifier",
+      "type": "collaboration",
+      "strength": 0.55,
+      "description": "Helps in web search",
+      "queries_processed": 0,
+      "success_rate": 0.85
     }
   ]
-} 
+}

@@ -199,14 +199,14 @@ ${userData.position} | ${userData.company}`;
       if (isPersonalized) {
         // Replace placeholders with recipient data
         finalSubject = finalSubject
-          .replace(/\{name\}/g, recipient.name)
-          .replace(/\{company\}/g, recipient.company || 'your company')
-          .replace(/\{position\}/g, recipient.position || 'your position');
+          .replace(/\{name\}/g, recipient.name || 'Shubham Rasal')
+          .replace(/\{company\}/g, recipient.company || 'Maximal Studios')
+          .replace(/\{position\}/g, recipient.position || 'Founder');
           
         finalBody = finalBody
-          .replace(/\{name\}/g, recipient.name)
-          .replace(/\{company\}/g, recipient.company || 'your company')
-          .replace(/\{position\}/g, recipient.position || 'your position');
+          .replace(/\{name\}/g, recipient.name || 'Shubham Rasal')
+          .replace(/\{company\}/g, recipient.company || 'Maximal Studios')
+          .replace(/\{position\}/g, recipient.position || 'Founder');
         
         // Replace custom fields if any
         if (recipient.customFields) {

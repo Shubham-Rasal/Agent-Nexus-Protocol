@@ -386,11 +386,11 @@ export default function MultiAgentChat() {
   }, [messages]);
 
   // Update the WorkflowPanel when activeTasks changes
-  useEffect(() => {
-    if (activeTasks.length > 0) {
-      setWorkflowPanelOpen(true);
-    }
-  }, [activeTasks]);
+  // useEffect(() => {
+  //   if (activeTasks.length > 0) {
+  //     setWorkflowPanelOpen(true);
+  //   }
+  // }, [activeTasks]);
 
   // Focus on input field when component mounts
   useEffect(() => {
@@ -688,6 +688,48 @@ export default function MultiAgentChat() {
         // Reset loading and router states
         setIsLoading(false);
         setIsRouterActive(false);
+        
+        // Explicitly save the chat to localStorage once the task is completed
+        const currentMessages = [...messages, {
+          ...loadingMessage,
+          content: enhancedResult,
+          isLoading: false
+        }];
+        
+        const chatId = currentChatId || `chat-${Date.now()}`;
+        const firstUserMessage = currentMessages.find(m => m.role === 'user');
+        let title = 'New Chat';
+        if (firstUserMessage) {
+          title = firstUserMessage.content.substring(0, 40);
+          if (firstUserMessage.content.length > 40) title += '...';
+        }
+        
+        // Create the chat session
+        const newChat: ChatSession = {
+          id: chatId,
+          title,
+          timestamp: new Date(),
+          messages: currentMessages,
+          activeTasks: [{ ...task, status: 'completed' }]
+        };
+        
+        // Update chat history
+        let updatedHistory = [...chatHistory];
+        const existingIndex = updatedHistory.findIndex(chat => chat.id === chatId);
+        
+        if (existingIndex >= 0) {
+          updatedHistory[existingIndex] = newChat;
+        } else {
+          updatedHistory = [newChat, ...updatedHistory];
+        }
+        
+        // Directly update localStorage
+        localStorage.setItem('anp-chat-history', JSON.stringify(updatedHistory));
+        localStorage.setItem('anp-current-chat-id', chatId);
+        
+        // Update the state to match what's in localStorage
+        setChatHistory(updatedHistory);
+        setCurrentChatId(chatId);
       }, 3500);
       
     } catch (error) {
@@ -1432,20 +1474,6 @@ export default function MultiAgentChat() {
               New Chat
             </button>
             
-            {/* Save to Storacha button */}
-            {messages.length > 0 && (
-              <>
-                <SaveToStorachaButton 
-                  messages={messages}
-                  onSuccess={handleSaveSuccess}
-                  onError={handleSaveError}
-                  onSaveStart={handleSaveStart}
-                />
-                {chatHistory.length > 0 && (
-                  <SyncButton />
-                )}
-              </>
-            )}
             
             {activeTasks.length > 0 && (
               <button 
