@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 // Type definitions from parent
 type Agent = {
@@ -13,11 +14,12 @@ type Agent = {
 
 type Message = {
   id: string;
-  role: 'user' | 'agent' | 'router';
+  role: 'user' | 'agent' | 'router' | 'system';
   content: string;
   timestamp: Date;
   agentId?: string;
   isLoading?: boolean;
+  isThought?: boolean;
 };
 
 type AgentResponseProps = {
@@ -34,6 +36,7 @@ export default function AgentResponse({ message, agent, content, loading, isThou
   // Get message content either from props or from message object
   const messageContent = content || (message?.content || '');
   const isMessageLoading = loading || message?.isLoading || false;
+  const showAsThought = isThought || message?.isThought;
   
   // Get the agent's privacy level color
   const getPrivacyLevelColor = (level: string) => {
@@ -51,6 +54,11 @@ export default function AgentResponse({ message, agent, content, loading, isThou
   
   // Generate a background color based on agent type
   const getBgColor = () => {
+    // If this is a thought message, use a lighter background
+    if (showAsThought) {
+      return 'bg-gray-50 border-gray-100 italic';
+    }
+    
     switch (agentType) {
       case 'legal': return 'bg-blue-50 border-blue-200';
       case 'finance': 
@@ -61,13 +69,17 @@ export default function AgentResponse({ message, agent, content, loading, isThou
       case 'tech': 
       case 'cyber': 
       case 'ai': return 'bg-indigo-50 border-indigo-200';
+      case 'gmail':
+      case 'email': return 'bg-purple-50 border-purple-200';
+      case 'lead':
+      case 'qualifier': return 'bg-amber-50 border-amber-200';
       default: return 'bg-gray-50 border-gray-200';
     }
   };
   
   return (
     <div className="flex mb-4">
-      <div className={`p-3 rounded-lg max-w-md border shadow-sm ${getBgColor()}`}>
+      <div className={`p-3 rounded-lg max-w-4xl border shadow-sm ${getBgColor()}`}>
         <div className="flex items-center mb-2">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center mr-2 border border-gray-200">
             <span className="text-xs font-medium">{agent.name.substring(0, 2)}</span>
@@ -79,6 +91,7 @@ export default function AgentResponse({ message, agent, content, loading, isThou
                 {agent.privacy_level}
               </span>
               <span className="text-xs text-gray-500 ml-2">Stake: {agent.stake}</span>
+              {showAsThought && <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full ml-2">Thought Process</span>}
             </div>
           </div>
         </div>
@@ -93,7 +106,11 @@ export default function AgentResponse({ message, agent, content, loading, isThou
             <p className="text-sm text-gray-500">Working on task...</p>
           </div>
         ) : (
-          <p className="whitespace-pre-line">{messageContent}</p>
+          <div className="prose prose-sm max-w-none">
+            <ReactMarkdown>
+              {messageContent}
+            </ReactMarkdown>
+          </div>
         )}
       </div>
     </div>

@@ -17,3 +17,5 @@ This query is sent to the task router. It should ideally break it down into the 
 - Find info about Shubham Rasal - research agent
 - send him a mail with the output of research agent at email id to ask if free - email outreach agent
 - take details from the mail reply  and book a meet - meeting scheduler
+
+Implement this as a single API and store the temporary data in local storage.

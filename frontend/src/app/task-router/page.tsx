@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { TaskRoutingInput } from '@/components/TaskRoutingInput';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -40,8 +41,10 @@ export default function TaskRouterPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="p-4 bg-gray-50 rounded-md whitespace-pre-wrap">
-                    {completedTaskResult}
+                  <div className="p-4 bg-gray-50 rounded-md prose prose-sm max-w-none dark:prose-invert">
+                    <ReactMarkdown>
+                      {completedTaskResult}
+                    </ReactMarkdown>
                   </div>
                 </CardContent>
               </Card>
@@ -58,34 +61,44 @@ export default function TaskRouterPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  Task routing is a powerful feature that enables the Agent Nexus Protocol to break down complex tasks 
-                  into subtasks and assign them to specialized agents. This allows the system to tackle problems that 
-                  would be challenging for a single agent.
+                  The Task Router implementation routes user queries to specialized agents based on intent recognition.
+                  Currently, the router supports routing to the Gmail Assistant and Lead Qualifier agents.
                 </p>
                 
                 <h3 className="text-lg font-medium mt-4">How It Works</h3>
                 <ol className="list-decimal pl-5 space-y-2">
-                  <li>You submit a complex task or query</li>
-                  <li>The task router analyzes the query and breaks it down into subtasks</li>
-                  <li>Each subtask is assigned to the most appropriate specialized agent</li>
-                  <li>Agents work on their assigned subtasks, potentially collaborating with each other</li>
-                  <li>Results from all subtasks are compiled into a comprehensive final answer</li>
+                  <li>You submit a query or task using the input form</li>
+                  <li>The task router analyzes the query using the Lilypad Inference API to determine intent</li>
+                  <li>Based on the detected intent, the query is routed to either the Gmail or Lead Qualifier agent</li>
+                  <li>The appropriate agent processes the query and returns results</li>
+                  <li>Results are displayed in the interface</li>
                 </ol>
                 
                 <h3 className="text-lg font-medium mt-4">Available Agents</h3>
                 <ul className="list-disc pl-5 space-y-2">
+                  <li><strong>Gmail Agent:</strong> Handles email-related tasks such as drafting, sending, or searching emails</li>
+                  <li><strong>Lead Qualifier Agent:</strong> Evaluates potential leads based on criteria such as contact information (email, LinkedIn, GitHub)</li>
                   <li><strong>Research Agent:</strong> Searches the web for information on any topic</li>
                   <li><strong>Email Outreach Agent:</strong> Drafts and sends personalized emails</li>
                   <li><strong>Meeting Scheduler:</strong> Schedules and coordinates meetings</li>
                   <li><strong>Data Analyzer:</strong> Analyzes structured data and extracts insights</li>
-                  <li><strong>Lead Qualifier:</strong> Evaluates potential leads based on criteria</li>
+                  <li><strong>Lead Generation Agent:</strong> Finds and gathers information about potential leads</li>
                 </ul>
+                
+                <div className="bg-amber-50 p-4 rounded-md border border-amber-200 my-4">
+                  <h4 className="text-sm font-medium text-amber-800 mb-2">Technical Implementation Note</h4>
+                  <p className="text-xs text-amber-700">
+                    The current implementation uses Lilypad Inference API to determine the intent of user queries and route them
+                    to either the Gmail Assistant or Lead Qualifier agent. Additional agents can be added to the router in the future.
+                  </p>
+                </div>
                 
                 <h3 className="text-lg font-medium mt-4">Example Tasks</h3>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li>"Research company X and send an email to schedule a meeting"</li>
-                  <li>"Find some info about Shubham Rasal's Github profile and send him a mail at bluequbits@gmail.com with relevant details and ask him when he would be free to book a call for an interview and book the call."</li>
-                  <li>"Analyze recent market trends in AI and prepare a summary report"</li>
+                  <li>"Send an email to john@example.com about our upcoming meeting"</li>
+                  <li>"Qualify this lead: email: sarah@company.com, LinkedIn: linkedin.com/in/sarahjones"</li>
+                  <li>"Find information about potential leads in the fintech industry and send them personalized introduction emails"</li>
+                  <li>"Generate a list of marketing directors at Fortune 500 companies and draft follow-up emails to schedule demos"</li>
                 </ul>
               </CardContent>
             </Card>

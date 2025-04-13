@@ -6,6 +6,7 @@ import AgentResponse from '@/components/AgentResponse';
 import WorkflowPanel from '@/components/WorkflowPanel';
 import { SendHorizontal, Sparkles, AlertCircle, Info, ChevronDown, Settings, HelpCircle, Clock, Zap, History, PlusCircle, ArrowLeft } from 'lucide-react';
 import TaskRouter from '@/components/TaskRouter';
+import ReactMarkdown from 'react-markdown';
 
 type AgentInfo = (typeof agents)[0];
 
@@ -247,12 +248,12 @@ export default function MultiAgentChat() {
     }
   }, [messages]);
 
-  // When tasks are added, open the workflow panel
-  // useEffect(() => {
-  //   if (activeTasks.length > 0) {
-  //     setWorkflowPanelOpen(true);
-  //   }
-  // }, [activeTasks.length]);
+  // Update the WorkflowPanel when activeTasks changes
+  useEffect(() => {
+    if (activeTasks.length > 0) {
+      setWorkflowPanelOpen(true);
+    }
+  }, [activeTasks]);
 
   // Focus on input field when component mounts
   useEffect(() => {
@@ -303,286 +304,185 @@ export default function MultiAgentChat() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!input.trim()) return;
-    
-    // Add user message
-    const userMessage: Message = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      role: 'user',
-      content: input,
-      timestamp: new Date(),
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+  // Process a task using the task router
+  const processTaskWithRouter = async (userQuery: string) => {
+    // Reset state for new message
     setShowExamples(false);
-    
-    // Activate the router
+    setIsLoading(true);
     setIsRouterActive(true);
+    setActiveTasks([]);
     
-    // Add system message - Protocol initialized
-    addSystemMessage('Protocol initialized. Preparing query analysis...');
-    
-    // Simulate router processing
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Add router message with task decomposition
-    const routerMessage: Message = {
-      id: `router-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      role: 'router',
-      content: 'I\'ll decompose this query into subtasks and assign specialized agents.',
+    // Add user message to the chat
+    const userMessageId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const userMessage: Message = {
+      id: userMessageId,
+      role: 'user',
+      content: userQuery,
       timestamp: new Date(),
     };
+    setMessages(prev => [...prev, userMessage]);
     
-    setMessages(prev => [...prev, routerMessage]);
-    
-    // Add system message - Breaking down query
-    addSystemMessage('Breaking query into subtasks...');
+    // Add system message - Identifying agents
+    addSystemMessage('Analyzing query and identifying appropriate agents...');
     
     try {
-      // Call our Smart Router API to decompose the task and assign agents
+      // Check localStorage for auth token
+      const authToken = localStorage.getItem('anp_google_auth');
+      if (!authToken) {
+        addSystemMessage('Authentication required. Please sign in to use task router.');
+        setIsRouterActive(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // Call our Task Router API to analyze the query and determine intent
       const response = await fetch('/api/task-router', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: input,
-          minConfidence: 0.7,
+          query: userQuery,
+          authToken: authToken
         }),
       });
       
       if (!response.ok) {
-        throw new Error(`Router API returned ${response.status}`);
+        throw new Error(`Task router API returned ${response.status}`);
       }
       
       const data = await response.json();
       
-      if (!data.tasks || data.tasks.length === 0) {
-        throw new Error('No tasks returned from router');
-      }
+      // Add system message with router decision
+      addSystemMessage(`Query analyzed: Routing to ${data.agent} agent (${Math.round(data.confidence * 100)}% confidence)`);
       
-      // Get the tasks from the API response and update state
-      const tasks: SubTask[] = data.tasks.map((task: any) => {
-        // Find the agent assigned to this task using agent_id
-        const assignedAgent = agents.find(agent => agent.id === task.agent_id) || 
-          // Fallback to a random agent if no specific assignment or agent not found
-          agents[Math.floor(Math.random() * agents.length)];
-          
-        return {
-          id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          description: task.subtask || task.description,
-          agent: assignedAgent,
-          status: 'pending'
-        };
-      });
-      setActiveTasks(tasks);
-      
-      // Add system message - Found agents
-      const agentNames = tasks.map(t => t.agent.name).join(', ');
-      addSystemMessage(`Found ${tasks.length} agents: ${agentNames}`);
-      addSystemMessage('Assigning subtasks to specialized agents...');
-      
-      // Deactivate the router as we're done with task assignment
-      setIsRouterActive(false);
-      
-      // Process each subtask in sequence with delays to simulate work
-      for (const task of tasks) {
-        // Update task status to in-progress
-        setActiveTasks(prev => 
-          prev.map(t => t.id === task.id ? {...t, status: 'in-progress'} : t)
-        );
-        
-        // Add system message - Agent working on task
-        addSystemMessage(`${task.agent.name} is analyzing: ${task.description}`);
-        
-        // Add agent thinking process message
-        const thinkingMessage: Message = {
-          id: `agent-thinking-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-          role: 'agent',
-          content: `Thinking about ${task.description.toLowerCase()}...`,
-          timestamp: new Date(),
-          agentId: task.agent.id,
-          isLoading: true,
-          isThought: true,
-        };
-        
-        setMessages(prev => [...prev, thinkingMessage]);
-        
-        // Simulate agent working (random delay between 1-3 seconds)
-        await new Promise(resolve => 
-          setTimeout(resolve, 1000 + Math.random() * 2000)
-        );
-        
-        // Generate agent response and thought process
-        const response = generateAgentResponse(task);
-        const thoughtProcess = generateThoughtProcess(task);
-        
-        // Update task with response and thought process
-        setActiveTasks(prev => 
-          prev.map(t => t.id === task.id ? 
-            {...t, status: 'completed', response, thoughtProcess} : t)
-        );
-        
-        // Update agent thinking message
-        setMessages(prev => 
-          prev.map(m => 
-            m.id === thinkingMessage.id ?
-            {...m, content: `Completed analysis of ${task.description.toLowerCase()}`, isLoading: false} : m
-          )
-        );
-        
-        // Add system message - Agent completed task
-        addSystemMessage(`${task.agent.name} completed analysis of ${task.description.toLowerCase()}`);
-      }
-      
-      // Add system message - Combining answers
-      addSystemMessage('All subtasks completed. Synthesizing final response...');
-      
-      // Add final synthesized response
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const finalResponse: Message = {
-        id: `router-final-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        role: 'router',
-        content: generateFinalResponse(tasks, input),
-        timestamp: new Date(),
+      // Create a subtask for the chosen agent
+      const agentInfo = determineAgentInfo(data.agent);
+      const task: SubTask = {
+        id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        description: `Process query using ${data.agent} capabilities`,
+        agent: agentInfo,
+        status: 'pending'
       };
       
-      setMessages(prev => [...prev, finalResponse]);
+      setActiveTasks([task]);
+      
+      // Add system message - Assigning task
+      addSystemMessage(`Assigning task to ${agentInfo.name}...`);
+      
+      // Update task status to in-progress
+      setActiveTasks(prev => prev.map(t => 
+        t.id === task.id ? { ...t, status: 'in-progress' } : t
+      ));
+      
+      // Add "thinking" message showing the thought process
+      const thoughtMessageId = `thought-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      const thoughtMessage: Message = {
+        id: thoughtMessageId,
+        role: 'agent',
+        content: 'Analyzing the query and determining the best approach...',
+        timestamp: new Date(),
+        agentId: agentInfo.id,
+        isThought: true,
+        isLoading: true
+      };
+      setMessages(prev => [...prev, thoughtMessage]);
+      
+      // After a short delay, update the thought with more details
+      setTimeout(() => {
+        setMessages(prev => prev.map(m => 
+          m.id === thoughtMessageId ? { 
+            ...m, 
+            content: `Analyzing query related to ${data.agent}. Determining relevant information and appropriate response format.`,
+            isLoading: false
+          } : m
+        ));
+      }, 1500);
+      
+      // Add loading message for the agent response
+      const loadingMessageId = `agent-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      const loadingMessage: Message = {
+        id: loadingMessageId,
+        role: 'agent',
+        content: 'Working on your request...',
+        timestamp: new Date(),
+        agentId: agentInfo.id,
+        isLoading: true
+      };
+      
+      setTimeout(() => {
+        setMessages(prev => [...prev, loadingMessage]);
+      }, 2500);
+      
+      // Add the final result after task has completed
+      setTimeout(() => {
+        // Update task status to completed
+        setActiveTasks(prev => prev.map(t => 
+          t.id === task.id ? { ...t, status: 'completed', response: data.result } : t
+        ));
+        
+        // Replace loading message with actual response
+        setMessages(prev => prev.map(m => 
+          m.id === loadingMessageId ? { 
+            ...m, 
+            content: data.result, 
+            isLoading: false 
+          } : m
+        ));
+        
+        // Add system message - Task completed
+        addSystemMessage('Task completed successfully.');
+        
+        // Reset loading and router states
+        setIsLoading(false);
+        setIsRouterActive(false);
+      }, 3500);
+      
     } catch (error) {
       console.error('Error calling task router:', error);
       
-      // Fallback to structured task generation in case of API failure
-      addSystemMessage('Router encountered an issue. Falling back to local task decomposition...');
+      // Add error message
+      addSystemMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
-      // Generate random subtasks based on the input query (fallback method)
-      const selectedAgentIndices = new Set();
-      while (selectedAgentIndices.size < 3) {
-        selectedAgentIndices.add(Math.floor(Math.random() * agents.length));
-      }
-      
-      const selectedAgents = Array.from(selectedAgentIndices).map(i => agents[i as number]);
-      const queryLower = input.toLowerCase();
-      
-      // Create structured task assignments based on the query and selected agents
-      const structuredTasks = [
-        {
-          subtask: queryLower.includes('legal') || queryLower.includes('compliance') ? 
-            'Analyze legal and regulatory requirements' : 'Research background information',
-          agent_id: selectedAgents[0].id
-        },
-        {
-          subtask: queryLower.includes('financial') || queryLower.includes('cost') ? 
-            'Evaluate financial implications' : 'Analyze domain-specific factors',
-          agent_id: selectedAgents[1].id
-        },
-        {
-          subtask: queryLower.includes('risk') || queryLower.includes('security') ? 
-            'Assess potential risks and mitigations' : 'Provide recommendations and next steps',
-          agent_id: selectedAgents[2].id
-        }
-      ];
-      
-      // Convert structured tasks to SubTask objects
-      const tasks: SubTask[] = structuredTasks.map(task => {
-        const assignedAgent = agents.find(agent => agent.id === task.agent_id) || selectedAgents[0];
-        return {
-          id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          description: task.subtask,
-          agent: assignedAgent,
-          status: 'pending'
-        };
-      });
-      
-      setActiveTasks(tasks);
-      
-      // Add system message - Found agents
-      const agentNames = tasks.map(t => t.agent.name).join(', ');
-      addSystemMessage(`Using fallback agents: ${agentNames}`);
-      
-      // Deactivate the router as we're done with task assignment
+      // Reset states
+      setIsLoading(false);
       setIsRouterActive(false);
-      
-      // Process each subtask in sequence with delays to simulate work
-      for (const task of tasks) {
-        // Update task status to in-progress
-        setActiveTasks(prev => 
-          prev.map(t => t.id === task.id ? {...t, status: 'in-progress'} : t)
-        );
-        
-        // Add system message - Agent working on task
-        addSystemMessage(`${task.agent.name} is analyzing: ${task.description}`);
-        
-        // Add agent thinking process message
-        const thinkingMessage: Message = {
-          id: `agent-thinking-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-          role: 'agent',
-          content: `Thinking about ${task.description.toLowerCase()}...`,
-          timestamp: new Date(),
-          agentId: task.agent.id,
-          isLoading: true,
-          isThought: true,
-        };
-        
-        setMessages(prev => [...prev, thinkingMessage]);
-        
-        // Simulate agent working (random delay between 1-3 seconds)
-        await new Promise(resolve => 
-          setTimeout(resolve, 1000 + Math.random() * 2000)
-        );
-        
-        // Generate agent response and thought process
-        const response = generateAgentResponse(task);
-        const thoughtProcess = generateThoughtProcess(task);
-        
-        // Update task with response and thought process
-        setActiveTasks(prev => 
-          prev.map(t => t.id === task.id ? 
-            {...t, status: 'completed', response, thoughtProcess} : t)
-        );
-        
-        // Update agent thinking message
-        setMessages(prev => 
-          prev.map(m => 
-            m.id === thinkingMessage.id ?
-            {...m, content: `Completed analysis of ${task.description.toLowerCase()}`, isLoading: false} : m
-          )
-        );
-        
-        // Add system message - Agent completed task
-        addSystemMessage(`${task.agent.name} completed analysis of ${task.description.toLowerCase()}`);
-      }
-      
-      // Add system message - Combining answers
-      addSystemMessage('All subtasks completed. Synthesizing final response...');
-      
-      // Add final synthesized response
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const finalResponse: Message = {
-        id: `router-final-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        role: 'router',
-        content: generateFinalResponse(tasks, input),
-        timestamp: new Date(),
-      };
-      
-      setMessages(prev => [...prev, finalResponse]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!input.trim()) {
+      return;
     }
     
-    // Add system message - Protocol completed
-    addSystemMessage('Response synthesis complete. Protocol execution finished.');
+    // Clear input and reset suggestions
+    const userQuery = input;
+    setInput('');
+    setSuggestions([]);
+    setActiveSuggestion(-1);
     
-    setIsLoading(false);
-    
-    // Focus the input after completion
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
+    // Process the task using the task router
+    await processTaskWithRouter(userQuery);
+  };
+
+  // Helper function to determine agent info based on agent ID
+  const determineAgentInfo = (agentId: string): AgentInfo => {
+    // Map agent IDs from task router to agent info in agents.json
+    switch(agentId) {
+      case 'gmail':
+        return agents.find(a => a.id === 'gmail-assistant') || 
+               agents.find(a => a.name.toLowerCase().includes('email')) || 
+               agents[0];
+      case 'lead_qualifier':
+        return agents.find(a => a.id === 'lead-qualifier') || 
+               agents.find(a => a.name.toLowerCase().includes('lead')) || 
+               agents[1];
+      default:
+        // Default to first agent if no match
+        return agents[0];
+    }
   };
 
   // Calculate time elapsed since the first message
@@ -778,8 +678,8 @@ export default function MultiAgentChat() {
                 if (message.role === 'system') {
                   return (
                     <div key={messageKey} className="flex justify-center">
-                      <div className="bg-gray-50 px-4 py-2 rounded-full flex items-center max-w-md">
-                        <Info size={16} className="text-blue-500 mr-2" />
+                      <div className="bg-gray-50 px-4 py-2 rounded-full flex items-center max-w-md border border-gray-200">
+                        <Info size={16} className="text-blue-500 mr-2 flex-shrink-0" />
                         <span className="text-sm text-gray-600">{message.content}</span>
                       </div>
                     </div>
@@ -812,7 +712,11 @@ export default function MultiAgentChat() {
                   return (
                     <div key={messageKey} className="flex">
                       <div className="bg-white border border-purple-200 rounded-lg px-4 py-3 shadow-sm max-w-2xl">
-                        <p className="text-gray-800 whitespace-pre-wrap">{message.content}</p>
+                        <div className="prose prose-sm max-w-none">
+                          <ReactMarkdown>
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
                       </div>
                     </div>
                   );
@@ -827,7 +731,11 @@ export default function MultiAgentChat() {
                     return (
                       <div key={messageKey} className="flex">
                         <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm max-w-2xl">
-                          <p className="text-gray-800">{message.content}</p>
+                          <div className="prose prose-sm max-w-none">
+                            <ReactMarkdown>
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
                         </div>
                       </div>
                     );
