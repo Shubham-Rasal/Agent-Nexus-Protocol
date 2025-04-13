@@ -9,7 +9,6 @@ import TaskRouter from '@/components/TaskRouter';
 import ReactMarkdown from 'react-markdown';
 import { getStorachaService, StorachaItem } from '@/features/agents/leadgen/storacha-service';
 import StorachaOperationIndicator from '@/components/StorachaOperationIndicator';
-import SaveToStorachaButton from '@/components/SaveToStorachaButton';
 import { Message, AgentInfo, SubTask, ChatSession, StorachaOperation } from '@/types/chatTypes';
 
 export default function MultiAgentChat() {
@@ -18,7 +17,7 @@ export default function MultiAgentChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTasks, setActiveTasks] = useState<SubTask[]>([]);
   const [workflowPanelOpen, setWorkflowPanelOpen] = useState(false);
-  const [showExamples, setShowExamples] = useState(true);
+  const [showExamples, setShowExamples] = useState<boolean>(true);
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [showChatHistory, setShowChatHistory] = useState(false);
@@ -37,11 +36,37 @@ export default function MultiAgentChat() {
   const [lastSavedTimestamp, setLastSavedTimestamp] = useState<Date | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   
-
+  // Add this code right after all the state initialization, before the useEffects
+  // Check if we should explicitly be in a new chat state
+  useEffect(() => {
+    // If we have a creating-new-chat flag set, ensure we're really starting fresh
+    if (localStorage.getItem('anp-creating-new-chat') === 'true') {
+      console.log('Creating new chat from flag - clearing state');
+      localStorage.removeItem('anp-current-chat-id');
+      setMessages([]);
+      setActiveTasks([]);
+      setCurrentChatId(null);
+      setShowExamples(true);
+      
+      // We'll clear the flag only after the component is fully mounted and initialized
+      setTimeout(() => {
+        localStorage.removeItem('anp-creating-new-chat');
+      }, 100);
+    }
+  }, []);
   
   // Load chat history from localStorage on component mount
   useEffect(() => {
     const loadChatHistory = () => {
+      // If we're explicitly in a new chat state (marked by a special flag), don't load previous chats
+      if (localStorage.getItem('anp-creating-new-chat') === 'true') {
+        // Clear the flag
+        localStorage.removeItem('anp-creating-new-chat');
+        // Also ensure we have no current chat ID
+        localStorage.removeItem('anp-current-chat-id');
+        return;
+      }
+      
       const savedHistory = localStorage.getItem('anp-chat-history');
       if (savedHistory) {
         try {
@@ -90,7 +115,8 @@ export default function MultiAgentChat() {
   // Save current chat to localStorage when messages change
   useEffect(() => {
     const saveChatToHistory = () => {
-      if (messages.length > 0 && !isLoading) {
+      // Only save if we actually have messages and we're not creating a new chat
+      if (messages.length > 0 && !isLoading && localStorage.getItem('anp-creating-new-chat') !== 'true') {
         // Create a chat ID if we don't have one
         const chatId = currentChatId || `chat-${Date.now()}`;
         
@@ -121,74 +147,91 @@ export default function MultiAgentChat() {
           updatedHistory = [updatedChat, ...updatedHistory];
         }
         
-        // Update state
-        setChatHistory(updatedHistory);
-        setCurrentChatId(chatId);
+        // Check if the history actually changed to avoid unnecessary updates
+        const historyChanged = JSON.stringify(updatedHistory) !== JSON.stringify(chatHistory);
         
-        // Save to localStorage
-        localStorage.setItem('anp-chat-history', JSON.stringify(updatedHistory));
-        localStorage.setItem('anp-current-chat-id', chatId);
+        // Only update state if there are actual changes
+        if (historyChanged) {
+          // Update state
+          setChatHistory(updatedHistory);
+          setCurrentChatId(chatId);
+          
+          // Save to localStorage
+          localStorage.setItem('anp-chat-history', JSON.stringify(updatedHistory));
+          localStorage.setItem('anp-current-chat-id', chatId);
+        } else {
+          // Just ensure the current chat ID is set correctly
+          if (currentChatId !== chatId) {
+            setCurrentChatId(chatId);
+            localStorage.setItem('anp-current-chat-id', chatId);
+          }
+        }
         
         return updatedChat;
       }
       return null;
     };
     
-    // Only save completed messages (wait until loading is done)
     if (!isLoading) {
       saveChatToHistory();
     }
-  }, [messages, activeTasks, isLoading, currentChatId]);
+  }, [messages, activeTasks, isLoading, currentChatId]); // Remove chatHistory from dependencies
   
   // Load Storacha items when component mounts
   useEffect(() => {
-    const loadStorachaItems = async () => {
+    // Initial load of Storacha items (but only for item listing, not auto-loading chats)
+    const initialLoadOnly = async () => {
       try {
         const storachaService = getStorachaService();
-        
-        // Get all storacha items
         const allItems = await storachaService.getAllItems();
         setStorachaItems(allItems);
         
-        // Filter for chat objects specifically
-        const chatItems = allItems.filter(item => 
-          item.agentId === 'chat' && 
-          item.dataType === 'metadata' &&
-          item.metadata?.chatId
-        );
-        
-        // If we have chat items and no current chat is loaded, load the most recent one
-        if (chatItems.length > 0 && messages.length === 0 && !currentChatId) {
-          try {
-            // Sort by timestamp descending
-            const sortedChats = chatItems.sort((a, b) => {
-              const timestampA = a.metadata?.timestamp || 0;
-              const timestampB = b.metadata?.timestamp || 0;
-              return timestampB - timestampA;
-            });
-            
-            // Get the most recent chat
-            const mostRecentChat = sortedChats[0];
-            
-            // Parse the chat object from the content
-            const chatObject = JSON.parse(mostRecentChat.content);
-            
-            // Convert timestamps back to Date objects
-            const processedMessages = chatObject.messages.map((msg: any) => ({
-              ...msg,
-              timestamp: new Date(msg.timestamp)
-            }));
-            
-            // Load the chat into the UI
-            setMessages(processedMessages);
-            setCurrentChatId(chatObject.id);
-            
-            // Add a system message indicating chat was loaded from Storacha
-            addSystemMessage(`Loaded chat from Storacha storage (ID: ${chatObject.id})`);
-            setIsSavedToStoracha(true);
-            setLastSavedTimestamp(new Date(chatObject.timestamp));
-          } catch (parseError) {
-            console.error('Error parsing chat data from Storacha:', parseError);
+        // Only load a chat if we have no messages, no current chat ID, and no creating-new-chat flag
+        if (messages.length === 0 && 
+            currentChatId === null && 
+            localStorage.getItem('anp-creating-new-chat') !== 'true') {
+          
+          // Filter for chat objects specifically
+          const chatItems = allItems.filter(item => 
+            item.agentId === 'chat' && 
+            item.dataType === 'metadata' &&
+            item.metadata?.chatId
+          );
+          
+          // If we have chat items and no current chat is loaded, load the most recent one
+          if (chatItems.length > 0) {
+            try {
+              // Sort by timestamp descending
+              const sortedChats = chatItems.sort((a, b) => {
+                const timestampA = a.metadata?.timestamp || 0;
+                const timestampB = b.metadata?.timestamp || 0;
+                return timestampB - timestampA;
+              });
+              
+              // Get the most recent chat
+              const mostRecentChat = sortedChats[0];
+              
+              // Parse the chat object from the content
+              const chatObject = JSON.parse(mostRecentChat.content);
+              
+              // Convert timestamps back to Date objects
+              const processedMessages = chatObject.messages.map((msg: any) => ({
+                ...msg,
+                timestamp: new Date(msg.timestamp)
+              }));
+              
+              // Load the chat into the UI
+              setMessages(processedMessages);
+              setCurrentChatId(chatObject.id);
+              
+              // Add a system message indicating chat was loaded from Storacha
+              addSystemMessage(`Loaded chat from Storacha storage (ID: ${chatObject.id})`);
+              setIsSavedToStoracha(true);
+              setLastSavedTimestamp(new Date(chatObject.timestamp));
+              setShowExamples(false);
+            } catch (parseError) {
+              console.error('Error parsing chat data from Storacha:', parseError);
+            }
           }
         }
       } catch (error) {
@@ -196,39 +239,76 @@ export default function MultiAgentChat() {
       }
     };
     
-    loadStorachaItems();
+    initialLoadOnly();
     
-    // Set up interval to refresh Storacha items periodically
-    const intervalId = setInterval(loadStorachaItems, 30000); // Every 30 seconds
-    
-    return () => clearInterval(intervalId);
   }, []);
   
-  // Helper function to start a new chat
+  // Initialize localStorage-dependent state after component mounts (client-side only)
+  useEffect(() => {
+    // Now it's safe to access localStorage (browser-only)
+    const creatingNewChat = localStorage.getItem('anp-creating-new-chat') === 'true';
+    setShowExamples(creatingNewChat || showExamples);
+  }, []);
+  
+  // Fix the startNewChat function to be more aggressive at clearing state
   const startNewChat = () => {
-    // Save current chat first if needed
-    if (messages.length > 0) {
-      saveChatToHistory();
-    }
+    console.log('Starting new chat - clearing state and setting flag');
     
-    // Clear current chat state
-    setMessages([]);
-    setActiveTasks([]);
-    
-    // Set the current chat ID to null explicitly to prevent opening old chats
-    setCurrentChatId(null);
+    // Set flag FIRST before any state changes to prevent race conditions
+    localStorage.setItem('anp-creating-new-chat', 'true');
     localStorage.removeItem('anp-current-chat-id');
     
-    // Reset Storacha status
+    // Save current chat first if needed
+    if (messages.length > 0) {
+      // Save the current chat to history before starting a new one
+      const currentChat: ChatSession = {
+        id: currentChatId || `chat-${Date.now()}`,
+        title: messages.find(m => m.role === 'user')?.content.substring(0, 40) || 'New Chat',
+        timestamp: new Date(),
+        messages: messages,
+        activeTasks: activeTasks
+      };
+      
+      // Update chat history
+      let updatedHistory = [...chatHistory];
+      const existingIndex = updatedHistory.findIndex(chat => chat.id === currentChat.id);
+      
+      if (existingIndex >= 0) {
+        updatedHistory[existingIndex] = currentChat;
+      } else {
+        updatedHistory = [currentChat, ...updatedHistory];
+      }
+      
+      // Update state and localStorage
+      setChatHistory(updatedHistory);
+      localStorage.setItem('anp-chat-history', JSON.stringify(updatedHistory));
+    }
+    
+    // Clear ALL state that could influence chat display
+    setMessages([]);
+    setActiveTasks([]);
+    setCurrentChatId(null);
+    localStorage.removeItem('anp-current-chat-id');
     setIsSavedToStoracha(false);
     setLastSavedTimestamp(null);
+    setShowExamples(true);
     
-    // Hide the examples after starting a new chat
-    setShowExamples(false);
+    // Focus on input for new message
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    
+    // Force the examples to show up
+    setTimeout(() => {
+      setShowExamples(true);
+    }, 100);
   };
 
   // Helper function to select a chat from history
   const selectChat = (chatId: string) => {
+    // Clear any new chat flag
+    localStorage.removeItem('anp-creating-new-chat');
+    
     const selectedChat = chatHistory.find(chat => chat.id === chatId);
     if (selectedChat) {
       setMessages(selectedChat.messages);
@@ -238,6 +318,9 @@ export default function MultiAgentChat() {
       
       // Save this as the current chat
       localStorage.setItem('anp-current-chat-id', chatId);
+      
+      // Hide examples when loading a chat
+      setShowExamples(false);
     }
   };
 
@@ -671,6 +754,9 @@ export default function MultiAgentChat() {
   // Add this function with the other utility functions
   const loadChatFromStoracha = async (storachaItemId: string) => {
     try {
+      // Clear any new chat flag
+      localStorage.removeItem('anp-creating-new-chat');
+
       const storachaService = getStorachaService();
       
       // Get the item from Storacha
@@ -775,13 +861,13 @@ export default function MultiAgentChat() {
     }
   };
 
-  // Now update the StorachaPanel component to show saved chats
+  // Update the StorachaPanel component to show both local and Storacha chats
   const StorachaPanel = () => {
     // If not showing the panel, return null
     if (!showStorachaPanel) return null;
     
-    // Filter for chat items
-    const chatItems = storachaItems.filter(item => 
+    // Filter for Storacha chat items
+    const storachaChats = storachaItems.filter(item => 
       item.agentId === 'chat' && 
       item.dataType === 'metadata' &&
       item.metadata?.chatId
@@ -791,11 +877,64 @@ export default function MultiAgentChat() {
       return timestampB - timestampA;
     });
     
+    // Get local chats that aren't in Storacha yet
+    // Extract Storacha chat IDs for comparison
+    const storachaChatIds = storachaChats.map(item => {
+      try {
+        const chatObj = JSON.parse(item.content);
+        return chatObj.id;
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+    
+    // Filter localStorage chats that aren't in Storacha
+    const localOnlyChats = chatHistory.filter(chat => 
+      !storachaChatIds.includes(chat.id)
+    ).sort((a, b) => 
+      b.timestamp.getTime() - a.timestamp.getTime()
+    );
+    
+    // Function to render a chat card
+    const renderChatCard = (
+      id: string, 
+      title: string, 
+      messageCount: number, 
+      timestamp: Date, 
+      isLocal: boolean,
+      onClick: () => void
+    ) => (
+      <div
+        key={id}
+        className={`p-4 border ${isLocal ? 'border-amber-200 bg-amber-50 hover:bg-amber-100' : 'border-gray-200 hover:bg-gray-50'} rounded-md cursor-pointer transition-colors`}
+        onClick={onClick}
+      >
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
+              {title}
+            </p>
+            {isLocal && (
+              <span className="text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full">Local</span>
+            )}
+          </div>
+          <div className="flex justify-between items-center">
+            <p className="text-xs text-gray-500">
+              {messageCount} messages
+            </p>
+            <p className="text-xs text-gray-400">
+              {timestamp.toLocaleDateString()} {timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+    
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Storacha Storage</h2>
+            <h2 className="text-xl font-semibold text-gray-800">Chat Storage</h2>
             <button
               onClick={() => setShowStorachaPanel(false)}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
@@ -806,13 +945,79 @@ export default function MultiAgentChat() {
             </button>
           </div>
 
+          {/* Storage summary */}
+          <div className="mb-4 bg-gray-50 p-3 rounded-md flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                <span className="font-medium">{localOnlyChats.length}</span> local chats, 
+                <span className="font-medium ml-1">{storachaChats.length}</span> in Storacha
+              </p>
+            </div>
+            <button
+              onClick={syncChatsToStoracha}
+              disabled={isSyncing || localOnlyChats.length === 0}
+              className={`
+                text-xs px-3 py-1 rounded-md
+                ${isSyncing || localOnlyChats.length === 0 ? 'bg-gray-100 text-gray-400' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'} 
+              `}
+            >
+              {isSyncing ? 'Syncing...' : 'Sync All'}
+            </button>
+          </div>
+
+          {/* Local chats section */}
+          {localOnlyChats.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <h3 className="text-lg font-medium">Local Chats</h3>
+                <span className="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                  Not synced to Storacha
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {localOnlyChats.map(chat => {
+                  // Get the first user message as a preview
+                  const firstUserMsg = chat.messages.find(m => m.role === 'user');
+                  const title = firstUserMsg 
+                    ? (firstUserMsg.content.length > 60 
+                      ? firstUserMsg.content.substring(0, 60) + '...' 
+                      : firstUserMsg.content)
+                    : chat.title || 'Untitled Chat';
+                  
+                  return renderChatCard(
+                    chat.id,
+                    title,
+                    chat.messages.length,
+                    chat.timestamp,
+                    true,
+                    () => {
+                      // Clear any new chat flag
+                      localStorage.removeItem('anp-creating-new-chat');
+                      
+                      // Load from local storage
+                      setMessages(chat.messages);
+                      setActiveTasks(chat.activeTasks || []);
+                      setCurrentChatId(chat.id);
+                      localStorage.setItem('anp-current-chat-id', chat.id);
+                      setShowStorachaPanel(false);
+                      
+                      // Hide examples when loading a chat
+                      setShowExamples(false);
+                    }
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Storacha chats section */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-3">Saved Chats</h3>
-            {chatItems.length === 0 ? (
-              <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-md">No saved chats found.</p>
+            <h3 className="text-lg font-medium mb-3">Storacha Chats</h3>
+            {storachaChats.length === 0 ? (
+              <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-md">No chats found in Storacha storage.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {chatItems.map(item => {
+                {storachaChats.map(item => {
                   try {
                     const chatObject = JSON.parse(item.content);
                     const messageCount = chatObject.messages?.length || 0;
@@ -824,26 +1029,13 @@ export default function MultiAgentChat() {
                       ? firstUserMessage.substring(0, 60) + '...' 
                       : firstUserMessage;
                     
-                    return (
-                      <div
-                        key={item.id}
-                        className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => loadChatFromStoracha(item.id)}
-                      >
-                        <div className="flex flex-col">
-                          <p className="text-sm font-medium mb-1 text-gray-800">
-                            {preview || chatObject.id}
-                          </p>
-                          <div className="flex justify-between items-center">
-                            <p className="text-xs text-gray-500">
-                              {messageCount} messages
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {timestamp.toLocaleDateString()} {timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    return renderChatCard(
+                      item.id,
+                      preview || chatObject.id,
+                      messageCount,
+                      timestamp,
+                      false,
+                      () => loadChatFromStoracha(item.id)
                     );
                   } catch (error) {
                     // Handle parsing errors gracefully
@@ -938,6 +1130,22 @@ export default function MultiAgentChat() {
   const syncChatsToStoracha = async () => {
     if (isSyncing) return;
     
+    // Get local chat history for count
+    const localHistory = JSON.parse(localStorage.getItem('anp-chat-history') || '[]');
+    if (localHistory.length === 0) {
+      addSystemMessage('No local chats to sync.');
+      return;
+    }
+    
+    // Show confirmation dialog
+    const shouldSync = window.confirm(
+      `This will sync ${localHistory.length} local chats to Storacha storage. Continue?`
+    );
+    
+    if (!shouldSync) {
+      return;
+    }
+    
     setIsSyncing(true);
     addSystemMessage('Syncing local chats to Storacha storage...');
     
@@ -950,14 +1158,6 @@ export default function MultiAgentChat() {
       } catch (error) {
         console.error('Error getting delegation:', error);
         addSystemMessage('Failed to get storage access permission');
-        setIsSyncing(false);
-        return;
-      }
-      
-      // Get local chat history
-      const localHistory = JSON.parse(localStorage.getItem('anp-chat-history') || '[]');
-      if (localHistory.length === 0) {
-        addSystemMessage('No local chats to sync.');
         setIsSyncing(false);
         return;
       }
@@ -999,7 +1199,7 @@ export default function MultiAgentChat() {
           const chatObject = {
             id: chat.id,
             timestamp: chat.timestamp.getTime(),
-            messages: chat.messages.map(msg => ({
+            messages: chat.messages.map((msg: Message) => ({
               id: msg.id,
               role: msg.role,
               content: msg.content,
@@ -1008,8 +1208,8 @@ export default function MultiAgentChat() {
               isThought: msg.isThought || false
             })),
             agentIds: Array.from(new Set(chat.messages
-              .filter(msg => msg.agentId)
-              .map(msg => msg.agentId))) as string[]
+              .filter((msg: Message) => msg.agentId)
+              .map((msg: Message) => msg.agentId))) as string[]
           };
           
           // Store in Storacha
@@ -1060,7 +1260,8 @@ export default function MultiAgentChat() {
         setLastSavedTimestamp(new Date());
         
         // Refresh Storacha items
-        loadStorachaItems();
+        const items = await storachaService.getAllItems();
+        setStorachaItems(items);
       } else {
         addSystemMessage('No new chats needed to be synced.');
       }
@@ -1233,12 +1434,17 @@ export default function MultiAgentChat() {
             
             {/* Save to Storacha button */}
             {messages.length > 0 && (
-              <SaveToStorachaButton 
-                messages={messages}
-                onSuccess={handleSaveSuccess}
-                onError={handleSaveError}
-                onSaveStart={handleSaveStart}
-              />
+              <>
+                <SaveToStorachaButton 
+                  messages={messages}
+                  onSuccess={handleSaveSuccess}
+                  onError={handleSaveError}
+                  onSaveStart={handleSaveStart}
+                />
+                {chatHistory.length > 0 && (
+                  <SyncButton />
+                )}
+              </>
             )}
             
             {activeTasks.length > 0 && (
