@@ -9,10 +9,12 @@ Agent Nexus Protocol (ANP) is a unique way for AI agent to collaborate with each
 
 ## 🚀 Features
 
-- **Standardized Communication Protocol**: Define and implement a common interface for AI agents to communicate
-- **Intelligent Routing**: Directs queries to the most capable agent based on expertise and context.
-- **Chain of Thought Sharing**: Agents can share their reasoning process, enabling transparent collaboration.
-- **Decentralized Knowledge**: A distributed system where each agent maintains specialized knowledge while contributing to a collective intelligence.
+- **Standardized Collaboration Protocol**: We've created an interface for AI agents to collaborate with each other, making it possible for different types of agents to work together seamlessly. This shared interface allows agents to exchange information, requests, and results in a structured way that any agent in the network can understand.
+
+- **Intelligent Routing**: Our system acts like a smart traffic controller, figuring out which agent is best suited for each part of a complex task. When you ask a question, the router analyzes what you need and sends your request to the agent with the right expertise - whether that's researching information, drafting emails, or analyzing data.
+
+- **Chain of Thought Sharing**: Instead of just sharing final answers, our agents share their thinking process along the way. This transparency means other agents can see not just what conclusion was reached, but how and why - making collaboration much more effective and allowing agents to build on each other's reasoning.
+
 
 ## Sponsors
 
@@ -55,18 +57,10 @@ Check out our collaboration system in [storacha-tool.ts](https://github.com/Shub
 ```bash
 git clone https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol
 cd ANP---Agent-Nexus-Protocol
+npm install
+npm run dev
 ```
 
-
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-## 🔒 Security
-
-Security is a top priority. Please report any vulnerabilities to security@yourdomain.com.
 
 ## 📄 License
 
@@ -77,17 +71,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 This project was created during [Hackathon Name] by [Team Name]. Our goal was to create a standardized protocol for agent communication that could revolutionize how AI agents interact and collaborate.
 
 ### Team Members
-- [Your Name]
-- [Team Member 2]
-- [Team Member 3]
+- [Shubham Rasal](https://github.com/Shubham-Rasal)
+- [Abhayjit Singh](https://github.com/abhayjit07)
+- [Subhojit Karmakar](https://github.com/subhojit26)
 
-## 📞 Contact
-
-For questions and support, please:
-- Open an issue on GitHub
-- Join our [Discord community](https://discord.gg/yourinvitelink)
-- Email us at team@yourdomain.com
-
----
-
-Made with ❤️ by [Your Team Name]
