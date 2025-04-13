@@ -1,4 +1,3 @@
-
 export async function akaveStorageTool(params: {
   bucketName: string;
   operation: 'list' | 'info' | 'download' | 'upload';
@@ -66,13 +65,15 @@ export async function akaveStorageTool(params: {
         response = await fetch(`${API_BASE_URL}${endpoint}`);
         const blob = await response.blob();
         
-        // Create a download URL
-        const url = URL.createObjectURL(blob);
+        // Read the file content instead of creating a download URL
+        const fileContent = await blob.text();
         return {
           success: true,
           data: {
-            downloadUrl: url,
-            fileName: params.fileName
+            content: fileContent,
+            fileName: params.fileName,
+            contentType: blob.type,
+            size: blob.size
           }
         };
         

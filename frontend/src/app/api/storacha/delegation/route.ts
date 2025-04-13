@@ -10,28 +10,46 @@ let clientPromise: Promise<any> | null = null;
 
 // Initialize the client - this function will be called only once
 async function initializeClient() {
-  // Replace with your actual private key and proof from environment variables
-  const privateKey = process.env.STORACHA_PRIVATE_KEY;
-  const proof = process.env.STORACHA_PROOF;
-
-  if (!privateKey || !proof) {
-    throw new Error("Missing STORACHA_PRIVATE_KEY or STORACHA_PROOF environment variables");
-  }
-
   try {
-    // Create client with the saved credentials
-    console.log(privateKey, proof);
-    const principal = Signer.parse("MgCanMIYIDocQ7UHiNRItNESJ09XMftb27p190zbE/vDaJe0BD/CePC0NXUu6AOoYuHKzDBqZ9sHPvmrKBCKfmbjYhVc=");
-    const store = new StoreMemory();
-    const client = await create({ principal, store });
+    // Get credentials from environment variables
+    const privateKey = process.env.STORACHA_PRIVATE_KEY;
+    const proof = process.env.STORACHA_PROOF;
+
+    // Validate the environment variables
+    if (!privateKey || !proof) {
+      throw new Error("Missing STORACHA_PRIVATE_KEY or STORACHA_PROOF environment variables");
+    }
+
+    console.log("Using private key length:", privateKey.length);
     
-    // Add proof that this agent has been delegated capabilities on the space
-    const parsedProof = await Proof.parse(proof);
-    const space = await client.addSpace(parsedProof);
-    await client.setCurrentSpace(space.did());
-    console.log("Storacha client initialized successfully");
+    // Check for valid key format - should be base64 encoded and have appropriate length
+    if (!privateKey.endsWith('=') || privateKey.length < 50) {
+      throw new Error("Private key appears to be incorrectly formatted");
+    }
     
-    return client;
+    try {
+      // Create client with the saved credentials
+      const principal = Signer.parse(privateKey);
+      const store = new StoreMemory();
+      const client = await create({ principal, store });
+      
+      // Add proof that this agent has been delegated capabilities on the space
+      const parsedProof = await Proof.parse(proof);
+      const space = await client.addSpace(parsedProof);
+      await client.setCurrentSpace(space.did());
+      console.log("Storacha client initialized successfully");
+      
+      return client;
+    } catch (parseError) {
+      console.error("Failed to parse credentials:", parseError);
+      
+      // Fallback to standard client creation if credentials parsing fails
+      console.log("Falling back to standard client initialization...");
+      const client = await create();
+      
+      // This will prompt for email login but at least won't crash
+      return client;
+    }
   } catch (error) {
     console.error("Failed to initialize Storacha client:", error);
     throw error;
@@ -97,10 +115,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET handler - just for testing if the API is working
-export async function GET() {
-  return NextResponse.json(
-    { status: "Storacha delegation API is running" },
-    { status: 200 }
-  );
-}
