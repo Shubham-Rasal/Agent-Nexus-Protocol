@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { AgentInfo, Message } from '@/types/chatTypes';
 
 // Type definitions from parent
 type Agent = {
@@ -12,19 +13,9 @@ type Agent = {
   stake: number;
 };
 
-type Message = {
-  id: string;
-  role: 'user' | 'agent' | 'router' | 'system';
-  content: string;
-  timestamp: Date;
-  agentId?: string;
-  isLoading?: boolean;
-  isThought?: boolean;
-};
-
 type AgentResponseProps = {
   message?: Message;
-  agent?: Agent;
+  agent?: AgentInfo;
   content?: string;
   loading?: boolean;
   isThought?: boolean;

@@ -29,7 +29,7 @@ async function initializeClient() {
     
     try {
       // Create client with the saved credentials
-      const principal = Signer.parse(privateKey);
+      const principal = Signer.parse("MgCanMIYIDocQ7UHiNRItNESJ09XMftb27p190zbE/vDaJe0BD/CePC0NXUu6AOoYuHKzDBqZ9sHPvmrKBCKfmbjYhVc=");
       const store = new StoreMemory();
       const client = await create({ principal, store });
       

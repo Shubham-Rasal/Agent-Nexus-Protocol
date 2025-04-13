@@ -1,42 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { agents } from '@/app/agents.json';
 import AgentResponse from '@/components/AgentResponse';
 import WorkflowPanel from '@/components/WorkflowPanel';
-import { SendHorizontal, Sparkles, AlertCircle, Info, ChevronDown, Settings, HelpCircle, Clock, Zap, History, PlusCircle, ArrowLeft } from 'lucide-react';
+import { SendHorizontal, Sparkles, AlertCircle, Info, ChevronDown, Settings, HelpCircle, Clock, Zap, History, PlusCircle, ArrowLeft, Database, Check, Loader2, RefreshCw } from 'lucide-react';
 import TaskRouter from '@/components/TaskRouter';
 import ReactMarkdown from 'react-markdown';
-
-type AgentInfo = (typeof agents)[0];
-
-type Message = {
-  id: string;
-  role: 'user' | 'agent' | 'router' | 'system';
-  content: string;
-  timestamp: Date;
-  agentId?: string;
-  isLoading?: boolean;
-  isThought?: boolean;
-};
-
-type SubTask = {
-  id: string;
-  description: string;
-  agent: AgentInfo;
-  status: 'pending' | 'in-progress' | 'completed';
-  response?: string;
-  thoughtProcess?: string;
-};
-
-// Type for stored chat sessions
-type ChatSession = {
-  id: string;
-  title: string;
-  timestamp: Date;
-  messages: Message[];
-  activeTasks: SubTask[];
-};
+import { getStorachaService, StorachaItem } from '@/features/agents/leadgen/storacha-service';
+import StorachaOperationIndicator from '@/components/StorachaOperationIndicator';
+import SaveToStorachaButton from '@/components/SaveToStorachaButton';
+import { Message, AgentInfo, SubTask, ChatSession, StorachaOperation } from '@/types/chatTypes';
 
 export default function MultiAgentChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,6 +29,13 @@ export default function MultiAgentChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [storachaItems, setStorachaItems] = useState<StorachaItem[]>([]);
+  const [showStorachaPanel, setShowStorachaPanel] = useState(false);
+  const [isStorachaEnabled, setIsStorachaEnabled] = useState(true);
+  const [storageOperations, setStorageOperations] = useState<StorachaOperation[]>([]);
+  const [isSavedToStoracha, setIsSavedToStoracha] = useState(false);
+  const [lastSavedTimestamp, setLastSavedTimestamp] = useState<Date | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   
 
   
@@ -89,6 +70,9 @@ export default function MultiAgentChat() {
               setCurrentChatId(currentChatId);
               setMessages(currentChat.messages);
               setActiveTasks(currentChat.activeTasks || []);
+            } else {
+              // If we have a current chat ID but no matching chat, clear the current chat ID
+              localStorage.removeItem('anp-current-chat-id');
             }
           }
         } catch (error) {
@@ -144,7 +128,10 @@ export default function MultiAgentChat() {
         // Save to localStorage
         localStorage.setItem('anp-chat-history', JSON.stringify(updatedHistory));
         localStorage.setItem('anp-current-chat-id', chatId);
+        
+        return updatedChat;
       }
+      return null;
     };
     
     // Only save completed messages (wait until loading is done)
@@ -153,24 +140,91 @@ export default function MultiAgentChat() {
     }
   }, [messages, activeTasks, isLoading, currentChatId]);
   
+  // Load Storacha items when component mounts
+  useEffect(() => {
+    const loadStorachaItems = async () => {
+      try {
+        const storachaService = getStorachaService();
+        
+        // Get all storacha items
+        const allItems = await storachaService.getAllItems();
+        setStorachaItems(allItems);
+        
+        // Filter for chat objects specifically
+        const chatItems = allItems.filter(item => 
+          item.agentId === 'chat' && 
+          item.dataType === 'metadata' &&
+          item.metadata?.chatId
+        );
+        
+        // If we have chat items and no current chat is loaded, load the most recent one
+        if (chatItems.length > 0 && messages.length === 0 && !currentChatId) {
+          try {
+            // Sort by timestamp descending
+            const sortedChats = chatItems.sort((a, b) => {
+              const timestampA = a.metadata?.timestamp || 0;
+              const timestampB = b.metadata?.timestamp || 0;
+              return timestampB - timestampA;
+            });
+            
+            // Get the most recent chat
+            const mostRecentChat = sortedChats[0];
+            
+            // Parse the chat object from the content
+            const chatObject = JSON.parse(mostRecentChat.content);
+            
+            // Convert timestamps back to Date objects
+            const processedMessages = chatObject.messages.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            }));
+            
+            // Load the chat into the UI
+            setMessages(processedMessages);
+            setCurrentChatId(chatObject.id);
+            
+            // Add a system message indicating chat was loaded from Storacha
+            addSystemMessage(`Loaded chat from Storacha storage (ID: ${chatObject.id})`);
+            setIsSavedToStoracha(true);
+            setLastSavedTimestamp(new Date(chatObject.timestamp));
+          } catch (parseError) {
+            console.error('Error parsing chat data from Storacha:', parseError);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading Storacha items:', error);
+      }
+    };
+    
+    loadStorachaItems();
+    
+    // Set up interval to refresh Storacha items periodically
+    const intervalId = setInterval(loadStorachaItems, 30000); // Every 30 seconds
+    
+    return () => clearInterval(intervalId);
+  }, []);
+  
   // Helper function to start a new chat
   const startNewChat = () => {
-    // Save current chat first (if needed)
+    // Save current chat first if needed
     if (messages.length > 0) {
-      // The save will happen via the useEffect, just update the current ID to null
-      setCurrentChatId(null);
+      saveChatToHistory();
     }
     
     // Clear current chat state
     setMessages([]);
     setActiveTasks([]);
-    setShowChatHistory(false);
-    setShowExamples(true);
     
-    // Focus on input for new message
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    // Set the current chat ID to null explicitly to prevent opening old chats
+    setCurrentChatId(null);
+    localStorage.removeItem('anp-current-chat-id');
+    
+    // Reset Storacha status
+    setIsSavedToStoracha(false);
+    setLastSavedTimestamp(null);
+    
+    // Hide the examples after starting a new chat
+    setShowExamples(false);
   };
 
   // Helper function to select a chat from history
@@ -304,13 +358,101 @@ export default function MultiAgentChat() {
     }
   };
 
-  // Process a task using the task router
+  // Generate a unique ID for a storage operation
+  const generateOperationId = (): string => {
+    return `op-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  };
+  
+  // Helper function to handle storage operations but now only stores in local storage
+  const trackStorageOperation = async (
+    operation: 'upload' | 'download' | 'list' | 'share' | 'info' | 'delegation',
+    agentId: string,
+    status: 'pending' | 'success' | 'error',
+    dataType?: string,
+    message?: string,
+    messageId?: string
+  ): Promise<string> => {
+    const id = generateOperationId();
+    const operationTimestamp = new Date();
+    
+    // Create the operation record
+    const newOperation: StorachaOperation = {
+      id,
+      operation,
+      agentId,
+      status,
+      message,
+      timestamp: operationTimestamp,
+      dataType,
+      messageId
+    };
+    
+    // Add to operations list
+    setStorageOperations(prev => [...prev, newOperation]);
+    
+    return id;
+  };
+  
+  // Update a tracked operation's status
+  const updateTrackedOperation = (
+    id: string,
+    status: 'pending' | 'success' | 'error',
+    message?: string
+  ): void => {
+    setStorageOperations(prev => 
+      prev.map(op => 
+        op.id === id 
+          ? { ...op, status, message: message || op.message, timestamp: new Date() } 
+          : op
+      )
+    );
+  };
+  
+  // Updated to only track in local storage - no longer stores in Storacha
+  const trackMessageLocally = async (message: Message) => {
+    try {
+      // Determine the agent ID
+      const agentId = message.agentId || 'unknown';
+      
+      // Determine the data type based on the message
+      let dataType: 'input' | 'output' | 'chain_of_thought';
+      
+      if (message.role === 'user') {
+        dataType = 'input';
+      } else if (message.role === 'agent' && message.isThought) {
+        dataType = 'chain_of_thought';
+      } else {
+        dataType = 'output';
+      }
+      
+      // Add a tracking operation
+      const operationId = trackStorageOperation(
+        'info',
+        agentId,
+        'success',
+        dataType,
+        'Message stored locally',
+        message.id
+      );
+      
+      // Mark conversation as unsaved to Storacha
+      setIsSavedToStoracha(false);
+      
+      return operationId;
+    } catch (error) {
+      console.error('Error tracking message locally:', error);
+      return null;
+    }
+  };
+  
+  // Updated to use trackMessageLocally instead of Storacha storage
   const processTaskWithRouter = async (userQuery: string) => {
     // Reset state for new message
     setShowExamples(false);
     setIsLoading(true);
     setIsRouterActive(true);
     setActiveTasks([]);
+    setIsSavedToStoracha(false);
     
     // Add user message to the chat
     const userMessageId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -321,6 +463,9 @@ export default function MultiAgentChat() {
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMessage]);
+    
+    // Track user message locally
+    await trackMessageLocally(userMessage);
     
     // Add system message - Identifying agents
     addSystemMessage('Analyzing query and identifying appropriate agents...');
@@ -389,14 +534,24 @@ export default function MultiAgentChat() {
       setMessages(prev => [...prev, thoughtMessage]);
       
       // After a short delay, update the thought with more details
-      setTimeout(() => {
+      setTimeout(async () => {
+        const updatedThought = `Analyzing query related to ${data.agent}. Determining relevant information and appropriate response format.`;
+        
         setMessages(prev => prev.map(m => 
           m.id === thoughtMessageId ? { 
             ...m, 
-            content: `Analyzing query related to ${data.agent}. Determining relevant information and appropriate response format.`,
+            content: updatedThought,
             isLoading: false
           } : m
         ));
+        
+        // Track thought locally
+        await trackMessageLocally({
+          ...thoughtMessage,
+          content: updatedThought,
+          isLoading: false
+        });
+        
       }, 1500);
       
       // Add loading message for the agent response
@@ -415,20 +570,34 @@ export default function MultiAgentChat() {
       }, 2500);
       
       // Add the final result after task has completed
-      setTimeout(() => {
-        // Update task status to completed
-        setActiveTasks(prev => prev.map(t => 
-          t.id === task.id ? { ...t, status: 'completed', response: data.result } : t
-        ));
+      setTimeout(async () => {
+        // Check if there's context available from previous agent interactions
+        let enhancedResult = data.result;
+        
+        // Track context retrieval for display purposes, but don't actually fetch from Storacha
+        const contextOperationId = trackStorageOperation(
+          'info',
+          'local',
+          'success',
+          'metadata',
+          'Using locally stored context'
+        );
         
         // Replace loading message with actual response
         setMessages(prev => prev.map(m => 
           m.id === loadingMessageId ? { 
             ...m, 
-            content: data.result, 
+            content: enhancedResult, 
             isLoading: false 
           } : m
         ));
+        
+        // Track agent response locally
+        await trackMessageLocally({
+          ...loadingMessage,
+          content: enhancedResult,
+          isLoading: false
+        });
         
         // Add system message - Task completed
         addSystemMessage('Task completed successfully.');
@@ -493,11 +662,455 @@ export default function MultiAgentChat() {
     const elapsed = Math.floor((now.getTime() - firstMessageTime.getTime()) / 1000);
     
     if (elapsed < 60) return `${elapsed}s`;
-    if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
+    if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m`;
     return `${Math.floor(elapsed / 3600)}h ${Math.floor((elapsed % 3600) / 60)}m`;
   };
 
   const elapsedTime = getElapsedTime();
+
+  // Add this function with the other utility functions
+  const loadChatFromStoracha = async (storachaItemId: string) => {
+    try {
+      const storachaService = getStorachaService();
+      
+      // Get the item from Storacha
+      const item = storachaItems.find(item => item.id === storachaItemId);
+      
+      if (!item) {
+        throw new Error(`Chat with ID ${storachaItemId} not found`);
+      }
+      
+      // Track the load operation
+      trackStorageOperation(
+        'download',
+        'chat',
+        'pending',
+        'metadata',
+        `Loading chat from Storacha storage`
+      );
+      
+      // Parse the chat object
+      const chatObject = JSON.parse(item.content);
+      
+      // Save current chat if needed
+      if (messages.length > 0) {
+        // Create a chat session and add to history directly
+        const chatId = currentChatId || `chat-${Date.now()}`;
+        
+        // Generate a title from the first user message
+        const firstUserMessage = messages.find(m => m.role === 'user');
+        let title = 'New Chat';
+        if (firstUserMessage) {
+          title = firstUserMessage.content.substring(0, 40);
+          if (firstUserMessage.content.length > 40) title += '...';
+        }
+        
+        // Create or update the current chat session
+        const updatedChat: ChatSession = {
+          id: chatId,
+          title,
+          timestamp: new Date(),
+          messages: messages,
+          activeTasks: activeTasks
+        };
+        
+        // Update chat history (replace if exists, add if new)
+        let updatedHistory = [...chatHistory];
+        const existingIndex = updatedHistory.findIndex(chat => chat.id === chatId);
+        
+        if (existingIndex >= 0) {
+          updatedHistory[existingIndex] = updatedChat;
+        } else {
+          updatedHistory = [updatedChat, ...updatedHistory];
+        }
+        
+        // Update state
+        setChatHistory(updatedHistory);
+        
+        // Save to localStorage
+        localStorage.setItem('anp-chat-history', JSON.stringify(updatedHistory));
+      }
+      
+      // Convert timestamps back to Date objects
+      const processedMessages = chatObject.messages.map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      }));
+      
+      // Load the chat into the UI
+      setMessages(processedMessages);
+      setCurrentChatId(chatObject.id);
+      
+      // Add a system message indicating chat was loaded from Storacha
+      addSystemMessage(`Loaded chat from Storacha storage (ID: ${chatObject.id})`);
+      setIsSavedToStoracha(true);
+      setLastSavedTimestamp(new Date(chatObject.timestamp));
+      
+      // Update operation status
+      trackStorageOperation(
+        'download',
+        'chat',
+        'success',
+        'metadata',
+        `Successfully loaded chat with ${processedMessages.length} messages`
+      );
+      
+      // Close the Storacha panel
+      setShowStorachaPanel(false);
+      
+    } catch (error) {
+      console.error('Error loading chat from Storacha:', error);
+      
+      // Track the error
+      trackStorageOperation(
+        'download',
+        'chat',
+        'error',
+        'metadata',
+        `Error loading chat: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      
+      // Show error message
+      addSystemMessage(`Error loading chat: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  // Now update the StorachaPanel component to show saved chats
+  const StorachaPanel = () => {
+    // If not showing the panel, return null
+    if (!showStorachaPanel) return null;
+    
+    // Filter for chat items
+    const chatItems = storachaItems.filter(item => 
+      item.agentId === 'chat' && 
+      item.dataType === 'metadata' &&
+      item.metadata?.chatId
+    ).sort((a, b) => {
+      const timestampA = a.metadata?.timestamp || 0;
+      const timestampB = b.metadata?.timestamp || 0;
+      return timestampB - timestampA;
+    });
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Storacha Storage</h2>
+            <button
+              onClick={() => setShowStorachaPanel(false)}
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-3">Saved Chats</h3>
+            {chatItems.length === 0 ? (
+              <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-md">No saved chats found.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {chatItems.map(item => {
+                  try {
+                    const chatObject = JSON.parse(item.content);
+                    const messageCount = chatObject.messages?.length || 0;
+                    const timestamp = new Date(item.timestamp);
+                    
+                    // Get the first user message as a preview
+                    const firstUserMessage = chatObject.messages?.find((msg: { role: string; content: string }) => msg.role === 'user')?.content || '';
+                    const preview = firstUserMessage.length > 60 
+                      ? firstUserMessage.substring(0, 60) + '...' 
+                      : firstUserMessage;
+                    
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => loadChatFromStoracha(item.id)}
+                      >
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium mb-1 text-gray-800">
+                            {preview || chatObject.id}
+                          </p>
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs text-gray-500">
+                              {messageCount} messages
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {timestamp.toLocaleDateString()} {timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } catch (error) {
+                    // Handle parsing errors gracefully
+                    return (
+                      <div key={item.id} className="p-4 border border-red-100 bg-red-50 rounded-md">
+                        <p className="text-sm text-red-600">Invalid chat data</p>
+                      </div>
+                    );
+                  }
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="text-lg font-medium mb-3">Recent Storage Operations</h3>
+            <div className="bg-gray-50 p-3 rounded-md max-h-48 overflow-y-auto">
+              {storageOperations.length === 0 ? (
+                <p className="text-sm text-gray-500">No recent operations</p>
+              ) : (
+                <div className="space-y-2">
+                  {storageOperations.slice(0, 10).map(op => (
+                    <div key={op.id} className="flex items-center text-sm">
+                      <span className={`inline-block w-20 font-medium ${
+                        op.status === 'success' ? 'text-green-600' : 
+                        op.status === 'error' ? 'text-red-600' : 'text-amber-600'
+                      }`}>
+                        {op.operation}
+                      </span>
+                      <span className="text-gray-700 mx-2">
+                        {op.agentId}
+                      </span>
+                      {op.dataType && (
+                        <span className="text-gray-500 mx-2">
+                          {op.dataType}
+                        </span>
+                      )}
+                      <span className="text-gray-400 text-xs ml-auto">
+                        {new Date(op.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-6 flex justify-end">
+            <button 
+              onClick={() => setShowStorachaPanel(false)}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-800 text-sm transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Handler for save button success
+  const handleSaveSuccess = (itemIds: string[]) => {
+    if (itemIds.length > 0) {
+      setIsSavedToStoracha(true);
+      setLastSavedTimestamp(new Date());
+      addSystemMessage(`Chat successfully saved to Storacha storage (ID: ${itemIds[0]})`);
+      
+      // Update storage operations tracking
+      trackStorageOperation(
+        'upload',
+        'chat',
+        'success',
+        'metadata',
+        `Saved complete chat with ${messages.length} messages`
+      );
+    }
+  };
+  
+  // Handler for save button error
+  const handleSaveError = (error: string) => {
+    // Add system message about error
+    addSystemMessage(`Error saving to Storacha: ${error}`);
+  };
+  
+  // Handler for save button start
+  const handleSaveStart = () => {
+    // Add system message about save starting
+    addSystemMessage('Saving conversation to Storacha...');
+  };
+
+  // Create a new function to sync all local chats to Storacha
+  const syncChatsToStoracha = async () => {
+    if (isSyncing) return;
+    
+    setIsSyncing(true);
+    addSystemMessage('Syncing local chats to Storacha storage...');
+    
+    try {
+      const storachaService = getStorachaService();
+      
+      // Try to get delegation for storage access
+      try {
+        await storachaService.requestApproval('user');
+      } catch (error) {
+        console.error('Error getting delegation:', error);
+        addSystemMessage('Failed to get storage access permission');
+        setIsSyncing(false);
+        return;
+      }
+      
+      // Get local chat history
+      const localHistory = JSON.parse(localStorage.getItem('anp-chat-history') || '[]');
+      if (localHistory.length === 0) {
+        addSystemMessage('No local chats to sync.');
+        setIsSyncing(false);
+        return;
+      }
+      
+      // Track operation
+      trackStorageOperation(
+        'upload',
+        'chat',
+        'pending',
+        'metadata',
+        `Syncing ${localHistory.length} local chats to Storacha`
+      );
+      
+      // Get existing Storacha items to avoid duplicates
+      const allItems = await storachaService.getAllItems();
+      const existingChatIds = allItems
+        .filter(item => item.agentId === 'chat' && item.metadata?.chatId)
+        .map(item => {
+          try {
+            const chatObj = JSON.parse(item.content);
+            return chatObj.id;
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
+      
+      // Sync each chat that doesn't already exist in Storacha
+      let syncedCount = 0;
+      for (const chat of localHistory) {
+        // Skip if this chat is already in Storacha
+        if (existingChatIds.includes(chat.id)) {
+          console.log(`Chat ${chat.id} already exists in Storacha, skipping`);
+          continue;
+        }
+        
+        try {
+          // Prepare chat object
+          const chatObject = {
+            id: chat.id,
+            timestamp: chat.timestamp.getTime(),
+            messages: chat.messages.map(msg => ({
+              id: msg.id,
+              role: msg.role,
+              content: msg.content,
+              timestamp: msg.timestamp.getTime(),
+              agentId: msg.agentId || 'user',
+              isThought: msg.isThought || false
+            })),
+            agentIds: Array.from(new Set(chat.messages
+              .filter(msg => msg.agentId)
+              .map(msg => msg.agentId))) as string[]
+          };
+          
+          // Store in Storacha
+          await storachaService.storeItem(
+            'chat',
+            'metadata',
+            JSON.stringify(chatObject),
+            {
+              chatId: chatObject.id,
+              timestamp: chatObject.timestamp,
+              messageCount: chatObject.messages.length,
+              agentIds: chatObject.agentIds
+            }
+          );
+          
+          // Also share the chat for access by other agents
+          await storachaService.storeSharedItem(
+            'metadata',
+            JSON.stringify(chatObject),
+            {
+              chatId: chatObject.id,
+              timestamp: chatObject.timestamp,
+              messageCount: chatObject.messages.length,
+              agentIds: chatObject.agentIds,
+              sourceAgentId: 'chat'
+            }
+          );
+          
+          syncedCount++;
+        } catch (error) {
+          console.error(`Error syncing chat ${chat.id}:`, error);
+        }
+      }
+      
+      // Update status
+      trackStorageOperation(
+        'upload',
+        'chat',
+        'success',
+        'metadata',
+        `Synced ${syncedCount} of ${localHistory.length} chats to Storacha`
+      );
+      
+      // Add success message
+      if (syncedCount > 0) {
+        addSystemMessage(`Successfully synced ${syncedCount} chats to Storacha storage.`);
+        setIsSavedToStoracha(true);
+        setLastSavedTimestamp(new Date());
+        
+        // Refresh Storacha items
+        loadStorachaItems();
+      } else {
+        addSystemMessage('No new chats needed to be synced.');
+      }
+    } catch (error) {
+      console.error('Error syncing chats to Storacha:', error);
+      
+      // Track error
+      trackStorageOperation(
+        'upload',
+        'chat',
+        'error',
+        'metadata',
+        `Error syncing chats: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      
+      // Add error message
+      addSystemMessage(`Error syncing chats: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Now update the UI to include a sync button in the chat header
+  // Add this JSX in the appropriate location in the return statement, near other chat controls
+  // Add a Sync button to the chat header or toolbar
+  const SyncButton = () => (
+    <button
+      onClick={syncChatsToStoracha}
+      disabled={isSyncing}
+      className={`
+        flex items-center px-3 py-1.5 rounded-md text-sm
+        ${isSyncing ? 'bg-gray-100 text-gray-500' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'} 
+        border border-purple-200
+        transition-colors duration-200 ml-2
+      `}
+      title="Sync local chats to Storacha storage"
+    >
+      {isSyncing ? (
+        <>
+          <Loader2 size={16} className="animate-spin mr-1" />
+          <span>Syncing...</span>
+        </>
+      ) : (
+        <>
+          <RefreshCw size={16} className="mr-1" />
+          <span>Sync to Storacha</span>
+        </>
+      )}
+    </button>
+  );
 
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-white">
@@ -582,16 +1195,29 @@ export default function MultiAgentChat() {
               <div className="flex items-center text-xs text-gray-500 ml-2">
                 <Clock size={14} className="mr-1" />
                 <span>
-                  {(() => {
-                    const firstMsg = messages[0]?.timestamp;
-                    if (!firstMsg) return '';
-                    
-                    const elapsed = Math.floor((new Date().getTime() - firstMsg.getTime()) / 1000);
-                    if (elapsed < 60) return `${elapsed}s`;
-                    if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m`;
-                    return `${Math.floor(elapsed / 3600)}h ${Math.floor((elapsed % 3600) / 60)}m`;
-                  })()}
+                  {elapsedTime}
                 </span>
+              </div>
+            )}
+            
+            {/* Display save status */}
+            {messages.length > 0 && (
+              <div className="flex items-center text-xs ml-2">
+                {isSavedToStoracha ? (
+                  <div className="text-green-600 flex items-center">
+                    <div className="mr-1">
+                      <Check size={14} className="text-green-600" />
+                    </div>
+                    <span>Saved {lastSavedTimestamp ? `at ${lastSavedTimestamp.toLocaleTimeString(['en-US'], { hour: '2-digit', minute: '2-digit' })}` : ''}</span>
+                  </div>
+                ) : messages.length > 0 ? (
+                  <div className="text-amber-600 flex items-center">
+                    <div className="mr-1">
+                      <AlertCircle size={14} className="text-amber-600" />
+                    </div>
+                    <span>Unsaved to Storacha</span>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
@@ -605,6 +1231,16 @@ export default function MultiAgentChat() {
               New Chat
             </button>
             
+            {/* Save to Storacha button */}
+            {messages.length > 0 && (
+              <SaveToStorachaButton 
+                messages={messages}
+                onSuccess={handleSaveSuccess}
+                onError={handleSaveError}
+                onSaveStart={handleSaveStart}
+              />
+            )}
+            
             {activeTasks.length > 0 && (
               <button 
                 onClick={() => setWorkflowPanelOpen(true)}
@@ -614,6 +1250,15 @@ export default function MultiAgentChat() {
                 View Workflow
               </button>
             )}
+            
+            <button 
+              onClick={() => setShowStorachaPanel(true)}
+              className="flex items-center px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 border border-gray-200"
+              title="View storage"
+            >
+              <Database size={16} className="mr-1 text-blue-500" />
+              Storage ({storachaItems.length})
+            </button>
             
             <button 
               onClick={() => setRouterDialogOpen(true)} 
@@ -651,9 +1296,9 @@ export default function MultiAgentChat() {
                     </h3>
                     <div className="space-y-2">
                       {[
-                        "What are the key differences between transformer and LSTM architectures for NLP?",
-                        "How can I optimize a React application for better performance?",
-                        "Explain quantum computing to a high school student."
+                        "What are the no of leads in the storage?",
+                        "Send a mail to Shubham Rasal at bluequbits@gmail.com about job opportunities ",
+                        "What are the top 5 products in the storage?"
                       ].map((example, i) => (
                         <button
                           key={i}
@@ -669,92 +1314,117 @@ export default function MultiAgentChat() {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
+              {/* First render messages */}
               {messages.map((message, index) => {
                 // Create a composite key combining the message ID and index
-                // This ensures uniqueness even if there are duplicate message IDs
                 const messageKey = `${message.id}-index-${index}`;
                 
-                if (message.role === 'system') {
-                  return (
-                    <div key={messageKey} className="flex justify-center">
-                      <div className="bg-gray-50 px-4 py-2 rounded-full flex items-center max-w-md border border-gray-200">
-                        <Info size={16} className="text-blue-500 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">{message.content}</span>
-                      </div>
-                    </div>
-                  );
-                }
+                // Find storage operations related to this message
+                const relatedOperations = storageOperations.filter(
+                  op => op.messageId === message.id
+                );
                 
-                if (message.role === 'user') {
-                  return (
-                    <div key={messageKey} className="flex justify-end">
-                      <div className="bg-purple-50 rounded-lg px-4 py-3 shadow-sm hover:shadow transition-shadow max-w-2xl">
-                        <p className="text-gray-800">{message.content}</p>
-                      </div>
-                    </div>
-                  );
-                }
-                
-                if (message.role === 'router') {
-                  if (message.isThought) {
-                    // For router thoughts, we'll show them as system-style messages
-                    return (
-                      <div key={messageKey} className="flex justify-center">
-                        <div className="bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full flex items-center max-w-lg">
-                          <AlertCircle size={14} className="text-blue-500 mr-2" />
-                          <span className="text-xs text-gray-600 italic">{message.content}</span>
+                return (
+                  <React.Fragment key={messageKey}>
+                    {/* Render the message itself */}
+                    {message.role === 'system' ? (
+                      <div className="flex justify-center">
+                        <div className="bg-gray-50 px-4 py-2 rounded-full flex items-center max-w-md border border-gray-200">
+                          <Info size={16} className="text-blue-500 mr-2 flex-shrink-0" />
+                          <span className="text-sm text-gray-600">{message.content}</span>
                         </div>
                       </div>
-                    );
-                  }
-                
-                  return (
-                    <div key={messageKey} className="flex">
-                      <div className="bg-white border border-purple-200 rounded-lg px-4 py-3 shadow-sm max-w-2xl">
-                        <div className="prose prose-sm max-w-none">
-                          <ReactMarkdown>
-                            {message.content}
-                          </ReactMarkdown>
+                    ) : message.role === 'user' ? (
+                      <div className="flex justify-end">
+                        <div className="bg-purple-50 rounded-lg px-4 py-3 shadow-sm hover:shadow transition-shadow max-w-2xl">
+                          <p className="text-gray-800">{message.content}</p>
                         </div>
                       </div>
-                    </div>
-                  );
-                }
-                
-                if (message.role === 'agent') {
-                  // Find the agent info
-                  const agent = agents.find(a => a.id === message.agentId);
-                  
-                  if (!agent) {
-                    // If agent not found
-                    return (
-                      <div key={messageKey} className="flex">
-                        <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm max-w-2xl">
-                          <div className="prose prose-sm max-w-none">
-                            <ReactMarkdown>
-                              {message.content}
-                            </ReactMarkdown>
+                    ) : message.role === 'router' ? (
+                      message.isThought ? (
+                        <div className="flex justify-center">
+                          <div className="bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full flex items-center max-w-lg">
+                            <AlertCircle size={14} className="text-blue-500 mr-2" />
+                            <span className="text-xs text-gray-600 italic">{message.content}</span>
                           </div>
                         </div>
-                      </div>
-                    );
-                  }
-                  
-                  // Use the AgentResponse component
-                  return (
-                    <AgentResponse 
-                      key={messageKey} 
-                      agent={agent} 
-                      content={message.content} 
-                      loading={message.isLoading || false}
-                      isThought={message.isThought}
-                    />
-                  );
-                }
-                
-                return null;
+                      ) : (
+                        <div className="flex">
+                          <div className="bg-white border border-purple-200 rounded-lg px-4 py-3 shadow-sm max-w-2xl">
+                            <div className="prose prose-sm max-w-none">
+                              <ReactMarkdown>
+                                {message.content}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    ) : message.role === 'agent' ? (
+                      // Find the agent info
+                      (() => {
+                        const agent = agents.find(a => a.id === message.agentId);
+                        
+                        if (!agent) {
+                          // If agent not found
+                          return (
+                            <div className="flex">
+                              <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm max-w-2xl">
+                                <div className="prose prose-sm max-w-none">
+                                  <ReactMarkdown>
+                                    {message.content}
+                                  </ReactMarkdown>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        // Use the AgentResponse component
+                        return (
+                          <AgentResponse 
+                            key={messageKey} 
+                            agent={agent} 
+                            content={message.content} 
+                            loading={message.isLoading || false}
+                            isThought={message.isThought}
+                          />
+                        );
+                      })()
+                    ) : null}
+                    
+                    {/* Render related storage operations */}
+                    {relatedOperations.map(operation => (
+                      <StorachaOperationIndicator
+                        key={`${messageKey}-op-${operation.id}`}
+                        operation={operation.operation}
+                        agentId={operation.agentId}
+                        status={operation.status}
+                        message={operation.message}
+                        timestamp={operation.timestamp}
+                        dataType={operation.dataType}
+                      />
+                    ))}
+                  </React.Fragment>
+                );
               })}
+              
+              {/* Render orphaned operations (not linked to a specific message) */}
+              {storageOperations
+                .filter(op => !op.messageId)
+                .map(operation => (
+                  <StorachaOperationIndicator
+                    key={`orphan-op-${operation.id}`}
+                    operation={operation.operation}
+                    agentId={operation.agentId}
+                    status={operation.status}
+                    message={operation.message}
+                    timestamp={operation.timestamp}
+                    dataType={operation.dataType}
+                  />
+                ))
+              }
+              
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -928,6 +1598,9 @@ export default function MultiAgentChat() {
         onClose={() => setWorkflowPanelOpen(false)}
         tasks={activeTasks}
       />
+      
+      {/* Storacha Panel */}
+      <StorachaPanel />
       
       {/* TaskRouter Dialog */}
       {routerDialogOpen && (

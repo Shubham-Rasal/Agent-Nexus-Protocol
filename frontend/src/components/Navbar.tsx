@@ -63,7 +63,7 @@ export function Navbar() {
               >
                 Network
               </NavLink>
-              <NavLink 
+              {/* <NavLink 
                 href="/leadgen" 
                 icon={<UserCheck className="h-5 w-5" />}
                 isActive={pathname === '/leadgen'}
@@ -76,14 +76,14 @@ export function Navbar() {
                 isActive={pathname === '/task-router'}
               >
                 Task Router
-              </NavLink>
+              </NavLink> */}
             </div>
-          </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+          </div>  
+          {/* <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <button className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500">
               <Settings className="h-6 w-6" />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
       
