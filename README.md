@@ -2,101 +2,62 @@
 
 ## 🌟 Overview
 
-Agent Nexus Protocol (ANP) is an innovative framework designed to enable seamless communication and collaboration between AI agents. Built as a hackathon project, ANP provides a standardized protocol for agent-to-agent interactions, allowing different AI systems to work together efficiently and effectively.
+Agent Nexus Protocol (ANP) is a unique way for AI agent to collaborate with each other and develop relationships with each other. This enables them to effectively solve complex problems and tasks.
 
 ![image](https://github.com/user-attachments/assets/3190dda0-6c6f-41b1-ae0a-c9b33d82ad2a)
 
 
 ## 🚀 Features
 
-- **Standardized Communication Protocol**: Define and implement a common language for AI agents to communicate
-- **Agent Discovery**: Dynamic discovery and registration of available agents in the network
-- **Message Routing**: Intelligent routing of messages between agents based on capabilities and requirements
-- **State Management**: Robust handling of agent states and conversation contexts
-- **Security**: Built-in security measures for safe agent interactions
-- **Extensibility**: Easy-to-extend architecture for adding new agent types and capabilities
+- **Standardized Communication Protocol**: Define and implement a common interface for AI agents to communicate
+- **Intelligent Routing**: Directs queries to the most capable agent based on expertise and context.
+- **Chain of Thought Sharing**: Agents can share their reasoning process, enabling transparent collaboration.
+- **Decentralized Knowledge**: A distributed system where each agent maintains specialized knowledge while contributing to a collective intelligence.
 
-## 🛠️ Technology Stack
+## Sponsors
 
-- Python 3.9+
-- FastAPI for API endpoints
-- Redis for state management
-- Protocol Buffers for message serialization
-- WebSocket support for real-time communication
 
-## 📋 Prerequisites
+##  Lilypad
 
-- Python 3.9 or higher
-- Redis server
-- Protocol Buffers compiler
-- pip (Python package manager)
+We integrated Lilypad's powerful APIs to implement a major componant - Task Router
+
+- Built a **task router** that analyzes what users are asking for and sends them to the right specialized agent
+- Added **web search capabilities** so our agents can find up-to-date information when answering questions
+- Created a system where different models work together on complex tasks, with each handling what they're best at
+
+Check out our implementation in [task-router/route.ts](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/frontend/src/app/api/task-router/route.ts)!
+
+## Akave
+
+Akave's decentralized storage powers our secure agent marketplace:
+
+- Implemented a **storage tool** that lets agents securely store and retrieve data
+- Built an **agent marketplace** where users can browse, select, and "stake" on different specialized agents
+
+See how we did it in [akave-storage.ts](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/frontend/src/features/agents/leadgen/akave-storage.ts)!
+
+## Storacha
+
+We used Storacha to enable true agent collaboration:
+
+- Built a system where agents can **store their thinking process** and share it with other agents
+- Created tools for agents to **learn from each other's work** and build on previous insights
+- Implemented **transparent tracking** of all knowledge-sharing operations
+
+Check out our collaboration system in [storacha-tool.ts](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/frontend/src/features/agents/leadgen/storacha-tool.ts)!
+
+
+
 
 ## 🔧 Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/agent-nexus-protocol.git
-cd agent-nexus-protocol
+git clone https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol
+cd ANP---Agent-Nexus-Protocol
 ```
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-## 🚦 Getting Started
-
-1. Start the Redis server:
-```bash
-redis-server
-```
-
-2. Run the ANP server:
-```bash
-python -m anp.server
-```
-
-3. Register your first agent:
-```bash
-python -m anp.tools.register_agent --name "my-agent" --capabilities "text,image"
-```
-
-## 📖 Documentation
-
-For detailed documentation, visit our [Wiki](https://github.com/yourusername/agent-nexus-protocol/wiki).
-
-### Quick Example
-
-```python
-from anp.client import ANPClient
-
-# Initialize client
-client = ANPClient()
-
-# Register an agent
-agent = client.register_agent(
-    name="assistant",
-    capabilities=["text-processing", "task-planning"]
-)
-
-# Send a message to another agent
-response = agent.send_message(
-    target_agent="executor",
-    content="Please analyze this text",
-    metadata={"priority": "high"}
-)
 ```
 
 ## 🤝 Contributing

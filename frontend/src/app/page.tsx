@@ -9,10 +9,25 @@ import {
   Router, 
   MessageCircle, 
   ChevronRight, 
-  ArrowRightCircle
+  ArrowRightCircle,
+  ArrowRight,
+  BarChart4
 } from 'lucide-react';
 
+// Import relationships data
+import relationshipsData from './relationships.json';
+
 export default function Home() {
+  // Sort relationships by strength for display
+  const sortedRelationships = [...relationshipsData.relationships].sort((a, b) => b.strength - a.strength).slice(0, 5);
+  
+  // Get unique agent names for the agent cards
+  const uniqueAgents = Array.from(
+    new Set(
+      relationshipsData.relationships.flatMap(rel => [rel.source, rel.target])
+    )
+  ).filter(agent => agent !== "general_purpose");
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -154,6 +169,84 @@ export default function Home() {
                 <Button variant="outline" size="sm">
                   <Link href="/network" className="flex items-center">
                     Network <ChevronRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Task Router & Agent Relationships Visualization */}
+      <section className="w-full py-16 bg-white">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="flex flex-col items-center">
+            <div className="space-y-2 max-w-[700px] mb-8 text-center">
+              <h2 className="text-2xl font-bold tracking-tighter md:text-3xl">Task Router in Action</h2>
+              <p className="text-gray-600">
+                See how our intelligent task router orchestrates work between specialized agents to solve complex business problems
+              </p>
+            </div>
+
+            {/* Agent Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {uniqueAgents.map((agent, index) => (
+                <div 
+                  key={agent} 
+                  className="flex flex-col items-center p-4 bg-slate-50 rounded-lg border border-slate-200"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    index % 4 === 0 ? 'bg-purple-100 text-purple-600' : 
+                    index % 4 === 1 ? 'bg-blue-100 text-blue-600' : 
+                    index % 4 === 2 ? 'bg-green-100 text-green-600' : 
+                    'bg-orange-100 text-orange-600'
+                  }`}>
+                    {index % 4 === 0 ? <BrainCircuit className="h-5 w-5" /> : 
+                     index % 4 === 1 ? <MessageCircle className="h-5 w-5" /> : 
+                     index % 4 === 2 ? <BarChart4 className="h-5 w-5" /> : 
+                     <Router className="h-5 w-5" />}
+                  </div>
+                  <h3 className="font-medium mt-2 text-slate-800 capitalize">
+                    {agent.replace(/-/g, ' ')}
+                  </h3>
+                </div>
+              ))}
+            </div>
+
+            {/* Top Relationships List */}
+            <div className="w-full max-w-3xl">
+              <h3 className="text-lg font-semibold mb-4 text-slate-800">Top Agent Relationships</h3>
+              
+              <div className="space-y-3">
+                {sortedRelationships.map((rel, index) => (
+                  <div key={index} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="font-medium text-slate-800 capitalize">{rel.source.replace(/-/g, ' ')}</div>
+                        <ArrowRight className="mx-2 h-4 w-4 text-slate-400" />
+                        <div className="font-medium text-slate-800 capitalize">{rel.target.replace(/-/g, ' ')}</div>
+                      </div>
+                      <Badge className={
+                        rel.strength > 0.8 ? "bg-green-100 text-green-800" : 
+                        rel.strength > 0.7 ? "bg-blue-100 text-blue-800" : 
+                        "bg-orange-100 text-orange-800"
+                      }>
+                        {Math.round(rel.strength * 100)}% Strength
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600">{rel.description}</p>
+                    <div className="flex justify-between mt-3 text-xs text-slate-500">
+                      <span>{rel.queries_processed.toLocaleString()} queries processed</span>
+                      <span>{Math.round(rel.success_rate * 100)}% success rate</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-8 text-center">
+                <Button variant="outline">
+                  <Link href="/network" className="flex items-center">
+                    View Complete Network <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>
               </div>
