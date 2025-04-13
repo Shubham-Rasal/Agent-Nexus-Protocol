@@ -4,6 +4,9 @@
 
 Agent Nexus Protocol (ANP) is an innovative framework designed to enable seamless communication and collaboration between AI agents. Built as a hackathon project, ANP provides a standardized protocol for agent-to-agent interactions, allowing different AI systems to work together efficiently and effectively.
 
+![image](https://github.com/user-attachments/assets/3190dda0-6c6f-41b1-ae0a-c9b33d82ad2a)
+
+
 ## 🚀 Features
 
 - **Standardized Communication Protocol**: Define and implement a common language for AI agents to communicate
