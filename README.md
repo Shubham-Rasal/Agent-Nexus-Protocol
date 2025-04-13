@@ -84,7 +84,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🏆 Hackathon Details
 
-This project was created during [Hackathon Name] by [Team Name]. Our goal was to create a standardized protocol for agent communication that could revolutionize how AI agents interact and collaborate.
+This project was created during Encode AI Blueprints Hackathon . Our goal was to create a standardized protocol for agent communication that could revolutionize how AI agents interact and collaborate.
 
 ### Team Members
 - [Shubham Rasal](https://github.com/Shubham-Rasal)
