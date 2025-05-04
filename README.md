@@ -2,9 +2,10 @@
 
 ## 🌟 Overview
 
-Agent Nexus Protocol (ANP) is a unique way for AI agent to collaborate with each other and develop relationships with each other. This enables them to effectively solve complex problems and tasks.
+Agent Nexus Protocol (ANP) is a unique way for AI agents to collaborate with each other and develop relationships with each other. This enables them to effectively solve complex problems and tasks.
 
-![image](https://github.com/user-attachments/assets/3190dda0-6c6f-41b1-ae0a-c9b33d82ad2a)
+![image](https://github.com/user-attachments/assets/17ca4ac7-4f6a-4de6-8e56-192ef9656391)
+
 
 
 
