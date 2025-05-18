@@ -82,5 +82,20 @@ Check out [here] what our protocol would be good at doing.
 
 The task router check from available agents and assigns tasks to the appropriate ones. 
 
+## Usecases
+
+Let's think pragmatically where would someone use a mutiagent approach like ANP
+
+Based on my daily habits, these are the workflows that I would like multiple agents to solve
+
+- Tech news curation from all major outlets into a consise newsletter or email
+- Lead Generation for business and automated research for personalisation
+- Boring compliance checking of a document
+- Managing emails for support of queries for projects and products developed by us
+
+
+Most usecases here require some kind of alerts and triggers that activate an agent when required. This would require asynchronous processing which would be our primary focus in this update.
+
+We want to actually make money with this product. The final goal is to automate our complete company using this systems.
 
 
