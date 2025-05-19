@@ -143,12 +143,13 @@ To better understand the chat interface, please take a look at our demo video - 
   
 | Number | Grant Deliverable       | Briefly describe how you will meet deliverable objectives  | Timeframe (within 3 months)|
 | :---   | :------                 | :---                                                       | :---                       | 
-| 1.     |                         |                                                            |                            | 
-| 2.     |                         |                                                            |                            | 
-| 3.     |                         |                                                            |                            | 
-| 4.     |                         |                                                            |                            | 
+| 1.     |  Local Agent Creation Interface                   |          Develop a UI for building agent profiles with LLM, tools, and prompt customization.                                                  |                            | 
+| 2.     |   Integrate the MCP into the interface               |      Integrate the MCP (Model Context Protocol) to provide agents with access to standardized tools and services.                                                       |                            | 
+| 3.     |  FEVM Smart Contract + Subgraph         |    Deploy the agent registry smart contract to FEVM and set up a subgraph to monitor contract activity.                                                        |                            | 
+| 4.     |      Reputation                   |        Implement the logic for collecting task ratings from users and the intelligent task router. Store agent resumes and update tags/metrics based on interactions and outcomes.                                                    |                            | 
 
-
+<!--5	Artifact Storage Engine	Implement artifact creation and encrypted Filecoin storage engine for storing interaction outputs.	Month 2 -->
+ 
 ### 4. What is the total amount of this grant request? 
  $7k
 
