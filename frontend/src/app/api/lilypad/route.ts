@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { OpenAIClient } from '@/lib/openai';
 
 /**
- * Makes a real API call to the Lilypad LLM service with structured output support
+ * Makes a real API call to the OpenAI service with structured output support
  */
-async function callLilypadLLM(prompt: string, schema: any, model: string = 'llama3.1:8b', temperature: number = 0.2, maxOutputTokens: number = 1000) {
-  console.log("Calling Lilypad LLM with prompt:", prompt);
+async function callOpenAILLM(prompt: string, schema: any, model: string = 'gpt-3.5-turbo-16k', temperature: number = 0.2, maxOutputTokens: number = 1000) {
+  console.log("Calling OpenAI with prompt:", prompt);
   
-  // Lilypad API endpoint and authentication
-  const API_URL = "https://anura-testnet.lilypad.tech/api/v1/chat/completions";
-  const API_TOKEN = process.env.NEXT_PUBLIC_LILYPAD_API_KEY;
-
-  console.log("API_TOKEN:", API_TOKEN);
-  if (!API_TOKEN) {
-    throw new Error("LILYPAD_API_TOKEN environment variable is not set");
-  }
-
   // Build the structure for schema-based output
   const systemMessage = `You are an AI assistant that extracts structured information from text.
 You must follow these rules:
@@ -25,61 +17,53 @@ You must follow these rules:
 
 The expected schema is: ${JSON.stringify(schema, null, 2)}`;
 
-  // Structure the messages for the LLM
-  const messages = [
-    {
-      role: "system",
-      content: systemMessage
-    },
-    {
-      role: "user",
-      content: prompt
-    }
-  ];
+  // Initialize OpenAI client
+  const openai = new OpenAIClient();
 
-  // Create the request body for the Lilypad API
-  const requestBody = {
-    model: model,
-    messages,
-    max_tokens: maxOutputTokens,
-    temperature: temperature,
-    response_format: { type: "json_object" } // Using JSON mode for structured output
-  };
-
-  // Make the API call
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${API_TOKEN}`,
-      },
-      body: JSON.stringify(requestBody),
+    const response = await openai.chatCompletion({
+      messages: [
+        {
+          role: "system",
+          content: systemMessage
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      model: model,
+      temperature: temperature,
+      maxTokens: maxOutputTokens,
+      functions: [
+        {
+          name: "extract_information",
+          description: "Extract structured information from text according to the schema",
+          parameters: schema
+        }
+      ],
+      functionCall: "extract_information"
     });
 
-    if (!response.ok) {
-      throw new Error(`Lilypad API request failed with status ${response.status}`);
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get response from OpenAI');
     }
 
-    const result = await response.json();
-    
     // Extract and parse the JSON response
-    if (result.choices && result.choices[0] && result.choices[0].message.content) {
-      const content = result.choices[0].message.content.trim();
-      
+    const functionCall = response.data.function_call;
+    if (functionCall && functionCall.name === "extract_information") {
       try {
         // Parse the structured JSON output
-        return JSON.parse(content);
+        return JSON.parse(functionCall.arguments);
       } catch (parseError) {
-        console.error("Error parsing LLM response:", parseError);
-        throw new Error("Failed to parse structured output from LLM");
+        console.error("Error parsing OpenAI response:", parseError);
+        throw new Error("Failed to parse structured output from OpenAI");
       }
     } else {
-      throw new Error("Invalid response structure from Lilypad API");
+      throw new Error("Invalid response structure from OpenAI API");
     }
   } catch (error) {
-    console.error("Error calling Lilypad API:", error);
+    console.error("Error calling OpenAI API:", error);
     throw error;
   }
 }
@@ -90,7 +74,7 @@ export async function POST(request: NextRequest) {
     const { 
       prompt, 
       schema, 
-      model = 'llama3.1:8b',
+      model = 'gpt-3.5-turbo-16k',
       temperature = 0.2,
       maxOutputTokens = 1000
     } = body;
@@ -103,12 +87,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No schema provided for structured output' }, { status: 400 });
     }
     
-    // Call the LLM with structured outputs
-    const result = await callLilypadLLM(prompt, schema, model, temperature, maxOutputTokens);
+    // Call OpenAI with structured outputs
+    const result = await callOpenAILLM(prompt, schema, model, temperature, maxOutputTokens);
     
     return NextResponse.json({ result });
   } catch (error) {
-    console.error('Error in lilypad API route:', error);
+    console.error('Error in OpenAI API route:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

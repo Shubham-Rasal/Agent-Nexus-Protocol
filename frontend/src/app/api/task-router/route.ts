@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { LilypadInference } from '@/lib/lilypad';
+import { OpenAIClient } from '@/lib/openai';
 import { findRelevantAgentByKeywords, getBestAgentForDomain, getRelatedAgents, getUserAgentPreferences } from '@/features/agents/agent-relationships';
 
 /**
  * Task Router API
  * 
  * Routes user queries to the appropriate agent (Gmail Assistant or Lead Qualifier)
- * based on the query intent using Lilypad Inference API.
+ * based on the query intent using OpenAI API.
  */
 
 // Validation schema for incoming requests
@@ -111,8 +111,8 @@ export async function POST(req: Request) {
  */
 async function determineQueryIntent(query: string): Promise<'gmail' | 'lead_qualifier' | 'general'> {
   try {
-    // Use LilypadInference to determine intent
-    const lilypad = new LilypadInference();
+    // Use OpenAI to determine intent
+    const openai = new OpenAIClient();
     const prompt = `
       You are an intent classifier for a multi-agent system. Your job is to determine which agent should handle the following query.
       
@@ -128,14 +128,17 @@ async function determineQueryIntent(query: string): Promise<'gmail' | 'lead_qual
       - "general" - if the query could be handled by either agent or you're not sure
     `;
 
-    const response = await lilypad.generate({
-      model: 'meta/llama-3-8b-instruct',
+    const response = await openai.generate({
       prompt,
       temperature: 0.2,
-      max_tokens: 50,
+      maxTokens: 50,
     });
 
-    const output = response.trim().toLowerCase();
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get response from OpenAI');
+    }
+
+    const output = response.data.content?.trim().toLowerCase() || '';
     
     if (output.includes('gmail')) {
       return 'gmail';
@@ -164,8 +167,8 @@ async function routeToGmailAgent(query: string, authToken?: string) {
       );
     }
 
-    // Use LilypadInference to generate a response
-    const lilypad = new LilypadInference();
+    // Use OpenAI to generate a response
+    const openai = new OpenAIClient();
     const prompt = `
       You are a helpful Gmail assistant. You help users manage their emails and perform email-related tasks.
       The user has the following request:
@@ -176,14 +179,17 @@ async function routeToGmailAgent(query: string, authToken?: string) {
       Remember to be concise, to the point, and only address the Gmail-related aspects of the query.
     `;
 
-    const response = await lilypad.generate({
-      model: 'meta/llama-3-8b-instruct',
+    const response = await openai.generate({
       prompt,
       temperature: 0.7,
-      max_tokens: 500,
+      maxTokens: 500,
     });
 
-    const formattedResponse = formatGmailResponse(query, response);
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get response from OpenAI');
+    }
+
+    const formattedResponse = formatGmailResponse(query, response.data.content || '');
 
     return NextResponse.json({
       agentId: 'gmail',
@@ -203,8 +209,8 @@ async function routeToGmailAgent(query: string, authToken?: string) {
  */
 async function routeToLeadQualifierAgent(query: string) {
   try {
-    // Use LilypadInference to generate a response
-    const lilypad = new LilypadInference();
+    // Use OpenAI to generate a response
+    const openai = new OpenAIClient();
     const prompt = `
       You are a Lead Qualifier agent. Your job is to help sales professionals qualify leads and find contact information for potential customers.
       The user has the following request:
@@ -215,14 +221,17 @@ async function routeToLeadQualifierAgent(query: string) {
       If you need more information to qualify the lead properly, mention this in your response.
     `;
 
-    const response = await lilypad.generate({
-      model: 'meta/llama-3-8b-instruct',
+    const response = await openai.generate({
       prompt,
       temperature: 0.7,
-      max_tokens: 500,
+      maxTokens: 500,
     });
 
-    const formattedResponse = formatLeadQualifierResponse(query, response);
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get response from OpenAI');
+    }
+
+    const formattedResponse = formatLeadQualifierResponse(query, response.data.content || '');
 
     return NextResponse.json({
       agentId: 'lead_qualifier',

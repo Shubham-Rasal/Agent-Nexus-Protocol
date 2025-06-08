@@ -24,13 +24,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Models available in Lilypad - updated to match the models in route.ts
-const AVAILABLE_MODELS = [
-  { id: 'llama3.1:8b', name: 'Llama 3.1 (8B)' },
-  { id: 'llama3.1:70b', name: 'Llama 3.1 (70B)' },
-  { id: 'mixtral:8x7b', name: 'Mixtral 8x7B' },
-  { id: 'mistral:7b', name: 'Mistral 7B' },
-  { id: 'gemma:7b', name: 'Gemma 7B' }
+// Models available for OpenAI - updated to match the new implementation
+const models = [
+  { value: 'gpt-3.5-turbo-16k', label: 'GPT-3.5 Turbo 16K' },
+  { value: 'gpt-4', label: 'GPT-4' },
+  { value: 'gpt-4-32k', label: 'GPT-4 32K' },
 ];
 
 interface CSVProcessorToolProps {
@@ -64,7 +62,7 @@ export default function CSVProcessorTool({ config, onChange, onTest }: CSVProces
         systemPrompt: config.systemPrompt || '',
         outputFormat: config.outputFormat || 'csv',
         maxRows: parseInt(config.maxRows || '1000'),
-        model: config.model || 'llama3.1:8b'
+        model: config.model || 'gpt-3.5-turbo-16k'
       });
 
       setTestResult(result);
@@ -177,20 +175,20 @@ export default function CSVProcessorTool({ config, onChange, onTest }: CSVProces
       <div className="space-y-2">
         <Label htmlFor="model">LLM Model</Label>
         <Select
-          value={config.model || 'llama3.1:8b'}
+          value={config.model || 'gpt-3.5-turbo-16k'}
           onValueChange={(value) => updateField('model', value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select LLM model" />
           </SelectTrigger>
           <SelectContent>
-            {AVAILABLE_MODELS.map(model => (
-              <SelectItem key={model.id} value={model.id}>{model.name}</SelectItem>
+            {models.map(model => (
+              <SelectItem key={model.value} value={model.value}>{model.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <p className="text-xs text-gray-500">
-          The Lilypad LLM model to use for transforming the data
+          OpenAI model to use for transformation
         </p>
       </div>
 

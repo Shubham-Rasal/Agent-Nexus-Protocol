@@ -1,12 +1,13 @@
 import axios from 'axios';
 import Papa from 'papaparse';
+import { OpenAIClient } from '@/lib/openai';
 
 /**
- * Implementation of the CSV Processor tool using Lilypad LLM API
+ * Implementation of the CSV Processor tool using OpenAI API
  * 
  * This tool allows users to:
  * 1. Load CSV data from a URL
- * 2. Process and transform the data using Lilypad LLM API
+ * 2. Process and transform the data using OpenAI API
  * 3. Output the transformed data
  */
 export const csvProcessorTool = async (params: {
@@ -29,7 +30,7 @@ export const csvProcessorTool = async (params: {
     // Set defaults
     const outputFormat = params.outputFormat || 'csv';
     const maxRows = params.maxRows || 1000;
-    const model = params.model || 'llama3.1:8b';
+    const model = params.model || 'gpt-3.5-turbo-16k';
     
     // Step 1: Fetch the CSV file from the URL
     let csvData;
@@ -103,60 +104,41 @@ Output format: ${outputFormat === 'json' ? 'JSON array' : 'CSV with headers'}
 Full dataset:
 ${JSON.stringify(parsedData, null, 2)}`;
 
-    // Step 4: Call the Lilypad LLM API using the same approach as in route.ts
+    // Step 4: Call the OpenAI API
     let transformedData;
     try {
-      const API_URL = "https://anura-testnet.lilypad.tech/api/v1/chat/completions";
-      const API_TOKEN = process.env.NEXT_PUBLIC_LILYPAD_API_KEY;
+      const openai = new OpenAIClient();
       
-      if (!API_TOKEN) {
-        return { success: false, error: 'Lilypad API key is not configured' };
-      }
-      
-      const messages = [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: userPrompt
-        }
-      ];
-
-      const requestBody = {
+      const response = await openai.chatCompletion({
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: userPrompt
+          }
+        ],
         model: model,
-        messages,
-        max_tokens: 4000,
         temperature: 0.2,
-      };
-
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${API_TOKEN}`,
-        },
-        body: JSON.stringify(requestBody),
+        maxTokens: 4000
       });
 
-      if (!response.ok) {
-        throw new Error(`LLM API request failed with status ${response.status}`);
+      if (!response.success || !response.data) {
+        throw new Error('Failed to get response from OpenAI');
       }
 
-      const result = await response.json();
+      transformedData = response.data.content?.trim();
       
-      if (result.choices && result.choices[0] && result.choices[0].message?.content) {
-        transformedData = result.choices[0].message.content.trim();
-      } else {
-        throw new Error('Invalid response format from LLM API');
+      if (!transformedData) {
+        throw new Error('Invalid response format from OpenAI API');
       }
     } catch (error) {
-      console.error('Error calling Lilypad LLM API:', error);
+      console.error('Error calling OpenAI API:', error);
       return { 
         success: false, 
-        error: `Failed to transform data with LLM: ${error instanceof Error ? error.message : String(error)}`
+        error: `Failed to transform data with OpenAI: ${error instanceof Error ? error.message : String(error)}`
       };
     }
     
@@ -182,13 +164,13 @@ ${JSON.stringify(parsedData, null, 2)}`;
               } else {
                 return { 
                   success: false, 
-                  error: 'Failed to extract valid JSON from LLM response' 
+                  error: 'Failed to extract valid JSON from OpenAI response' 
                 };
               }
             } else {
               return { 
                 success: false, 
-                error: 'Failed to extract valid JSON from LLM response' 
+                error: 'Failed to extract valid JSON from OpenAI response' 
               };
             }
           }
@@ -230,7 +212,7 @@ ${JSON.stringify(parsedData, null, 2)}`;
                 } else {
                   return { 
                     success: false, 
-                    error: 'Failed to extract valid data from LLM response' 
+                    error: 'Failed to extract valid data from OpenAI response' 
                   };
                 }
               }
@@ -246,38 +228,23 @@ ${JSON.stringify(parsedData, null, 2)}`;
           }
         }
       }
+      
+      return {
+        success: true,
+        data: outputData
+      };
     } catch (error) {
       console.error('Error processing transformed data:', error);
       return { 
         success: false, 
-        error: `Failed to process transformed data: ${error instanceof Error ? error.message : String(error)}`
+        error: `Failed to process transformed data: ${error instanceof Error ? error.message : String(error)}` 
       };
     }
-    
-    // Step 6: Create a downloadable URL for the transformed data
-    let outputUrl = '';
-    try {
-      const blob = new Blob(
-        [outputFormat === 'json' ? JSON.stringify(outputData, null, 2) : outputData], 
-        { type: outputFormat === 'json' ? 'application/json' : 'text/csv' }
-      );
-      outputUrl = URL.createObjectURL(blob);
-    } catch (error) {
-      console.error('Error creating downloadable URL:', error);
-      // This is not a critical error, so we'll continue
-    }
-    
-    // Return the processed data and download URL
-    return {
-      success: true,
-      data: outputData,
-      outputUrl
-    };
   } catch (error) {
-    console.error('Unexpected error in CSV Processor tool:', error);
+    console.error('Error in CSV processor:', error);
     return { 
       success: false, 
-      error: `Unexpected error: ${error instanceof Error ? error.message : String(error)}`
+      error: `CSV processing failed: ${error instanceof Error ? error.message : String(error)}` 
     };
   }
 }; 

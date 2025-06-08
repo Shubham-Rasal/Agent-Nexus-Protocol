@@ -68,7 +68,7 @@ export default function TaskRouterPage() {
                 <h3 className="text-lg font-medium mt-4">How It Works</h3>
                 <ol className="list-decimal pl-5 space-y-2">
                   <li>You submit a query or task using the input form</li>
-                  <li>The task router analyzes the query using the Lilypad Inference API to determine intent</li>
+                  <li>The task router analyzes the query using the OpenAI API to determine intent</li>
                   <li>Based on the detected intent, the query is routed to either the Gmail or Lead Qualifier agent</li>
                   <li>The appropriate agent processes the query and returns results</li>
                   <li>Results are displayed in the interface</li>
@@ -88,7 +88,7 @@ export default function TaskRouterPage() {
                 <div className="bg-amber-50 p-4 rounded-md border border-amber-200 my-4">
                   <h4 className="text-sm font-medium text-amber-800 mb-2">Technical Implementation Note</h4>
                   <p className="text-xs text-amber-700">
-                    The current implementation uses Lilypad Inference API to determine the intent of user queries and route them
+                    The current implementation uses OpenAI API to determine the intent of user queries and route them
                     to either the Gmail Assistant or Lead Qualifier agent. Additional agents can be added to the router in the future.
                   </p>
                 </div>

@@ -1,7 +1,7 @@
 import { OpenAIAgent } from 'llamaindex';
 import { OpenAI } from 'llamaindex';
 import { NextResponse } from 'next/server';
-import { leadQualification, akaveStorage, lilyPadsWebSearch } from '@/features/agents/leadgen/leadgen';
+import { leadQualification, akaveStorage, webSearch } from '@/features/agents/leadgen/leadgen';
 
 // Define interfaces for response types to help TypeScript
 interface ContentItem {

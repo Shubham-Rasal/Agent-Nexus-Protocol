@@ -141,7 +141,7 @@ export const PRESET_TOOLS: Tool[] = [
     name: 'CSV Processor',
     description: 'Process and transform CSV data using LLM-powered intelligence',
     category: 'analysis',
-    provider: 'lilypad',
+    provider: 'openai',
     requiresAuth: false,
     parameters: [
       {
@@ -178,7 +178,7 @@ export const PRESET_TOOLS: Tool[] = [
         id: 'model',
         name: 'LLM Model',
         type: 'string',
-        description: 'Lilypad LLM model to use for transformation',
+        description: 'OpenAI model to use for transformation',
         required: false,
         defaultValue: 'openhermes',
       },

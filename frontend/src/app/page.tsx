@@ -11,8 +11,10 @@ import {
   ChevronRight, 
   ArrowRightCircle,
   ArrowRight,
-  BarChart4
+  BarChart4,
+  ArrowUpRight
 } from 'lucide-react';
+import Image from 'next/image';
 
 // Import relationships data
 import relationshipsData from './relationships.json';
@@ -267,26 +269,22 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Lilypad */}
-              <Card className="hover:shadow-md transition-all border border-gray-100">
-                <CardHeader className="pb-2 flex flex-col items-center">
-                  <div className="h-12 mb-2 flex items-center justify-center">
-                    <img 
-                      src="https://docs.lilypad.tech/~gitbook/image?url=https%3A%2F%2F58337262-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FtadiyoOe4nTUoSulEVOV%252Flogo%252Fu6N6Y7nuO4tN6PVZ6HTv%252FLilypadLogoWord.png%3Falt%3Dmedia%26token%3Dd8dc4049-7c95-4f9e-acbc-682b34ba3965&width=260&dpr=4&quality=100&sign=9441c26b&sv=2" 
-                      alt="Lilypad Logo" 
-                      className="max-h-10 w-auto"
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-gray-600 text-sm mb-3">
-                    Powering task router agent and research assistant through inference API
-                  </p>
-                  <Link href="https://lilypad.tech" target="_blank" className="text-purple-600 inline-flex items-center text-sm hover:underline">
-                    Learn more <ChevronRight className="ml-1 h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
+              {/* OpenAI */}
+              <div className="flex items-center justify-center">
+                <Image
+                  src="https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg"
+                  alt="OpenAI Logo"
+                  width={260}
+                  height={80}
+                  className="dark:invert"
+                />
+              </div>
+              <div className="text-center mt-4">
+                <Link href="https://openai.com" target="_blank" className="text-purple-600 inline-flex items-center text-sm hover:underline">
+                  Learn more about OpenAI
+                  <ArrowUpRight className="ml-1 h-4 w-4" />
+                </Link>
+              </div>
 
               {/* Storacha */}
               <Card className="hover:shadow-md transition-all border border-gray-100">
