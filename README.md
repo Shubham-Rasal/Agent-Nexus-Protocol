@@ -73,7 +73,7 @@ Check out our collaboration system in [storacha-tool.ts](https://github.com/Shub
 1. Clone the repository:
 ```bash
 git clone https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol
-cd ANP---Agent-Nexus-Protocol
+cd ANP---Agent-Nexus-Protocol/frontend
 npm install
 npm run dev
 ```
