@@ -17,11 +17,3 @@ const relationStore = await orbitdb.open("relations", { type: "documents" });
 
 // Create GraphDB instance
 export const graphDB = new GraphDB(entityStore, relationStore);
-
-// Clean up function for graceful shutdown
-export async function closeDB() {
-  await entityStore.close();
-  await relationStore.close();
-  await orbitdb.stop();
-  await libp2p.stop();
-}

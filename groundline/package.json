@@ -1,7 +1,7 @@
 {
-  "name": "custom-mcp-server",
+  "name": "groundline-mcp",
   "version": "0.0.1",
-  "description": "Custom MCP server with OrbitDB integration",
+  "description": "Groundline MCP server with OrbitDB integration",
   "type": "module",
   "scripts": {
     "build": "tsc",

@@ -5,10 +5,6 @@ import { graphDB } from "./db/orbitdb.js";
 import { WikidataAdapter } from "./lib/kg-adapters/wikidata.js";
 import { DBpediaAdapter } from "./lib/kg-adapters/dbpedia.js";
 import { OpenAlexAdapter } from "./lib/kg-adapters/openalex.js";
-import type {
-  ExternalEntity,
-  ExternalRelation,
-} from "./lib/kg-adapters/adapter.js";
 
 const server = new McpServer({
   name: "custom-mcp-server",
@@ -273,6 +269,27 @@ server.tool(
         {
           type: "text",
           text: `Imported entity ${entityId_} from ${source} with ${relationIds.length} relations`,
+        },
+      ],
+    };
+  },
+);
+
+server.tool(
+  "get_relation",
+  `Get a relation from the knowledge graph by its ID. Sample relation: {\n"id" : "123"\n  }`,
+  {
+    relationId: z.string().min(1, "Relation ID cannot be empty"),
+  },
+  async ({ relationId }) => {
+    const result = await graphDB.getRelationById(relationId);
+    return {
+      content: [
+        {
+          type: "text",
+          text: result
+            ? `Relation: ${JSON.stringify(result)}`
+            : `No relation found with ID ${relationId}`,
         },
       ],
     };
