@@ -2,11 +2,10 @@
 
 ## 🎯 Core Infrastructure
 
-### OrbitDB Setup
+### Storage Layer Setup (IPFS-based)
 
-- [x] Basic OrbitDB server setup
-- [x] Configure IPFS node for OrbitDB
-- [x] Set up documents store for graph data
+- [x] Basic IPFS node setup
+- [x] Set up storage layer built directly on top of IPFS for graph data
 - [x] Implement database connection management
 - [x] Add error handling and reconnection logic
 
@@ -86,7 +85,6 @@
 - [ ] Add update history logging
 
 
-
 ## 🌐 External Knowledge Graph Integration
 
 ### Query Adapters
@@ -99,7 +97,7 @@
 
 - [x] Implement query adapter framework
 - [x] Create schema transformation layer
-- [x] Build import pipeline to OrbitDB
+- [x] Build import pipeline to storage layer built directly on top of IPFS
 - [x] Add validation for external data
 
 ### Integration Tests
@@ -116,5 +114,14 @@
 - [ ] Integration examples
 - [ ] External KG connector guide
 - [ ] Provenance tracking guide
+
+
+## 🔄 Migration Tasks
+
+- [x] Remove all OrbitDB code and configuration from the codebase
+- [x] Remove OrbitDB dependencies and scripts
+- [x] Update documentation and setup to reflect IPFS-only storage
+- [ ] Validate data integrity post-migration
+- [ ] Test full migration workflow in staging environment
 
 

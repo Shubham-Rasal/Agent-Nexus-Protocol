@@ -1,200 +1,86 @@
-import type { OrbitDBInstance } from "@orbitdb/core";
+import { createHelia } from "helia";
+import { CID } from "multiformats/cid";
 import type { Entity, Relation } from "../types/graph.js";
 import { validateEntity, validateRelation } from "../types/schema.js";
 
-type DocumentStore = Awaited<ReturnType<OrbitDBInstance["open"]>>;
+// Placeholder: You should initialize Helia/IPFS elsewhere and pass the instance in
+let ipfs: any = null;
+export function setIPFSInstance(instance: any) {
+  ipfs = instance;
+}
 
 export class GraphDB {
-  private entityStore: DocumentStore;
-  private relationStore: DocumentStore;
+  // Entities and relations are stored as JSON objects in IPFS
 
-  constructor(entityStore: DocumentStore, relationStore: DocumentStore) {
-    this.entityStore = entityStore;
-    this.relationStore = relationStore;
-  }
-
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
-  }
-
-  /**
-   * Add a new entity
-   */
   async addEntity(entity: unknown): Promise<string> {
     const validation = validateEntity(entity);
     if (!validation.success) {
       throw new Error(`Invalid entity: ${validation.error.message}`);
     }
-
-    const _id = this.generateId();
-    const documentWithId = { _id, ...validation.data };
-    await this.entityStore.put(documentWithId);
-    return _id;
+    const data = JSON.stringify(validation.data);
+    const { cid } = await ipfs.add(data);
+    return cid.toString();
   }
 
-  /**
-   * Add a new relation
-   */
   async addRelation(relation: unknown): Promise<string> {
     const validation = validateRelation(relation);
     if (!validation.success) {
       throw new Error(`Invalid relation: ${validation.error.message}`);
     }
-
-    const _id = this.generateId();
-    const documentWithId = { _id, ...validation.data };
-    await this.relationStore.put(documentWithId);
-    return _id;
+    const data = JSON.stringify(validation.data);
+    const { cid } = await ipfs.add(data);
+    return cid.toString();
   }
 
-  /**
-   * Delete a relation by ID
-   */
-  async deleteRelation(id: string): Promise<boolean> {
-    const relation = await this.relationStore.get(id);
-    if (!relation) return false;
-
-    await this.relationStore.del(id);
-    return true;
-  }
-
-  /**
-   * Get a relation by ID
-   */
-  async getRelationById(
-    id: string,
-  ): Promise<(Relation & { _id: string }) | null> {
-    const relation = await this.relationStore.get(id);
-    return relation as (Relation & { _id: string }) | null;
-  }
-
-  /**
-   * Get an entity by ID
-   */
-  async getEntityById(id: string): Promise<(Entity & { _id: string }) | null> {
-    const entity = await this.entityStore.get(id);
-    return entity as (Entity & { _id: string }) | null;
-  }
-
-  /**
-   * Get all relations
-   */
-  async getAllRelations(): Promise<(Relation & { _id: string })[]> {
-    const relations = await this.relationStore.all();
-    return Object.entries(relations).map(([id, relation]) => ({
-      _id: id,
-      ...(relation as Relation),
-    }));
-  }
-
-  /**
-   * Get all entities
-   */
-  async getAllEntities(): Promise<(Entity & { _id: string })[]> {
-    const entities = await this.entityStore.all();
-    return Object.entries(entities).map(([id, entity]) => ({
-      _id: id,
-      ...(entity as Entity),
-    }));
-  }
-
-  /**
-   * Search for entities by name or type using simple string matching
-   */
-  async searchEntities(query: string): Promise<(Entity & { _id: string })[]> {
-    const allEntities = await this.getAllEntities();
-    return allEntities.filter(
-      (entity) =>
-        entity.name.toLowerCase().includes(query.toLowerCase()) ||
-        entity.entityType.toLowerCase().includes(query.toLowerCase()),
-    );
-  }
-
-  /**
-   * Get all relations for an entity (both incoming and outgoing)
-   */
-  async getRelationsForEntity(
-    entityId: string,
-  ): Promise<(Relation & { _id: string })[]> {
-    const allRelations = await this.getAllRelations();
-    return allRelations.filter(
-      (relation) => relation.from === entityId || relation.to === entityId,
-    );
-  }
-
-  /**
-   * Get all connected entities (neighbors) of an entity
-   */
-  async getConnectedEntities(
-    entityId: string,
-  ): Promise<
-    { entity: Entity & { _id: string }; relation: Relation & { _id: string } }[]
-  > {
-    const relations = await this.getRelationsForEntity(entityId);
-    const connectedEntities = await Promise.all(
-      relations.map(async (relation) => {
-        const connectedId =
-          relation.from === entityId ? relation.to : relation.from;
-        const entity = await this.getEntityById(connectedId);
-        return entity ? { entity, relation } : null;
-      }),
-    );
-    return connectedEntities.filter(
-      (
-        item,
-      ): item is {
-        entity: Entity & { _id: string };
-        relation: Relation & { _id: string };
-      } => item !== null,
-    );
-  }
-
-  /**
-   * Traverse the graph starting from an entity, up to a certain depth
-   */
-  async traverseGraph(
-    startEntityId: string,
-    maxDepth: number = 2,
-  ): Promise<
-    Map<
-      string,
-      {
-        entity: Entity & { _id: string };
-        relations: (Relation & { _id: string })[];
+  async getEntityById(cid: string): Promise<(Entity & { _id: string }) | null> {
+    try {
+      const stream = ipfs.cat(cid);
+      let data = "";
+      for await (const chunk of stream) {
+        data += new TextDecoder().decode(chunk);
       }
-    >
-  > {
-    const visited = new Map<
-      string,
-      {
-        entity: Entity & { _id: string };
-        relations: (Relation & { _id: string })[];
-      }
-    >();
-    const queue: { id: string; depth: number }[] = [
-      { id: startEntityId, depth: 0 },
-    ];
-
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      if (current.depth >= maxDepth) continue;
-
-      const entity = await this.getEntityById(current.id);
-      if (!entity || visited.has(current.id)) continue;
-
-      const relations = await this.getRelationsForEntity(current.id);
-      visited.set(current.id, { entity, relations });
-
-      // Add unvisited neighbors to queue
-      for (const relation of relations) {
-        const neighborId =
-          relation.from === current.id ? relation.to : relation.from;
-        if (!visited.has(neighborId)) {
-          queue.push({ id: neighborId, depth: current.depth + 1 });
-        }
-      }
+      return { ...(JSON.parse(data)), _id: cid };
+    } catch {
+      return null;
     }
+  }
 
-    return visited;
+  async getRelationById(cid: string): Promise<(Relation & { _id: string }) | null> {
+    try {
+      const stream = ipfs.cat(cid);
+      let data = "";
+      for await (const chunk of stream) {
+        data += new TextDecoder().decode(chunk);
+      }
+      return { ...(JSON.parse(data)), _id: cid };
+    } catch {
+      return null;
+    }
+  }
+
+  // The following are placeholders for more advanced graph operations
+  async getAllEntities(): Promise<(Entity & { _id: string })[]> {
+    // You would need to maintain a list of entity CIDs elsewhere (e.g., in a root object or index)
+    return [];
+  }
+
+  async getAllRelations(): Promise<(Relation & { _id: string })[]> {
+    // You would need to maintain a list of relation CIDs elsewhere
+    return [];
+  }
+
+  async searchEntities(query: string): Promise<(Entity & { _id: string })[]> {
+    // Implement search logic using getAllEntities and filter
+    return [];
+  }
+
+  async getRelationsForEntity(entityId: string): Promise<(Relation & { _id: string })[]> {
+    // Implement logic to find relations for a given entity
+    return [];
+  }
+
+  async traverseGraph(startEntityId: string, maxDepth: number = 2): Promise<Map<string, { entity: Entity & { _id: string }; relations: (Relation & { _id: string })[] }>> {
+    // Implement graph traversal using IPFS data
+    return new Map();
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "groundline-mcp",
   "version": "0.0.1",
-  "description": "Groundline MCP server with OrbitDB integration",
+  "description": "Groundline MCP server with IPFS direct sync integration",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -26,8 +26,6 @@
     "@libp2p/mdns": "^11.0.41",
     "@libp2p/tcp": "^10.1.16",
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@orbitdb/core": "^3.0.2",
-    "@orbitdb/core-types": "^1.0.15",
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.1",
     "blockstore-level": "^2.0.3",

@@ -1,6 +1,6 @@
 Here's a **Product Requirements Document (PRD)** for your **MCP-compatible Knowledge Graph Server**, integrating:
 
-- Local OrbitDB-based graph storage
+- Storage layer built directly on top of IPFS
 - IPFS/IPNS for decentralized pinning
 - Provenance tracking
 - External KG integration tools
@@ -17,7 +17,7 @@ Here's a **Product Requirements Document (PRD)** for your **MCP-compatible Knowl
 **Goal**:  
 Build an **MCP-compatible server** that powers trustworthy AI agents by providing access to a **transparent, extensible knowledge graph**, grounded in:
 
-- **Real-time, editable graphs** (via OrbitDB)
+- **Real-time, editable graphs** (via storage layer built directly on top of IPFS)
 - **Decentralized storage and provenance** (via IPFS/IPNS/Filecoin)
 - **Composable integration with external KGs** (Wikidata, DBpedia, OpenAlex, etc.)
 - **AI-native function API** (via MCP tools)
@@ -28,7 +28,7 @@ Build an **MCP-compatible server** that powers trustworthy AI agents by providin
 
 | Layer               | Tech/Approach                                                                            |
 | ------------------- | ---------------------------------------------------------------------------------------- |
-| Local Graph Store   | [OrbitDB](https://github.com/orbitdb/orbit-db) (IPFS-based, distributed database)        |
+| Local Graph Store   | Storage layer built directly on top of IPFS                                              |
 | Immutable Snapshots | [IPFS](https://ipfs.tech/), [IPNS](https://docs.ipfs.tech/concepts/ipns/) for versioning |
 | Persistence Layer   | Filecoin (via Web3.storage, Lighthouse, Powergate, etc.)                                 |
 | Interface Protocol  | [Model Context Protocol (MCP)] for AI function calling                                   |
@@ -47,7 +47,7 @@ Build an **MCP-compatible server** that powers trustworthy AI agents by providin
 | `delete_entities`     | Delete entity and its associated relations                                                                 |
 | `delete_observations` | Remove selected observations from an entity                                                                |
 | `delete_relations`    | Remove directed relation between two entities                                                              |
-| `read_graph`          | Export full knowledge graph from OrbitDB                                                                   |
+| `read_graph`          | Export full knowledge graph from storage layer built directly on top of IPFS                              |
 | `search_nodes`        | Search across names, types, and observation content                                                        |
 | `open_nodes`          | Return entities and their relations by name                                                                |
 | `snapshot_graph`      | Dump full graph → IPFS → return CID                                                                        |
@@ -63,7 +63,7 @@ Build an **MCP-compatible server** that powers trustworthy AI agents by providin
 ### Case 1: Create/Update
 
 1. AI model calls an MCP tool (e.g., `create_entities`)
-2. MCP Server updates **OrbitDB**
+2. MCP Server updates **storage layer built directly on top of IPFS**
 3. Optionally triggers `snapshot_graph` tool:
 
    - Serializes graph → JSON-LD
@@ -87,7 +87,7 @@ Build an **MCP-compatible server** that powers trustworthy AI agents by providin
 
    - Queries external API
    - Transforms response to local format
-   - (Optional) saves into OrbitDB via `create_entities` + `create_relations`
+   - (Optional) saves into storage layer built directly on top of IPFS via `create_entities` + `create_relations`
 
 ---
 
@@ -119,7 +119,7 @@ Build an **MCP-compatible server** that powers trustworthy AI agents by providin
 | ------------- | --------------------------------------- |
 | Query adapter | Uses API or SPARQL depending on source  |
 | Transformer   | Maps external schema → local format     |
-| Importer      | Optionally writes to OrbitDB            |
+| Importer      | Optionally writes to storage layer built directly on top of IPFS |
 | Extensibility | Each source gets its own plugin wrapper |
 
 ---
@@ -147,7 +147,7 @@ interface Relation {
 | Component              | Status                            |
 | ---------------------- | --------------------------------- |
 | MCP server             | ✅ Implement tools and endpoints  |
-| OrbitDB schema         | ✅ Flexible node/key-value design |
+| Graph schema           | ✅ Flexible node/key-value design |
 | IPFS integration       | ✅ Snapshot → pin → return CID    |
 | IPNS support           | ✅ Update mutable pointer         |
 | Provenance tracker     | ✅ Metadata per CID               |
@@ -159,7 +159,7 @@ interface Relation {
 
 - Unit tests per MCP tool
 - End-to-end tests:
-  - AI call → OrbitDB update → snapshot → IPFS
+  - AI call → storage layer update → snapshot → IPFS
   - External KG → Import → Read
 - Provenance validation via CID chain
 - CID resolution through IPNS

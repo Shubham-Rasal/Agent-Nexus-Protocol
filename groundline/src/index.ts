@@ -1,10 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { graphDB } from "./db/orbitdb.js";
+import { GraphDB, setIPFSInstance } from "./db/graph-db.js";
 import { WikidataAdapter } from "./lib/kg-adapters/wikidata.js";
 import { DBpediaAdapter } from "./lib/kg-adapters/dbpedia.js";
 import { OpenAlexAdapter } from "./lib/kg-adapters/openalex.js";
+import { createHelia } from "helia";
+
+// Initialize Helia/IPFS and inject into GraphDB
+const ipfs = await createHelia();
+setIPFSInstance(ipfs);
+const graphDB = new GraphDB();
 
 const server = new McpServer({
   name: "custom-mcp-server",
@@ -97,29 +103,25 @@ server.tool(
   },
 );
 
-server.tool(
-  "delete_relation",
-  `Delete a relation from the knowledge graph by its ID. Sample relation: {
-"id" : "123"
-  }`,
-  {
-    relationId: z.string().min(1, "Relation ID cannot be empty"),
-  },
-  async ({ relationId }) => {
-    const success = await graphDB.deleteRelation(relationId);
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: success
-            ? `Successfully deleted relation ${relationId}`
-            : `No relation found with ID ${relationId}`,
-        },
-      ],
-    };
-  },
-);
+// Remove or comment out the delete_relation tool implementation
+// server.tool(
+//   "delete_relation",
+//   `Delete a relation from the knowledge graph by its ID. Sample relation: {\n"id" : "123"\n  }`,
+//   {
+//     relationId: z.string().min(1, "Relation ID cannot be empty"),
+//   },
+//   async ({ relationId }) => {
+//     // Not supported in IPFS direct sync yet
+//     return {
+//       content: [
+//         {
+//           type: "text",
+//           text: `Relation deletion is not yet supported with direct IPFS sync.`,
+//         },
+//       ],
+//     };
+//   },
+// );
 
 server.tool(
   "search_nodes",
