@@ -1,40 +1,25 @@
-# ✅ TODO List — MCP-Compatible Knowledge Graph Server
+# ✅ TODO List — MCP-Compatible GraphDB Package (IPFS Persistence)
 
 ---
 
-## 🧠 Core Graph Engine (Local Storage)
+## 🧠 Core GraphDB Package (Library/Module)
 
 - [x] Setup project scaffold (monorepo or modular structure)
 - [x] Implement internal graph model (`Entity`, `Relation`)
 - [x] Implement utility functions: add/edit/delete nodes/edges
 - [ ] Integrate CRDT engine (Yjs)
   - [x] Setup Y.Doc with `nodes` and `edges` maps
-  - [ ] Implement utility functions: add/edit/delete nodes/edges
+  - [ ] Implement utility functions: add/edit/delete nodes/edges (CRDT-aware)
 - [x] Add local persistence (Yjs + file-based JSON)
 - [x] Implement change logging for provenance metadata
+- [ ] Expose programmatic API (JS/TS) for all graph operations:
+  - [ ] `createEntities`, `createRelations`, `addObservations`, `deleteEntities`, etc.
+  - [ ] `snapshotGraph`, `pinSnapshot`, `resolveLatest`, `getProvenance`, `importExternalKG`, `loadGraphByCID`
+- [ ] Package documentation (usage, API reference)
 
 ---
 
-## 🧰 MCP Tool
-
-- [x] Set up REST 
-- [x] Define standard API endpoints:
-  - [x] `POST /create_entities`
-  - [x] `POST /create_relations`
-  - [x] `POST /add_observations`
-  - [x] `DELETE /delete_entities`
-  - [x] `DELETE /delete_relations`
-  - [x] `GET /read_graph`
-  - [x] `GET /open_nodes`
-  - [ ] `POST /snapshot_graph`
-  - [ ] `GET /get_provenance`
-  - [ ] `POST /pin_snapshot`
-  - [ ] `POST /import_external_kg`
-  - [ ] `GET /resolve_latest`
-
----
-
-## 📤 IPFS + IPNS Integration
+## 📤 IPFS + IPNS Integration (as Library Features)
 
 - [ ] Setup Helia client for IPFS interaction
 - [ ] Implement graph snapshotting:
@@ -49,18 +34,18 @@
 
 ---
 
-## 🔍 Provenance Tracker
+## 🔍 Provenance Tracker (as Library Feature)
 
 - [ ] Design provenance metadata schema
-- [ ] Hook into each MCP action to:
+- [ ] Hook into each API action to:
   - [ ] Capture timestamp, agent ID, CID diff
   - [ ] Append to changelog per graph
-- [ ] Create endpoint: `GET /get_provenance`
+- [ ] Expose provenance via programmatic API
 - [ ] Optional: Ethereum anchor support (hash log with third-party service)
 
 ---
 
-## 🌐 External Knowledge Graph Integration
+## 🌐 External Knowledge Graph Integration (Adapters)
 
 - [ ] Create plugin interface for KG adapters
 - [ ] Implement `wikidata-adapter`:
@@ -69,33 +54,28 @@
 - [ ] Implement `dbpedia-adapter`
 - [ ] Implement `openalex-adapter`
 - [ ] Implement `conceptnet-adapter`
-- [ ] Add `import_external_kg` endpoint to orchestrate adapters
+- [ ] Expose `importExternalKG` method in package API
 
 ---
 
-## 🖼 Frontend (Graph Editor)
+## 🧩 Example Usage: REST/MCP Server (Optional)
 
-- [ ] Set up React + Tailwind project
-- [ ] Integrate graph visualizer (Cytoscape.js or Vis.js)
-- [ ] Implement:
-  - [ ] Add/edit/delete node UI
-  - [ ] Edge creation UI
-  - [ ] Import file (.json, .csv, .ttl)
-  - [ ] Show CRDT-synced version in real-time
-  - [ ] Publish graph → IPFS (via API)
-  - [ ] View provenance history
-- [ ] Fork/import graph by CID and load into editor
+- [ ] Create example REST API server using the package
+  - [ ] Implement REST endpoints by calling package API
+- [ ] Create example MCP server/tool using the package
+  - [ ] Implement MCP tool handlers by calling package API
+- [ ] Example scripts/CLI for direct usage
 
 ---
 
-## 📚 Public Graph Registry
+## 📚 Public Graph Registry (Optional, Example)
 
-- [ ] Set up Postgres or SQLite for metadata
+- [ ] Set up Postgres or SQLite for metadata (if needed)
 - [ ] Store published graphs: `title`, `author`, `CID`, `tags`, `createdAt`
-- [ ] Implement endpoints:
+- [ ] Implement example endpoints:
   - [ ] `GET /public-graphs`
   - [ ] `POST /import/:cid`
-- [ ] Add frontend UI for:
+- [ ] Example frontend UI for:
   - [ ] Search & filter graphs
   - [ ] Import/fork public graphs
 
@@ -103,11 +83,19 @@
 
 ## 🧪 Testing & Deployment
 
-- [ ] Write unit tests for each MCP tool
+- [ ] Write unit tests for each package API method
 - [ ] Write integration tests:
   - [ ] Full flow: create → snapshot → publish → import
   - [ ] External KG import → local storage
-- [ ] Setup Docker/CI for backend
+- [ ] Setup Docker/CI for package and example servers
 - [ ] Deploy IPFS node (Helia or remote gateway)
 - [ ] Setup staging and production environments
+
+---
+
+## 📖 Documentation & Release
+
+- [ ] Write package documentation (README, API docs, usage examples)
+- [ ] Document example REST/MCP server usage
+- [ ] Prepare for npm (or other) release
 

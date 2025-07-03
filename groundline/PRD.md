@@ -2,19 +2,21 @@ Thanks, Shubham. Here's the **updated and merged PRD** that combines your origin
 
 ---
 
-# 🧠 MCP-Compatible Knowledge Graph Server — Product Requirements Document (PRD)
+# 🧠 MCP-Compatible GraphDB Package with IPFS Persistence — Product Requirements Document (PRD)
 
 ---
 
 ## 🔍 Overview
 
 **Goal**:
-Build a **graph database server** that enables users and AI agents to collaboratively create, edit, import, and publish graphs with:
+Build a **reusable package (library/module)** that implements a **graph database** with:
 
 * **Decentralized storage** (via IPFS/IPNS)
 * **Provenance tracking** (CID chains, logs, optional blockchain anchoring)
 * **External KG integration** (Wikidata, DBpedia, OpenAlex, etc.)
-* **MCP-compatible API** for AI agent interoperability
+* **Programmatic API** for graph operations (create, edit, import, publish, provenance, etc.)
+
+This package can be used as the backend for a **REST API server**, an **MCP server**, or embedded in other applications. It is not a monolithic server, but a core engine that can be wrapped with different interfaces.
 
 ---
 
@@ -28,11 +30,11 @@ Build a **graph database server** that enables users and AI agents to collaborat
 | Import     | Import from JSON, CSV, RDF, GraphML or external KGs (Wikidata, etc.) |
 | Publishing | Serialize + publish to IPFS, update IPNS, store provenance           |
 | Discovery  | Browse/import published graphs via CID or search                     |
-| MCP Access | AI agents use MCP API to read/write/query/export graphs              |
+| MCP Access | Expose programmatic API for MCP/REST to read/write/query/export      |
 
 ---
 
-## 2. 🧱 Architecture Overview
+## 2. 🛠️ Package Architecture
 
 | Layer                 | Tech/Approach                                      |
 | --------------------- | -------------------------------------------------- |
@@ -40,56 +42,41 @@ Build a **graph database server** that enables users and AI agents to collaborat
 | IPFS Publishing Layer | Helia + Filecoin for permanent pinning             |
 | Provenance Tracker    | CID chain, changelogs, optional Ethereum anchor    |
 | External KG Adapter   | SPARQL + REST wrappers for Wikidata, DBpedia, etc. |
-| MCP Interface Layer   | Standard MCP tools for entity/relation ops         |
-| Public Registry       | PostgreSQL index of published graphs with metadata |
+| Programmatic API      | Expose all graph operations as JS/TS API           |
 
 ---
 
-## 3. 🛠️ MCP Tooling & Graph Operations
+## 3. 🧩 Package API & Graph Operations
 
-| Tool/Action          | Description                                            |
-| -------------------- | ------------------------------------------------------ |
-| `create_entities`    | Create one or more nodes/entities                      |
-| `create_relations`   | Link nodes with directional edges                      |
-| `add_observations`   | Attach descriptions or attributes to entities          |
-| `delete_entities`    | Remove entity and attached relations                   |
-| `snapshot_graph`     | Serialize graph → upload to IPFS → return CID          |
-| `pin_snapshot`       | Store CID on Filecoin (via Web3.storage or Lighthouse) |
-| `resolve_latest`     | Resolve latest version from IPNS pointer               |
-| `import_external_kg` | Import entities/edges from Wikidata, DBpedia, OpenAlex |
-| `get_provenance`     | Return change history, CID lineage, and logs           |
+The package exposes a programmatic API (JS/TS) for all graph operations. This API can be used to build REST endpoints, MCP tools, or other interfaces.
+
+| Method/Action         | Description                                            |
+| --------------------- | ------------------------------------------------------ |
+| `createEntities`      | Create one or more nodes/entities                      |
+| `createRelations`     | Link nodes with directional edges                      |
+| `addObservations`     | Attach descriptions or attributes to entities          |
+| `deleteEntities`      | Remove entity and attached relations                   |
+| `snapshotGraph`       | Serialize graph → upload to IPFS → return CID          |
+| `pinSnapshot`         | Store CID on Filecoin (via Web3.storage or Lighthouse) |
+| `resolveLatest`       | Resolve latest version from IPNS pointer               |
+| `importExternalKG`    | Import entities/edges from Wikidata, DBpedia, OpenAlex |
+| `getProvenance`       | Return change history, CID lineage, and logs           |
+| `loadGraphByCID`      | Load a published graph from IPFS by CID                |
 
 ---
 
-## 4. 🧑‍💻 User & Agent Workflows
+## 4. 🧑‍💻 Usage Scenarios
 
-### 🧍 For Human Users
+### As a Backend for REST or MCP Server
 
-1. **Create Graph**
+- Import the package in a Node.js server
+- Use the programmatic API to implement REST endpoints or MCP tool handlers
+- All persistence, provenance, and KG integration handled by the package
 
-   * Add nodes/edges via UI
-   * Store in CRDT (Yjs) → IndexedDB
-2. **Import Graph**
+### As a Standalone Library
 
-   * Upload `.csv`, `.json`, `.ttl`, `.graphml` OR
-   * Query + import from Wikidata/DBpedia/OpenAlex
-3. **Publish Graph**
-
-   * Export as JSON-LD → IPFS → get CID
-   * Write to public registry
-   * Track provenance (CID lineage, timestamp, author)
-4. **Import Public Graph**
-
-   * Discover by tag/search
-   * Clone by CID
-   * Forked version → editable in draft mode
-
-### 🤖 For AI Agents (via MCP)
-
-* Call `create_entities`, `create_relations`, etc.
-* Read and write from the same storage layer
-* Fetch published graphs via `read_graph`, `resolve_latest`
-* Snapshot changes → `snapshot_graph` → receive CID
+- Use in scripts, CLIs, or other apps to manage graphs with IPFS persistence
+- Directly call API methods for graph CRUD, import/export, provenance, etc.
 
 ---
 
@@ -164,7 +151,7 @@ type Relation = {
 | Draft        | Local CRDT only (private) |
 | Published    | Read-only via IPFS        |
 | Imported     | Forked → private draft    |
-| MCP Endpoint | Auth via API key/JWT      |
+| MCP/REST     | Auth via API key/JWT      |
 
 ---
 
@@ -172,13 +159,12 @@ type Relation = {
 
 | Component            | Description                                 |
 | -------------------- | ------------------------------------------- |
-| CRDT Graph Engine    | Yjs-backed local store for draft graphs     |
-| MCP API Server       | REST/GraphQL MCP tool endpoint handler      |
-| IPFS Integration     | Helia, Web3.storage for snapshotting        |
+| GraphDB Package      | Core library for graph + IPFS + provenance  |
+| Programmatic API     | JS/TS API for all graph operations          |
 | External KG Adapters | Modular wrapper for each data source        |
 | Provenance Tracker   | CID lineage + changelog tracking            |
-| Frontend Editor      | React UI for graph editing, import, publish |
-| Public Registry      | Index of published graphs (Postgres)        |
+| Example REST Server  | (Optional) Example REST API using package   |
+| Example MCP Server   | (Optional) Example MCP server using package |
 
 ---
 
@@ -186,13 +172,13 @@ type Relation = {
 
 | Week | Deliverable                               |
 | ---- | ----------------------------------------- |
-| 1    | CRDT graph editor MVP                     |
+| 1    | GraphDB package MVP (CRDT, API, IPFS)     |
 | 2    | File import: JSON/CSV/RDF/GraphML         |
 | 3    | External KG adapter (Wikidata)            |
-| 4    | MCP tool: `create_entities`, `read_graph` |
-| 5    | Snapshot + publish to IPFS/IPNS           |
-| 6    | Provenance chain + CID history            |
-| 7    | Public registry & import by CID           |
-| 8    | Final polish + test coverage              |
+| 4    | Provenance chain + CID history            |
+| 5    | Example REST/MCP server                   |
+| 6    | Public registry & import by CID           |
+| 7    | Final polish + test coverage              |
+| 8    | Documentation & release                   |
 
 ---
