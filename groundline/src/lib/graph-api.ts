@@ -141,6 +141,16 @@ export class GraphDB {
   }
 
   /**
+   * Get the current graph state
+   */
+  getGraph() {
+    if (!this.ipfsManager) {
+      throw new Error('IPFS support not enabled');
+    }
+    return this.ipfsManager.getGraphState();
+  }
+
+  /**
    * Get provenance information for the graph
    */
   getProvenance(): any[] {
