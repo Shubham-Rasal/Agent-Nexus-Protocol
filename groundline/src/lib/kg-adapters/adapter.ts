@@ -1,4 +1,4 @@
-import type { Entity, Relation } from "../../types/graph.js";
+import type { Entity, Relation } from "../graph-model.js";
 
 export interface ExternalEntity {
   id: string;
