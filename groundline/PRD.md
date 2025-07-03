@@ -1,167 +1,184 @@
-Here's a **Product Requirements Document (PRD)** for your **MCP-compatible Knowledge Graph Server**, integrating:
-
-- Local OrbitDB-based graph storage
-- IPFS/IPNS for decentralized pinning
-- Provenance tracking
-- External KG integration tools
-- Standard MCP API for model compatibility
+Thanks, Shubham. Here's the **updated and merged PRD** that combines your original requirements with **MCP compatibility**, **provenance tracking**, and **external KG integration**:
 
 ---
 
-# 🧠 MCP Knowledge Graph Server — Product Requirements Document
+# 🧠 MCP-Compatible GraphDB Package with IPFS Persistence — Product Requirements Document (PRD)
 
 ---
 
 ## 🔍 Overview
 
-**Goal**:  
-Build an **MCP-compatible server** that powers trustworthy AI agents by providing access to a **transparent, extensible knowledge graph**, grounded in:
+**Goal**:
+Build a **reusable package (library/module)** that implements a **graph database** with:
 
-- **Real-time, editable graphs** (via OrbitDB)
-- **Decentralized storage and provenance** (via IPFS/IPNS/Filecoin)
-- **Composable integration with external KGs** (Wikidata, DBpedia, OpenAlex, etc.)
-- **AI-native function API** (via MCP tools)
+* **Decentralized storage** (via IPFS/IPNS)
+* **Provenance tracking** (CID chains, logs, optional blockchain anchoring)
+* **External KG integration** (Wikidata, DBpedia, OpenAlex, etc.)
+* **Programmatic API** for graph operations (create, edit, import, publish, provenance, etc.)
 
----
-
-## 🧱 Architecture Summary
-
-| Layer               | Tech/Approach                                                                            |
-| ------------------- | ---------------------------------------------------------------------------------------- |
-| Local Graph Store   | [OrbitDB](https://github.com/orbitdb/orbit-db) (IPFS-based, distributed database)        |
-| Immutable Snapshots | [IPFS](https://ipfs.tech/), [IPNS](https://docs.ipfs.tech/concepts/ipns/) for versioning |
-| Persistence Layer   | Filecoin (via Web3.storage, Lighthouse, Powergate, etc.)                                 |
-| Interface Protocol  | [Model Context Protocol (MCP)] for AI function calling                                   |
-| External Sources    | Wikidata, DBpedia, OpenAlex, ConceptNet, etc.                                            |
-| Provenance Tracker  | Metadata logs, CID chains, optional anchoring on blockchain                              |
+This package can be used as the backend for a **REST API server**, an **MCP server**, or embedded in other applications. It is not a monolithic server, but a core engine that can be wrapped with different interfaces.
 
 ---
 
-## 🛠 MCP Server Tools
+## 1. 🎯 Core Features
 
-| Tool Name             | Description                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `create_entities`     | Create new entities with `name`, `entityType`, and `observations[]`                                        |
-| `create_relations`    | Define directed links between entities with `relationType`                                                 |
-| `add_observations`    | Add observations to existing entities                                                                      |
-| `delete_entities`     | Delete entity and its associated relations                                                                 |
-| `delete_observations` | Remove selected observations from an entity                                                                |
-| `delete_relations`    | Remove directed relation between two entities                                                              |
-| `read_graph`          | Export full knowledge graph from OrbitDB                                                                   |
-| `search_nodes`        | Search across names, types, and observation content                                                        |
-| `open_nodes`          | Return entities and their relations by name                                                                |
-| `snapshot_graph`      | Dump full graph → IPFS → return CID                                                                        |
-| `pin_snapshot`        | Pin specific CID to Filecoin or pinning service                                                            |
-| `resolve_latest`      | Get latest IPFS snapshot from IPNS pointer                                                                 |
-| `import_external_kg`  | Query external knowledge graphs (Wikidata, DBpedia, OpenAlex, etc.) and optionally import into local graph |
-| `get_provenance`      | Return change logs, CID chains, and update history for any node or the full graph                          |
+### ✅ Graph Lifecycle
+
+| Phase      | Feature                                                              |
+| ---------- | -------------------------------------------------------------------- |
+| Drafting   | Create/edit graphs locally via CRDT (Yjs)                            |
+| Import     | Import from JSON, CSV, RDF, GraphML or external KGs (Wikidata, etc.) |
+| Publishing | Serialize + publish to IPFS, update IPNS, store provenance           |
+| Discovery  | Browse/import published graphs via CID or search                     |
+| MCP Access | Expose programmatic API for MCP/REST to read/write/query/export      |
 
 ---
 
-## 🔁 Graph Lifecycle Flow
+## 2. 🛠️ Package Architecture
 
-### Case 1: Create/Update
-
-1. AI model calls an MCP tool (e.g., `create_entities`)
-2. MCP Server updates **OrbitDB**
-3. Optionally triggers `snapshot_graph` tool:
-
-   - Serializes graph → JSON-LD
-   - Uploads to **IPFS**
-   - Updates **IPNS pointer**
-   - Stores provenance metadata:
-     ```json
-     {
-       "timestamp": 1728548391,
-       "updated_by": "agent://gpt-4o",
-       "prev": "QmXYZ...",
-       "current": "QmABC...",
-       "change_log": ["Added Alice", "Linked to OpenAI"]
-     }
-     ```
-
-### Case 2: Import External Graph
-
-1. Call `import_external_kg` with `query`, `source`, and `import` flag
-2. MCP Server:
-
-   - Queries external API
-   - Transforms response to local format
-   - (Optional) saves into OrbitDB via `create_entities` + `create_relations`
+| Layer                 | Tech/Approach                                      |
+| --------------------- | -------------------------------------------------- |
+| Local Graph Store     | CRDT (Yjs), property graph format                  |
+| IPFS Publishing Layer | Helia + Filecoin for permanent pinning             |
+| Provenance Tracker    | CID chain, changelogs, optional Ethereum anchor    |
+| External KG Adapter   | SPARQL + REST wrappers for Wikidata, DBpedia, etc. |
+| Programmatic API      | Expose all graph operations as JS/TS API           |
 
 ---
 
-## 🗃 Provenance Strategy
+## 3. 🧩 Package API & Graph Operations
 
-- Each update stored with:
-  - `timestamp`
-  - `agent_id`
-  - `change_log`
-  - `prev_cid` → `current_cid`
-- Snapshots are **deterministically hashed**
-- Optionally publish `current_cid` to **public blockchain** or **Ethereum log contract** (extendable)
+The package exposes a programmatic API (JS/TS) for all graph operations. This API can be used to build REST endpoints, MCP tools, or other interfaces.
 
----
-
-## 🌍 External KG Integration Plan
-
-### Initial Sources:
-
-- **Wikidata** (via SPARQL + EntityData API)
-- **DBpedia** (SPARQL endpoint)
-- **OpenAlex** (REST)
-- **ConceptNet** (REST)
-- **CommonsenseKG / ATOMIC** (local dump)
-
-### Architecture:
-
-| Step          | Function                                |
-| ------------- | --------------------------------------- |
-| Query adapter | Uses API or SPARQL depending on source  |
-| Transformer   | Maps external schema → local format     |
-| Importer      | Optionally writes to OrbitDB            |
-| Extensibility | Each source gets its own plugin wrapper |
+| Method/Action         | Description                                            |
+| --------------------- | ------------------------------------------------------ |
+| `createEntities`      | Create one or more nodes/entities                      |
+| `createRelations`     | Link nodes with directional edges                      |
+| `addObservations`     | Attach descriptions or attributes to entities          |
+| `deleteEntities`      | Remove entity and attached relations                   |
+| `snapshotGraph`       | Serialize graph → upload to IPFS → return CID          |
+| `pinSnapshot`         | Store CID on Filecoin (via Web3.storage or Lighthouse) |
+| `resolveLatest`       | Resolve latest version from IPNS pointer               |
+| `importExternalKG`    | Import entities/edges from Wikidata, DBpedia, OpenAlex |
+| `getProvenance`       | Return change history, CID lineage, and logs           |
+| `loadGraphByCID`      | Load a published graph from IPFS by CID                |
 
 ---
 
-## 📁 Data Format (Internal)
+## 4. 🧑‍💻 Usage Scenarios
 
-```ts
-interface Entity {
-  name: string;
-  entityType: string;
-  observations: string[];
-}
+### As a Backend for REST or MCP Server
 
-interface Relation {
-  from: string;
-  to: string;
-  relationType: string;
+- Import the package in a Node.js server
+- Use the programmatic API to implement REST endpoints or MCP tool handlers
+- All persistence, provenance, and KG integration handled by the package
+
+### As a Standalone Library
+
+- Use in scripts, CLIs, or other apps to manage graphs with IPFS persistence
+- Directly call API methods for graph CRUD, import/export, provenance, etc.
+
+---
+
+## 5. 🧬 Provenance Design
+
+### Data Stored per Graph Change
+
+```json
+{
+  "timestamp": 1728548391,
+  "updated_by": "agent://gpt-4o",
+  "prev": "QmPrev...",
+  "current": "QmCurrent...",
+  "change_log": ["+ Added node Q42", "+ Linked to DBpedia"]
 }
 ```
 
----
-
-## 📦 Deliverables
-
-| Component              | Status                            |
-| ---------------------- | --------------------------------- |
-| MCP server             | ✅ Implement tools and endpoints  |
-| OrbitDB schema         | ✅ Flexible node/key-value design |
-| IPFS integration       | ✅ Snapshot → pin → return CID    |
-| IPNS support           | ✅ Update mutable pointer         |
-| Provenance tracker     | ✅ Metadata per CID               |
-| External graph imports | ✅ Extendable per-source modules  |
+* Chain forms a **provenance DAG**
+* Snapshots are **deterministically hashed**
+* Optionally **anchor hashes on blockchain** (Ethereum via Light Clients or third-party services)
 
 ---
 
-## 🧪 Test Plan
+## 6. 🌐 External KG Integration
 
-- Unit tests per MCP tool
-- End-to-end tests:
-  - AI call → OrbitDB update → snapshot → IPFS
-  - External KG → Import → Read
-- Provenance validation via CID chain
-- CID resolution through IPNS
+| Source     | Method              | Adapter              |
+| ---------- | ------------------- | -------------------- |
+| Wikidata   | SPARQL + EntityData | `wikidata-adapter`   |
+| DBpedia    | SPARQL              | `dbpedia-adapter`    |
+| OpenAlex   | REST                | `openalex-adapter`   |
+| ConceptNet | REST                | `conceptnet-adapter` |
+
+Each adapter:
+
+* Accepts structured query (e.g., entity label)
+* Fetches data
+* Maps schema to `{ name, entityType, observations[] }`
+* Returns structured JSON for import
+
+---
+
+## 7. 📁 Data Format
+
+### Internal Graph Model
+
+```ts
+type Entity = {
+  name: string;
+  entityType: string;
+  observations: string[];
+};
+
+type Relation = {
+  from: string;
+  to: string;
+  relationType: string;
+};
+```
+
+### Storage Format
+
+* JSON-LD or DAG-JSON for snapshot serialization
+* Stored on IPFS
+* Indexed by CIDs and optionally by IPNS
+
+---
+
+## 8. 🔐 Security & Access Control
+
+| Graph Type   | Access Type               |
+| ------------ | ------------------------- |
+| Draft        | Local CRDT only (private) |
+| Published    | Read-only via IPFS        |
+| Imported     | Forked → private draft    |
+| MCP/REST     | Auth via API key/JWT      |
+
+---
+
+## 9. 📦 Deliverables
+
+| Component            | Description                                 |
+| -------------------- | ------------------------------------------- |
+| GraphDB Package      | Core library for graph + IPFS + provenance  |
+| Programmatic API     | JS/TS API for all graph operations          |
+| External KG Adapters | Modular wrapper for each data source        |
+| Provenance Tracker   | CID lineage + changelog tracking            |
+| Example REST Server  | (Optional) Example REST API using package   |
+| Example MCP Server   | (Optional) Example MCP server using package |
+
+---
+
+## 10. 📆 Timeline (8 Weeks)
+
+| Week | Deliverable                               |
+| ---- | ----------------------------------------- |
+| 1    | GraphDB package MVP (CRDT, API, IPFS)     |
+| 2    | File import: JSON/CSV/RDF/GraphML         |
+| 3    | External KG adapter (Wikidata)            |
+| 4    | Provenance chain + CID history            |
+| 5    | Example REST/MCP server                   |
+| 6    | Public registry & import by CID           |
+| 7    | Final polish + test coverage              |
+| 8    | Documentation & release                   |
 
 ---

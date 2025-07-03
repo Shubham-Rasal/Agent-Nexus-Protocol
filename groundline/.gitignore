@@ -4,3 +4,4 @@ dist/
 .env
 data/ 
 build/
+dist/

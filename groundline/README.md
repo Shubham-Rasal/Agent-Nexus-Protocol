@@ -1,6 +1,6 @@
-# Custom MCP Server (OrbitDB Knowledge Graph)
+# Custom MCP Server (IPFS Knowledge Graph)
 
-This is a custom MCP server implementation for the MCP Client Chatbot project. It uses OrbitDB as a decentralized backend for storing entities, relations, and knowledge graph data, and provides a rich set of MCP tools for graph management and external knowledge graph integration.
+This is a custom MCP server implementation for the MCP Client Chatbot project. It uses a storage layer built directly on top of IPFS as a decentralized backend for storing entities, relations, and knowledge graph data, and provides a rich set of MCP tools for graph management and external knowledge graph integration.
 
 ## Features
 
