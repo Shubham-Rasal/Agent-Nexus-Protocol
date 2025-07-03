@@ -7,30 +7,30 @@
 - [x] Setup project scaffold (monorepo or modular structure)
 - [x] Implement internal graph model (`Entity`, `Relation`)
 - [x] Implement utility functions: add/edit/delete nodes/edges
-- [ ] Integrate CRDT engine (Yjs)
+- [x] Integrate CRDT engine (Yjs)
   - [x] Setup Y.Doc with `nodes` and `edges` maps
-  - [ ] Implement utility functions: add/edit/delete nodes/edges (CRDT-aware)
+  - [x] Implement utility functions: add/edit/delete nodes/edges (CRDT-aware)
 - [x] Add local persistence (Yjs + file-based JSON)
 - [x] Implement change logging for provenance metadata
-- [ ] Expose programmatic API (JS/TS) for all graph operations:
-  - [ ] `createEntities`, `createRelations`, `addObservations`, `deleteEntities`, etc.
-  - [ ] `snapshotGraph`, `pinSnapshot`, `resolveLatest`, `getProvenance`, `importExternalKG`, `loadGraphByCID`
+- [x] Expose programmatic API (JS/TS) for all graph operations:
+  - [x] `createEntities`, `createRelations`, `addObservations`, `deleteEntities`, etc.
+  - [x] `snapshotGraph`, `pinSnapshot`, `resolveLatest`, `getProvenance`, `importExternalKG`, `loadGraphByCID`
 - [ ] Package documentation (usage, API reference)
 
 ---
 
 ## 📤 IPFS + IPNS Integration (as Library Features)
 
-- [ ] Setup Helia client for IPFS interaction
-- [ ] Implement graph snapshotting:
-  - [ ] Serialize Y.Doc → JSON-LD or DAG-JSON
-  - [ ] Upload to IPFS
-  - [ ] Return CID
+- [x] Setup Synapse SDK for IPFS interaction
+- [x] Implement graph snapshotting:
+  - [x] Serialize Y.Doc → JSON
+  - [x] Upload to IPFS via Synapse
+  - [x] Return CommP (CID)
 - [ ] Implement IPNS key management and pointer updates
-- [ ] Integrate Filecoin (Web3.storage or Lighthouse) for permanent pinning
-- [ ] Create version history log:
-  - [ ] Track previous CID, current CID, and change logs
-  - [ ] Store in local graph metadata
+- [x] Integrate Filecoin storage via Synapse SDK
+- [x] Create version history log:
+  - [x] Track previous CID, current CID, and change logs
+  - [x] Store in local graph metadata
 
 ---
 
