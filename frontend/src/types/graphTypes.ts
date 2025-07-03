@@ -5,6 +5,7 @@ export interface GraphNode {
   x?: number;
   y?: number;
   description?: string;
+  user?: string;
 }
 
 export interface GraphLink {

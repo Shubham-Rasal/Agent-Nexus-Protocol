@@ -11,7 +11,7 @@ type Props = {
   onNodeClick?: (node: GraphNode) => void;
 };
 
-const KnowledgeGraph: React.FC<Props> = ({ data, width = 900, height = 700, onNodeClick }) => {
+const KnowledgeGraph: React.FC<Props> = ({ data, width = 1500, height = 700, onNodeClick }) => {
   const fgRef = useRef<any>(null);
    
   // Center the graph and fit to canvas on mount/data change
@@ -35,6 +35,9 @@ const KnowledgeGraph: React.FC<Props> = ({ data, width = 900, height = 700, onNo
       nodeLabel={(node) => (node as GraphNode).label || (node as GraphNode).id}
       onNodeClick={(node) => {
         console.log(node);
+        if (onNodeClick) {
+          onNodeClick(node as GraphNode);
+        }
       }}
     />
   );
