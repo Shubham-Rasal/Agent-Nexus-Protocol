@@ -9,6 +9,7 @@ export interface Entity {
 }
 
 export interface Relation {
+  id?: string; // Optional, as some adapters may not provide it
   from: string;
   to: string;
   relationType: string;
