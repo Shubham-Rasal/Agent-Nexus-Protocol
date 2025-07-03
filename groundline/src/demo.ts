@@ -7,7 +7,6 @@ async function runDemo() {
     const graphDB = createGraphDB({
       ipfs: {
         // Optional: provide custom IPFS config
-        // privateKey: "8f3092541ef889aa7c0c6c3f81f0c607a63dc75204003b57c1ce2c51570b490c",
         rpcURL:  'https://api.calibration.node.glif.io/rpc/v1',
       }
     });
