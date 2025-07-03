@@ -59,6 +59,9 @@ importers:
       helia:
         specifier: ^5.4.2
         version: 5.4.2(react-native@0.80.0(@babel/core@7.27.4)(react@19.1.0))
+      hono:
+        specifier: ^4.8.3
+        version: 4.8.3
       libp2p:
         specifier: ^2.8.11
         version: 2.8.11
@@ -1704,6 +1707,10 @@ packages:
 
   hermes-parser@0.28.1:
     resolution: {integrity: sha512-nf8o+hE8g7UJWParnccljHumE9Vlq8F7MqIdeahl+4x0tvCUJYRrT0L7h0MMg/X9YJmkNwsfbaNNrzPtFXOscg==}
+
+  hono@4.8.3:
+    resolution: {integrity: sha512-jYZ6ZtfWjzBdh8H/0CIFfCBHaFL75k+KMzaM177hrWWm2TWL39YMYaJgB74uK/niRc866NMlH9B8uCvIo284WQ==}
+    engines: {node: '>=16.9.0'}
 
   http-cookie-agent@6.0.8:
     resolution: {integrity: sha512-qnYh3yLSr2jBsTYkw11elq+T361uKAJaZ2dR4cfYZChw1dt9uL5t3zSUwehoqqVb4oldk1BpkXKm2oat8zV+oA==}
@@ -5532,6 +5539,8 @@ snapshots:
   hermes-parser@0.28.1:
     dependencies:
       hermes-estree: 0.28.1
+
+  hono@4.8.3: {}
 
   http-cookie-agent@6.0.8(tough-cookie@5.1.2)(undici@6.21.3):
     dependencies:

@@ -21,11 +21,11 @@
 - [x] Define standard API endpoints:
   - [x] `POST /create_entities`
   - [x] `POST /create_relations`
-  - [ ] `POST /add_observations`
-  - [ ] `DELETE /delete_entities`
-  - [ ] `DELETE /delete_relations`
-  - [ ] `GET /read_graph`
-  - [ ] `GET /open_nodes`
+  - [x] `POST /add_observations`
+  - [x] `DELETE /delete_entities`
+  - [x] `DELETE /delete_relations`
+  - [x] `GET /read_graph`
+  - [x] `GET /open_nodes`
   - [ ] `POST /snapshot_graph`
   - [ ] `GET /get_provenance`
   - [ ] `POST /pin_snapshot`
