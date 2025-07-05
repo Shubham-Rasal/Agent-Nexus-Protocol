@@ -7,8 +7,8 @@
     "start": "tsx demo.ts"
   },
   "dependencies": {
-    "dotenv": "^17.0.1",
-    "groundline": "file:../"
+    "@shubhamrasal/groundline": "0.2.0",
+    "dotenv": "^17.0.1"
   },
   "devDependencies": {
     "tsx": "^4.7.0",

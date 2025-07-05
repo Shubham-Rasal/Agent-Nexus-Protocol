@@ -3,7 +3,7 @@ import { addNode, editNode, deleteNode, addEdge, editEdge, deleteEdge, getProven
 import { createGraphIPFSManager} from './graph-ipfs.js';
 import { IPFSConfig } from './ipfs.js';
 import type { ExternalEntity, ExternalRelation } from './kg-adapters/adapter.js';
-import { WikidataAdapter } from './kg-adapters/wikidata.js';
+import { WikidataAdapter } from './kg-adapters/wikidata';
 import { DBpediaAdapter } from './kg-adapters/dbpedia.js';
 import { OpenAlexAdapter } from './kg-adapters/openalex.js';
 import { serializeGraphToJsonLD, validateAndCompactJsonLD } from './graph-jsonld.js';
