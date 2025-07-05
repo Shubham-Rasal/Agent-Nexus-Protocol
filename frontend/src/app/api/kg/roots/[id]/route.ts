@@ -12,7 +12,7 @@ export async function GET(
     // Here you would typically fetch the root details from your database
     // For now, we'll return mock data
     const rootData = {
-      rootId: params.id,
+      rootId: id,
       rootCid: "baga6ea4seaqgezkarkz72pg3p3jcrt7p53xlky4v4rgs3wyu6nc5f2bikij4aoa",
       timestamp: new Date().toISOString(),
       status: "active"

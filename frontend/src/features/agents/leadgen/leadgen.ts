@@ -1,6 +1,6 @@
 import { FunctionTool } from "llamaindex";
 import { websearch } from "./web-search";
-import { akaveStorage } from "./akave-storage";
+import { akaveStorageTool } from "./akave-storage";
 import { leadQualification } from "./lead-qualification";
 
 export const webSearch = new FunctionTool(websearch, {
@@ -8,4 +8,4 @@ export const webSearch = new FunctionTool(websearch, {
   description: "Search the web for information",
 });
 
-export { akaveStorage, leadQualification };
+export { akaveStorageTool, leadQualification };

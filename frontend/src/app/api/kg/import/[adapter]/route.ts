@@ -3,10 +3,10 @@ import { createGraphDB } from '@shubhamrasal/groundline'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { adapter: string } }
+  { params }: { params: Promise<{ adapter: string }> }
 ) {
   try {
-    const { adapter } = params
+    const { adapter } = await params
     const { query } = await request.json()
 
     if (!adapter || !query) {
