@@ -91,7 +91,7 @@ export class IPFSClient {
   async initialize(): Promise<void> {
     // Initialize Synapse SDK
     this.synapse = await Synapse.create({
-      privateKey : this.config.privateKey || "",
+      privateKey : this.config.privateKey,
       rpcURL: this.config.rpcURL || RPC_URLS.calibration.websocket,
       withCDN: this.config.withCDN
     });

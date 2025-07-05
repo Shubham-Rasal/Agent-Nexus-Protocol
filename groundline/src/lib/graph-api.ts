@@ -232,6 +232,7 @@ export class GraphDB {
       });
 
       // Create a snapshot with just the JSON-LD document
+      console.log('✅ Creating snapshot with JSON-LD document');
       ipfsCid = await this.ipfsManager.snapshotToIPFS();
     }
 
@@ -251,13 +252,9 @@ export class GraphDB {
     
     // Get the JSON-LD document from the special entity
     const state = this.ipfsManager.getGraphState();
-    const jsonLdEntity = state.nodes.find(([id]) => id === 'jsonld')?.[1] as Entity;
-    
-    if (!jsonLdEntity?.observations?.[0]) {
-      throw new Error('No JSON-LD document found in snapshot');
-    }
+    console.log('✅ State:', state);
 
-    return JSON.parse(jsonLdEntity.observations[0]);
+    return state;
   }
 }
 

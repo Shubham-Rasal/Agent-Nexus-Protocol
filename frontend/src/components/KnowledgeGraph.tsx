@@ -52,6 +52,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import * as d3 from "d3"
+import { createGraphDB } from "@shubhamrasal/groundline"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface GraphNode {
   id: string
@@ -225,6 +233,12 @@ const sampleProvenanceData = [
   }
 ]
 
+const ADAPTERS = [
+  { id: 'wikidata', name: 'Wikidata', description: 'Structured data from Wikipedia' },
+  { id: 'dbpedia', name: 'DBpedia', description: 'Linked data from Wikipedia' },
+  { id: 'openalex', name: 'OpenAlex', description: 'Open academic graph' }
+]
+
 export default function Neo4jGraphBrowser() {
   const svgRef = useRef<SVGSVGElement>(null)
   const [graphData, setGraphData] = useState<GraphData>(sampleGraphData)
@@ -247,6 +261,16 @@ export default function Neo4jGraphBrowser() {
     name: "",
     useCDN: false
   })
+  const [isImportDrawerOpen, setIsImportDrawerOpen] = useState(false)
+  const [importForm, setImportForm] = useState({
+    adapter: '',
+    query: ''
+  })
+  const [isImporting, setIsImporting] = useState(false)
+  const [importResults, setImportResults] = useState<{
+    entities: any[];
+    relations: any[];
+  } | null>(null)
 
   const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null)
 
@@ -460,6 +484,8 @@ export default function Neo4jGraphBrowser() {
       setIsProvenanceOpen(true)
     } else if (label === "IPFS Sync") {
       setIsIPFSDialogOpen(true)
+    } else if (label === "Import External Graphs") {
+      setIsImportDrawerOpen(true)
     }
   }
 
@@ -481,6 +507,28 @@ export default function Neo4jGraphBrowser() {
     setIsIPFSDialogOpen(false)
     // Reset form
     setSyncForm({ name: "", useCDN: false })
+  }
+
+  const handleImport = async () => {
+    if (!importForm.adapter || !importForm.query) return
+
+    setIsImporting(true)
+    setImportResults(null)
+
+    try {
+      const graphDB = createGraphDB({
+        enabledAdapters: [importForm.adapter as 'wikidata' | 'dbpedia' | 'openalex']
+      })
+      
+      await graphDB.initialize()
+      const results = await graphDB.importExternalKG(importForm.adapter, importForm.query)
+      setImportResults(results)
+    } catch (error) {
+      console.error('Import failed:', error)
+      // TODO: Show error toast
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   return (
@@ -668,6 +716,146 @@ export default function Neo4jGraphBrowser() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Import External Graphs Drawer */}
+        <Sheet open={isImportDrawerOpen} onOpenChange={setIsImportDrawerOpen}>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Globe2 className="w-5 h-5" />
+                Import External Graphs
+              </SheetTitle>
+              <SheetDescription>
+                Import knowledge from external graph databases
+              </SheetDescription>
+            </SheetHeader>
+            
+            <div className="mt-6 space-y-6">
+              {/* Import Form */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Select Data Source</Label>
+                  <Select
+                    value={importForm.adapter}
+                    onValueChange={(value) => setImportForm({ ...importForm, adapter: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a data source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ADAPTERS.map(adapter => (
+                        <SelectItem key={adapter.id} value={adapter.id}>
+                          <div>
+                            <div className="font-medium">{adapter.name}</div>
+                            <div className="text-xs text-slate-500">{adapter.description}</div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Search Query</Label>
+                  <Textarea
+                    placeholder="Enter your search query..."
+                    value={importForm.query}
+                    onChange={(e) => setImportForm({ ...importForm, query: e.target.value })}
+                    className="min-h-[100px]"
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleImport}
+                  disabled={!importForm.adapter || !importForm.query || isImporting}
+                  className="w-full"
+                >
+                  {isImporting ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Globe2 className="w-4 h-4 mr-2" />
+                      Import Data
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Import Results */}
+              {importResults && (
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-medium">Import Results</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-slate-50 p-3 rounded-lg">
+                      <div className="text-sm font-medium">Entities</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {importResults.entities.length}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-slate-50 p-3 rounded-lg">
+                      <div className="text-sm font-medium">Relations</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {importResults.relations.length}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm">Preview</Label>
+                      <div className="max-h-[200px] overflow-y-auto space-y-2">
+                        {importResults.entities.slice(0, 5).map((entity, idx) => (
+                          <div key={idx} className="bg-white p-2 rounded border text-sm">
+                            <div className="font-medium">{entity.name}</div>
+                            <div className="text-xs text-slate-500">{entity.entityType}</div>
+                          </div>
+                        ))}
+                        {importResults.entities.length > 5 && (
+                          <div className="text-xs text-center text-slate-500">
+                            And {importResults.entities.length - 5} more entities...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      setImportResults(null)
+                      setImportForm({ adapter: '', query: '' })
+                    }}
+                  >
+                    Clear Results
+                  </Button>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col">

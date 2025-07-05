@@ -1,6 +1,6 @@
 import * as Y from 'yjs';
 import type { Entity, Relation } from './graph-model.js';
-import * as fs from 'fs';
+// import * as fs from 'fs';
 
 // Create a new Y.Doc instance
 export const graphDoc = new Y.Doc();
@@ -73,18 +73,7 @@ export function deleteEdge(edgeId: string) {
   logChange({ action: 'delete', objectType: 'edge', id: edgeId });
 }
 
-// Save the current Y.Doc state to a file (as base64-encoded update)
-export function saveGraphToFile(filepath: string) {
-  const update = Y.encodeStateAsUpdate(graphDoc);
-  fs.writeFileSync(filepath, update);
-}
 
-// Load the Y.Doc state from a file (base64-encoded update)
-export function loadGraphFromFile(filepath: string) {
-  if (!fs.existsSync(filepath)) return;
-  const update = fs.readFileSync(filepath);
-  Y.applyUpdate(graphDoc, update);
-}
 
 // Export functions to get and clear the provenance log
 export function getProvenanceLog() {

@@ -19,9 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "groundline/*": ["../groundline/src/*"]
+    },
+    "baseUrl": "."
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../../agent.js", "src/features/agents/research/research-agent.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../../agent.js", "src/features/agents/research/research-agent.ts", "../groundline/src/**/*"],
   "exclude": ["node_modules"]
 }

@@ -34,7 +34,9 @@ export class OpenAlexAdapter extends BaseKGAdapter {
         `OpenAlex query failed: ${response.statusText} (${response.status})`,
       );
     }
-    const data = await response.json();
+    const data = (await response.json()) as {
+      results: any[]
+    };
     // Map OpenAlex authors to ExternalEntity
     const authors: ExternalEntity[] = (data.results || []).map(
       (author: any) => ({
@@ -72,7 +74,9 @@ export class OpenAlexAdapter extends BaseKGAdapter {
         `OpenAlex relation query failed: ${response.statusText} (${response.status})`,
       );
     }
-    const data = await response.json();
+    const data = (await response.json()) as {
+      results: any[]
+    };
     const relations: ExternalRelation[] = [];
     for (const work of data.results || []) {
       const coAuthors = (work.authorships || [])
