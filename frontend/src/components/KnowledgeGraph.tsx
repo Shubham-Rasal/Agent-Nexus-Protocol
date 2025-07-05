@@ -65,6 +65,7 @@ import { sampleGraphData, sampleProvenanceData, ADAPTERS, GraphNode, GraphLink, 
 import React from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { ImportGraphDrawer } from "./kg/ImportGraphDrawer"
 
 interface ExternalEntity {
   id?: string
@@ -184,7 +185,7 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
 
     const svg = d3.select(svgRef.current)
     const width = 800
-    const height = 500
+    const height = 600
 
     svg.selectAll("*").remove()
 
@@ -491,26 +492,60 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
     setSyncForm({ name: "", useCDN: false })
   }
 
-  const handleImport = async () => {
-    if (!importForm.adapter || !importForm.query) return
-
-    setIsImporting(true)
-    setImportResults(null)
-
+  const handleImport = async (adapter: string, query: string) => {
     try {
-      const graphDB = createGraphDB({
-        enabledAdapters: [importForm.adapter as 'wikidata' | 'dbpedia' | 'openalex']
+      setIsImporting(true)
+      setError(null)
+
+      const response = await fetch(`/api/kg/import/${adapter}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
       })
-      
-      await graphDB.initialize()
-      const results = await graphDB.importExternalKG(importForm.adapter, importForm.query)
+
+      if (!response.ok) {
+        throw new Error(`Import failed: ${response.statusText}`)
+      }
+
+      const results = await response.json()
       setImportResults(results)
-    } catch (error) {
-      console.error('Import failed:', error)
-      // TODO: Show error toast
+      toast.success('Graph imported successfully')
+    } catch (err) {
+      console.error('Import error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to import graph')
+      toast.error('Failed to import graph')
     } finally {
       setIsImporting(false)
     }
+  }
+
+  const handleAddToGraph = () => {
+    if (!importResults) return
+
+    const newNodes = importResults.entities.map((entity: ExternalEntity) => ({
+      id: entity.id || entity.name,
+      name: entity.name,
+      type: entity.type,
+      properties: entity.properties || {},
+    }))
+
+    const newLinks = importResults.relations.map((relation: ExternalRelation) => ({
+      source: relation.from,
+      target: relation.to,
+      type: relation.type,
+      properties: relation.properties || {},
+    }))
+
+    setGraphData(prevData => ({
+      nodes: [...prevData.nodes, ...newNodes],
+      links: [...prevData.links, ...newLinks],
+    }))
+
+    setIsImportDrawerOpen(false)
+    setImportResults(null)
+    toast.success('Data added to graph')
   }
 
   useEffect(() => {
@@ -677,12 +712,12 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen overflow-hidden bg-white">
+      <div className="flex min-h-screen bg-white relative">
         {/* Collapsible Sidebar - Fixed */}
         <div
           className={`${
             sidebarCollapsed ? "w-16" : "w-64"
-          } bg-slate-50 border-r border-slate-200 flex flex-col h-screen transition-all duration-300 ease-in-out`}
+          } bg-slate-50 border-r border-slate-200 flex flex-col fixed top-0 left-0 h-screen transition-all duration-300 ease-in-out`}
         >
           {/* Header */}
           <div className="p-4 border-b border-slate-200 flex items-center justify-between">
@@ -723,38 +758,13 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
             ))}
           </nav>
 
-          {/* Add metadata display when expanded */}
-          {!sidebarCollapsed && metadata && (
-            <div className="p-4 border-t">
-              <h3 className="text-sm font-medium text-slate-900 mb-2">Graph Info</h3>
-              <div className="space-y-2 text-xs text-slate-600">
-                <p>Version: {metadata.version}</p>
-                <p>Last Updated: {new Date(metadata.timestamp).toLocaleString()}</p>
-                <div>
-                  <p className="font-medium">Node Types:</p>
-                  <ul className="ml-2">
-                    {metadata.nodeTypes.map(type => (
-                      <li key={type}>{type}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium">Relation Types:</p>
-                  <ul className="ml-2">
-                    {metadata.relationTypes.map(type => (
-                      <li key={type}>{type}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
+          
         </div>
 
         {/* Main Content - Scrollable */}
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <div className={`flex-1 flex flex-col min-h-screen ${sidebarCollapsed ? "ml-16" : "ml-64"}`}>
           {/* Fixed Headers */}
-          <div className="flex-none">
+          <div className=" top-0 z-30 bg-white">
             {/* Top Navigation */}
             <div className="bg-white border-b border-slate-200 px-6 py-3">
             </div>
@@ -857,7 +867,7 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
           </div>
 
           {/* Scrollable Graph Area */}
-          <div className="flex-1 overflow-auto relative">
+          <div className="flex-1 relative">
             {/* Graph Controls */}
             <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
               {/* Search */}
@@ -989,14 +999,14 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
             )}
 
             {/* Graph Visualization */}
-            <div className="p-6">
+            <div className="p-6 ">
               <h3 className="text-lg font-semibold mb-6 text-slate-800">Result frame views</h3>
               <svg
                 ref={svgRef}
                 width="100%"
-                height="500"
+                height="600"
                 className="border border-slate-200 rounded-xl bg-slate-50/30"
-                viewBox="0 0 800 500"
+                viewBox="0 0 800 600"
               />
             </div>
           </div>
@@ -1142,7 +1152,7 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
         {/* Import External Graphs Drawer */}
         <Sheet open={isImportDrawerOpen} onOpenChange={setIsImportDrawerOpen}>
           <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white flex flex-col p-0">
-            {/* Import drawer content remains the same */}
+            <h1>Import External Graphs</h1>
           </SheetContent>
         </Sheet>
 
@@ -1155,6 +1165,18 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
             </div>
           </div>
         )}
+
+        <ImportGraphDrawer
+          isOpen={isImportDrawerOpen}
+          onClose={() => {
+            setIsImportDrawerOpen(false)
+            setImportResults(null)
+          }}
+          onImport={handleImport}
+          isImporting={isImporting}
+          importResults={importResults}
+          onAddToGraph={handleAddToGraph}
+        />
 
       </div>
     </TooltipProvider>
