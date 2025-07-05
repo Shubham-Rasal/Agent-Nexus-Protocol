@@ -54,7 +54,15 @@ async function runDemo() {
     ]);
     console.log('✅ Added observations to person1');
 
-    // Create a snapshot and store it on IPFS
+    // Export to JSON-LD and publish to IPFS
+    const { jsonLd, ipfsCid } = await graphDB.exportAsJsonLD({
+      validate: true,
+      publishToIPFS: true
+    });
+    console.log('✅ Exported graph as JSON-LD:', JSON.stringify(jsonLd, null, 2));
+    console.log('✅ Published JSON-LD to IPFS:', ipfsCid);
+
+    // Create a regular graph snapshot and store it on IPFS
     const cid = await graphDB.snapshotGraph();
     console.log('✅ Created IPFS snapshot:', cid);
 
@@ -62,11 +70,17 @@ async function runDemo() {
     await graphDB.deleteEntities(['person1', 'person2']);
     console.log('✅ Cleared graph');
 
-    // Load the graph from IPFS
+    // Load the JSON-LD version from IPFS
+    if (ipfsCid) {
+      const loadedJsonLd = await graphDB.loadJsonLDFromIPFS(ipfsCid);
+      console.log('✅ Loaded JSON-LD from IPFS:', JSON.stringify(loadedJsonLd, null, 2));
+    }
+
+    // Load the regular graph from IPFS
     await graphDB.loadGraphByCID(cid);
     console.log('✅ Loaded graph from IPFS');
 
-    //check if the graph is loaded
+    // Check if the graph is loaded
     console.log('✅ Graph loaded:', graphDB.getGraph());
 
     // Get provenance information
