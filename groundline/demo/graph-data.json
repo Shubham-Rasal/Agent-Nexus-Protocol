@@ -1,0 +1,9214 @@
+{
+  "nodes": [
+    {
+      "id": "Zettels_0",
+      "label": "Zettels_0",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_1",
+      "label": "Zettels_1",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_2",
+      "label": "Zettels_2",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_3",
+      "label": "Zettels_3",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_4",
+      "label": "Zettels_4",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_5",
+      "label": "Zettels_5",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_6",
+      "label": "Zettels_6",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_7",
+      "label": "Zettels_7",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_8",
+      "label": "Zettels_8",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_9",
+      "label": "Zettels_9",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_10",
+      "label": "Zettels_10",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_11",
+      "label": "Zettels_11",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_12",
+      "label": "Zettels_12",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_13",
+      "label": "Zettels_13",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_14",
+      "label": "Zettels_14",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_15",
+      "label": "Zettels_15",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_16",
+      "label": "Zettels_16",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_17",
+      "label": "Zettels_17",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_18",
+      "label": "Zettels_18",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_19",
+      "label": "Zettels_19",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_20",
+      "label": "Zettels_20",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_21",
+      "label": "Zettels_21",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_22",
+      "label": "Zettels_22",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_23",
+      "label": "Zettels_23",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_24",
+      "label": "Zettels_24",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_25",
+      "label": "Zettels_25",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_26",
+      "label": "Zettels_26",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_27",
+      "label": "Zettels_27",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_28",
+      "label": "Zettels_28",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_29",
+      "label": "Zettels_29",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_30",
+      "label": "Zettels_30",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_31",
+      "label": "Zettels_31",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_32",
+      "label": "Zettels_32",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_33",
+      "label": "Zettels_33",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_34",
+      "label": "Zettels_34",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_35",
+      "label": "Zettels_35",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_36",
+      "label": "Zettels_36",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_37",
+      "label": "Zettels_37",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_38",
+      "label": "Zettels_38",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_39",
+      "label": "Zettels_39",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_40",
+      "label": "Zettels_40",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_41",
+      "label": "Zettels_41",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_42",
+      "label": "Zettels_42",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_43",
+      "label": "Zettels_43",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_44",
+      "label": "Zettels_44",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_45",
+      "label": "Zettels_45",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_46",
+      "label": "Zettels_46",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_47",
+      "label": "Zettels_47",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_48",
+      "label": "Zettels_48",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_49",
+      "label": "Zettels_49",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_50",
+      "label": "Zettels_50",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_51",
+      "label": "Zettels_51",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_52",
+      "label": "Zettels_52",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_53",
+      "label": "Zettels_53",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_54",
+      "label": "Zettels_54",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_55",
+      "label": "Zettels_55",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_56",
+      "label": "Zettels_56",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_57",
+      "label": "Zettels_57",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_58",
+      "label": "Zettels_58",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_59",
+      "label": "Zettels_59",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_60",
+      "label": "Zettels_60",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_61",
+      "label": "Zettels_61",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_62",
+      "label": "Zettels_62",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_63",
+      "label": "Zettels_63",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_64",
+      "label": "Zettels_64",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_65",
+      "label": "Zettels_65",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_66",
+      "label": "Zettels_66",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_67",
+      "label": "Zettels_67",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_68",
+      "label": "Zettels_68",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_69",
+      "label": "Zettels_69",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_70",
+      "label": "Zettels_70",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_71",
+      "label": "Zettels_71",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_72",
+      "label": "Zettels_72",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_73",
+      "label": "Zettels_73",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_74",
+      "label": "Zettels_74",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_75",
+      "label": "Zettels_75",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_76",
+      "label": "Zettels_76",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_77",
+      "label": "Zettels_77",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_78",
+      "label": "Zettels_78",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_79",
+      "label": "Zettels_79",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_80",
+      "label": "Zettels_80",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_81",
+      "label": "Zettels_81",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_82",
+      "label": "Zettels_82",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_83",
+      "label": "Zettels_83",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_84",
+      "label": "Zettels_84",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_85",
+      "label": "Zettels_85",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_86",
+      "label": "Zettels_86",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_87",
+      "label": "Zettels_87",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_88",
+      "label": "Zettels_88",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_89",
+      "label": "Zettels_89",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_90",
+      "label": "Zettels_90",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_91",
+      "label": "Zettels_91",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_92",
+      "label": "Zettels_92",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_93",
+      "label": "Zettels_93",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_94",
+      "label": "Zettels_94",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_95",
+      "label": "Zettels_95",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_96",
+      "label": "Zettels_96",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_97",
+      "label": "Zettels_97",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_98",
+      "label": "Zettels_98",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "Zettels_99",
+      "label": "Zettels_99",
+      "group": "Zettels",
+      "color": "#f44336"
+    },
+    {
+      "id": "References_0",
+      "label": "References_0",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_1",
+      "label": "References_1",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_2",
+      "label": "References_2",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_3",
+      "label": "References_3",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_4",
+      "label": "References_4",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_5",
+      "label": "References_5",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_6",
+      "label": "References_6",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_7",
+      "label": "References_7",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_8",
+      "label": "References_8",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_9",
+      "label": "References_9",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_10",
+      "label": "References_10",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_11",
+      "label": "References_11",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_12",
+      "label": "References_12",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_13",
+      "label": "References_13",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_14",
+      "label": "References_14",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_15",
+      "label": "References_15",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_16",
+      "label": "References_16",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_17",
+      "label": "References_17",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_18",
+      "label": "References_18",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_19",
+      "label": "References_19",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_20",
+      "label": "References_20",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_21",
+      "label": "References_21",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_22",
+      "label": "References_22",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_23",
+      "label": "References_23",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_24",
+      "label": "References_24",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_25",
+      "label": "References_25",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_26",
+      "label": "References_26",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_27",
+      "label": "References_27",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_28",
+      "label": "References_28",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_29",
+      "label": "References_29",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_30",
+      "label": "References_30",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_31",
+      "label": "References_31",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_32",
+      "label": "References_32",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_33",
+      "label": "References_33",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_34",
+      "label": "References_34",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_35",
+      "label": "References_35",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_36",
+      "label": "References_36",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_37",
+      "label": "References_37",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_38",
+      "label": "References_38",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_39",
+      "label": "References_39",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_40",
+      "label": "References_40",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_41",
+      "label": "References_41",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_42",
+      "label": "References_42",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_43",
+      "label": "References_43",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_44",
+      "label": "References_44",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_45",
+      "label": "References_45",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_46",
+      "label": "References_46",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_47",
+      "label": "References_47",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_48",
+      "label": "References_48",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_49",
+      "label": "References_49",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_50",
+      "label": "References_50",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_51",
+      "label": "References_51",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_52",
+      "label": "References_52",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_53",
+      "label": "References_53",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_54",
+      "label": "References_54",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_55",
+      "label": "References_55",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_56",
+      "label": "References_56",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_57",
+      "label": "References_57",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_58",
+      "label": "References_58",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_59",
+      "label": "References_59",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_60",
+      "label": "References_60",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_61",
+      "label": "References_61",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_62",
+      "label": "References_62",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_63",
+      "label": "References_63",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_64",
+      "label": "References_64",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_65",
+      "label": "References_65",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_66",
+      "label": "References_66",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_67",
+      "label": "References_67",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_68",
+      "label": "References_68",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_69",
+      "label": "References_69",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_70",
+      "label": "References_70",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_71",
+      "label": "References_71",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_72",
+      "label": "References_72",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_73",
+      "label": "References_73",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_74",
+      "label": "References_74",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_75",
+      "label": "References_75",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_76",
+      "label": "References_76",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_77",
+      "label": "References_77",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_78",
+      "label": "References_78",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_79",
+      "label": "References_79",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_80",
+      "label": "References_80",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_81",
+      "label": "References_81",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_82",
+      "label": "References_82",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_83",
+      "label": "References_83",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_84",
+      "label": "References_84",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_85",
+      "label": "References_85",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_86",
+      "label": "References_86",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_87",
+      "label": "References_87",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_88",
+      "label": "References_88",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_89",
+      "label": "References_89",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_90",
+      "label": "References_90",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_91",
+      "label": "References_91",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_92",
+      "label": "References_92",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_93",
+      "label": "References_93",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_94",
+      "label": "References_94",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_95",
+      "label": "References_95",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_96",
+      "label": "References_96",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_97",
+      "label": "References_97",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_98",
+      "label": "References_98",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "References_99",
+      "label": "References_99",
+      "group": "References",
+      "color": "#4caf50"
+    },
+    {
+      "id": "Articles_0",
+      "label": "Articles_0",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_1",
+      "label": "Articles_1",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_2",
+      "label": "Articles_2",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_3",
+      "label": "Articles_3",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_4",
+      "label": "Articles_4",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_5",
+      "label": "Articles_5",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_6",
+      "label": "Articles_6",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_7",
+      "label": "Articles_7",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_8",
+      "label": "Articles_8",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_9",
+      "label": "Articles_9",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_10",
+      "label": "Articles_10",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_11",
+      "label": "Articles_11",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_12",
+      "label": "Articles_12",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_13",
+      "label": "Articles_13",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_14",
+      "label": "Articles_14",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_15",
+      "label": "Articles_15",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_16",
+      "label": "Articles_16",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_17",
+      "label": "Articles_17",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_18",
+      "label": "Articles_18",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_19",
+      "label": "Articles_19",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_20",
+      "label": "Articles_20",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_21",
+      "label": "Articles_21",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_22",
+      "label": "Articles_22",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_23",
+      "label": "Articles_23",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_24",
+      "label": "Articles_24",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_25",
+      "label": "Articles_25",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_26",
+      "label": "Articles_26",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_27",
+      "label": "Articles_27",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_28",
+      "label": "Articles_28",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_29",
+      "label": "Articles_29",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_30",
+      "label": "Articles_30",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_31",
+      "label": "Articles_31",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_32",
+      "label": "Articles_32",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_33",
+      "label": "Articles_33",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_34",
+      "label": "Articles_34",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_35",
+      "label": "Articles_35",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_36",
+      "label": "Articles_36",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_37",
+      "label": "Articles_37",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_38",
+      "label": "Articles_38",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_39",
+      "label": "Articles_39",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_40",
+      "label": "Articles_40",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_41",
+      "label": "Articles_41",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_42",
+      "label": "Articles_42",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_43",
+      "label": "Articles_43",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_44",
+      "label": "Articles_44",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_45",
+      "label": "Articles_45",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_46",
+      "label": "Articles_46",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_47",
+      "label": "Articles_47",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_48",
+      "label": "Articles_48",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_49",
+      "label": "Articles_49",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_50",
+      "label": "Articles_50",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_51",
+      "label": "Articles_51",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_52",
+      "label": "Articles_52",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_53",
+      "label": "Articles_53",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_54",
+      "label": "Articles_54",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_55",
+      "label": "Articles_55",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_56",
+      "label": "Articles_56",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_57",
+      "label": "Articles_57",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_58",
+      "label": "Articles_58",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_59",
+      "label": "Articles_59",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_60",
+      "label": "Articles_60",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_61",
+      "label": "Articles_61",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_62",
+      "label": "Articles_62",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_63",
+      "label": "Articles_63",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_64",
+      "label": "Articles_64",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_65",
+      "label": "Articles_65",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_66",
+      "label": "Articles_66",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_67",
+      "label": "Articles_67",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_68",
+      "label": "Articles_68",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_69",
+      "label": "Articles_69",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_70",
+      "label": "Articles_70",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_71",
+      "label": "Articles_71",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_72",
+      "label": "Articles_72",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_73",
+      "label": "Articles_73",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_74",
+      "label": "Articles_74",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_75",
+      "label": "Articles_75",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_76",
+      "label": "Articles_76",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_77",
+      "label": "Articles_77",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_78",
+      "label": "Articles_78",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_79",
+      "label": "Articles_79",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_80",
+      "label": "Articles_80",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_81",
+      "label": "Articles_81",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_82",
+      "label": "Articles_82",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_83",
+      "label": "Articles_83",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_84",
+      "label": "Articles_84",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_85",
+      "label": "Articles_85",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_86",
+      "label": "Articles_86",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_87",
+      "label": "Articles_87",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_88",
+      "label": "Articles_88",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_89",
+      "label": "Articles_89",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_90",
+      "label": "Articles_90",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_91",
+      "label": "Articles_91",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_92",
+      "label": "Articles_92",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_93",
+      "label": "Articles_93",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_94",
+      "label": "Articles_94",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_95",
+      "label": "Articles_95",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_96",
+      "label": "Articles_96",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_97",
+      "label": "Articles_97",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_98",
+      "label": "Articles_98",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Articles_99",
+      "label": "Articles_99",
+      "group": "Articles",
+      "color": "#2196f3"
+    },
+    {
+      "id": "Books_0",
+      "label": "Books_0",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_1",
+      "label": "Books_1",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_2",
+      "label": "Books_2",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_3",
+      "label": "Books_3",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_4",
+      "label": "Books_4",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_5",
+      "label": "Books_5",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_6",
+      "label": "Books_6",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_7",
+      "label": "Books_7",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_8",
+      "label": "Books_8",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_9",
+      "label": "Books_9",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_10",
+      "label": "Books_10",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_11",
+      "label": "Books_11",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_12",
+      "label": "Books_12",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_13",
+      "label": "Books_13",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_14",
+      "label": "Books_14",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_15",
+      "label": "Books_15",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_16",
+      "label": "Books_16",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_17",
+      "label": "Books_17",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_18",
+      "label": "Books_18",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_19",
+      "label": "Books_19",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_20",
+      "label": "Books_20",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_21",
+      "label": "Books_21",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_22",
+      "label": "Books_22",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_23",
+      "label": "Books_23",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_24",
+      "label": "Books_24",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_25",
+      "label": "Books_25",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_26",
+      "label": "Books_26",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_27",
+      "label": "Books_27",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_28",
+      "label": "Books_28",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_29",
+      "label": "Books_29",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_30",
+      "label": "Books_30",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_31",
+      "label": "Books_31",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_32",
+      "label": "Books_32",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_33",
+      "label": "Books_33",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_34",
+      "label": "Books_34",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_35",
+      "label": "Books_35",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_36",
+      "label": "Books_36",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_37",
+      "label": "Books_37",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_38",
+      "label": "Books_38",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_39",
+      "label": "Books_39",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_40",
+      "label": "Books_40",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_41",
+      "label": "Books_41",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_42",
+      "label": "Books_42",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_43",
+      "label": "Books_43",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_44",
+      "label": "Books_44",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_45",
+      "label": "Books_45",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_46",
+      "label": "Books_46",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_47",
+      "label": "Books_47",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_48",
+      "label": "Books_48",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_49",
+      "label": "Books_49",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_50",
+      "label": "Books_50",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_51",
+      "label": "Books_51",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_52",
+      "label": "Books_52",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_53",
+      "label": "Books_53",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_54",
+      "label": "Books_54",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_55",
+      "label": "Books_55",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_56",
+      "label": "Books_56",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_57",
+      "label": "Books_57",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_58",
+      "label": "Books_58",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_59",
+      "label": "Books_59",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_60",
+      "label": "Books_60",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_61",
+      "label": "Books_61",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_62",
+      "label": "Books_62",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_63",
+      "label": "Books_63",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_64",
+      "label": "Books_64",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_65",
+      "label": "Books_65",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_66",
+      "label": "Books_66",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_67",
+      "label": "Books_67",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_68",
+      "label": "Books_68",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_69",
+      "label": "Books_69",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_70",
+      "label": "Books_70",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_71",
+      "label": "Books_71",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_72",
+      "label": "Books_72",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_73",
+      "label": "Books_73",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_74",
+      "label": "Books_74",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_75",
+      "label": "Books_75",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_76",
+      "label": "Books_76",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_77",
+      "label": "Books_77",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_78",
+      "label": "Books_78",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_79",
+      "label": "Books_79",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_80",
+      "label": "Books_80",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_81",
+      "label": "Books_81",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_82",
+      "label": "Books_82",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_83",
+      "label": "Books_83",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_84",
+      "label": "Books_84",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_85",
+      "label": "Books_85",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_86",
+      "label": "Books_86",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_87",
+      "label": "Books_87",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_88",
+      "label": "Books_88",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_89",
+      "label": "Books_89",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_90",
+      "label": "Books_90",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_91",
+      "label": "Books_91",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_92",
+      "label": "Books_92",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_93",
+      "label": "Books_93",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_94",
+      "label": "Books_94",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_95",
+      "label": "Books_95",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_96",
+      "label": "Books_96",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_97",
+      "label": "Books_97",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_98",
+      "label": "Books_98",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Books_99",
+      "label": "Books_99",
+      "group": "Books",
+      "color": "#ff9800"
+    },
+    {
+      "id": "Slipbox_0",
+      "label": "Slipbox_0",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_1",
+      "label": "Slipbox_1",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_2",
+      "label": "Slipbox_2",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_3",
+      "label": "Slipbox_3",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_4",
+      "label": "Slipbox_4",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_5",
+      "label": "Slipbox_5",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_6",
+      "label": "Slipbox_6",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_7",
+      "label": "Slipbox_7",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_8",
+      "label": "Slipbox_8",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_9",
+      "label": "Slipbox_9",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_10",
+      "label": "Slipbox_10",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_11",
+      "label": "Slipbox_11",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_12",
+      "label": "Slipbox_12",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_13",
+      "label": "Slipbox_13",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_14",
+      "label": "Slipbox_14",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_15",
+      "label": "Slipbox_15",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_16",
+      "label": "Slipbox_16",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_17",
+      "label": "Slipbox_17",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_18",
+      "label": "Slipbox_18",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_19",
+      "label": "Slipbox_19",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_20",
+      "label": "Slipbox_20",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_21",
+      "label": "Slipbox_21",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_22",
+      "label": "Slipbox_22",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_23",
+      "label": "Slipbox_23",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_24",
+      "label": "Slipbox_24",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_25",
+      "label": "Slipbox_25",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_26",
+      "label": "Slipbox_26",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_27",
+      "label": "Slipbox_27",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_28",
+      "label": "Slipbox_28",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_29",
+      "label": "Slipbox_29",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_30",
+      "label": "Slipbox_30",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_31",
+      "label": "Slipbox_31",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_32",
+      "label": "Slipbox_32",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_33",
+      "label": "Slipbox_33",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_34",
+      "label": "Slipbox_34",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_35",
+      "label": "Slipbox_35",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_36",
+      "label": "Slipbox_36",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_37",
+      "label": "Slipbox_37",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_38",
+      "label": "Slipbox_38",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_39",
+      "label": "Slipbox_39",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_40",
+      "label": "Slipbox_40",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_41",
+      "label": "Slipbox_41",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_42",
+      "label": "Slipbox_42",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_43",
+      "label": "Slipbox_43",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_44",
+      "label": "Slipbox_44",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_45",
+      "label": "Slipbox_45",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_46",
+      "label": "Slipbox_46",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_47",
+      "label": "Slipbox_47",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_48",
+      "label": "Slipbox_48",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_49",
+      "label": "Slipbox_49",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_50",
+      "label": "Slipbox_50",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_51",
+      "label": "Slipbox_51",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_52",
+      "label": "Slipbox_52",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_53",
+      "label": "Slipbox_53",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_54",
+      "label": "Slipbox_54",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_55",
+      "label": "Slipbox_55",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_56",
+      "label": "Slipbox_56",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_57",
+      "label": "Slipbox_57",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_58",
+      "label": "Slipbox_58",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_59",
+      "label": "Slipbox_59",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_60",
+      "label": "Slipbox_60",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_61",
+      "label": "Slipbox_61",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_62",
+      "label": "Slipbox_62",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_63",
+      "label": "Slipbox_63",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_64",
+      "label": "Slipbox_64",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_65",
+      "label": "Slipbox_65",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_66",
+      "label": "Slipbox_66",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_67",
+      "label": "Slipbox_67",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_68",
+      "label": "Slipbox_68",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_69",
+      "label": "Slipbox_69",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_70",
+      "label": "Slipbox_70",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_71",
+      "label": "Slipbox_71",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_72",
+      "label": "Slipbox_72",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_73",
+      "label": "Slipbox_73",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_74",
+      "label": "Slipbox_74",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_75",
+      "label": "Slipbox_75",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_76",
+      "label": "Slipbox_76",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_77",
+      "label": "Slipbox_77",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_78",
+      "label": "Slipbox_78",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_79",
+      "label": "Slipbox_79",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_80",
+      "label": "Slipbox_80",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_81",
+      "label": "Slipbox_81",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_82",
+      "label": "Slipbox_82",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_83",
+      "label": "Slipbox_83",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_84",
+      "label": "Slipbox_84",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_85",
+      "label": "Slipbox_85",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_86",
+      "label": "Slipbox_86",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_87",
+      "label": "Slipbox_87",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_88",
+      "label": "Slipbox_88",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_89",
+      "label": "Slipbox_89",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_90",
+      "label": "Slipbox_90",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_91",
+      "label": "Slipbox_91",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_92",
+      "label": "Slipbox_92",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_93",
+      "label": "Slipbox_93",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_94",
+      "label": "Slipbox_94",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_95",
+      "label": "Slipbox_95",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_96",
+      "label": "Slipbox_96",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_97",
+      "label": "Slipbox_97",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_98",
+      "label": "Slipbox_98",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    },
+    {
+      "id": "Slipbox_99",
+      "label": "Slipbox_99",
+      "group": "Slipbox",
+      "color": "#9c27b0"
+    }
+  ],
+  "edges": [
+    {
+      "from": "Zettels_1",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_1",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_1",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_2",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_2",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_2",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_3",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_3",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_3",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_4",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_4",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_4",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_5",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_5",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_5",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_6",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_6",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_6",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_6",
+      "to": "Articles_47"
+    },
+    {
+      "from": "Zettels_7",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_7",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_7",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_8",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_8",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_8",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_9",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_9",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_9",
+      "to": "Zettels_8"
+    },
+    {
+      "from": "Zettels_10",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_10",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_10",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_11",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_11",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_11",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_12",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_12",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_12",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_13",
+      "to": "Zettels_8"
+    },
+    {
+      "from": "Zettels_13",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_13",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_14",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_14",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_14",
+      "to": "Zettels_9"
+    },
+    {
+      "from": "Zettels_15",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_15",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_15",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_16",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_16",
+      "to": "Zettels_14"
+    },
+    {
+      "from": "Zettels_16",
+      "to": "Zettels_14"
+    },
+    {
+      "from": "Zettels_16",
+      "to": "Articles_80"
+    },
+    {
+      "from": "Zettels_17",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_17",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_17",
+      "to": "Zettels_16"
+    },
+    {
+      "from": "Zettels_17",
+      "to": "Articles_65"
+    },
+    {
+      "from": "Zettels_18",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_18",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_18",
+      "to": "Zettels_15"
+    },
+    {
+      "from": "Zettels_19",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_19",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_19",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_20",
+      "to": "Zettels_13"
+    },
+    {
+      "from": "Zettels_20",
+      "to": "Zettels_12"
+    },
+    {
+      "from": "Zettels_20",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_21",
+      "to": "Zettels_13"
+    },
+    {
+      "from": "Zettels_21",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_21",
+      "to": "Zettels_19"
+    },
+    {
+      "from": "Zettels_22",
+      "to": "Zettels_14"
+    },
+    {
+      "from": "Zettels_22",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_22",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_23",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_23",
+      "to": "Zettels_9"
+    },
+    {
+      "from": "Zettels_23",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_24",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_24",
+      "to": "Zettels_9"
+    },
+    {
+      "from": "Zettels_24",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_25",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_25",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_25",
+      "to": "Zettels_20"
+    },
+    {
+      "from": "Zettels_26",
+      "to": "Zettels_20"
+    },
+    {
+      "from": "Zettels_26",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_26",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_27",
+      "to": "Zettels_12"
+    },
+    {
+      "from": "Zettels_27",
+      "to": "Zettels_10"
+    },
+    {
+      "from": "Zettels_27",
+      "to": "Zettels_9"
+    },
+    {
+      "from": "Zettels_27",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Zettels_28",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_28",
+      "to": "Zettels_15"
+    },
+    {
+      "from": "Zettels_28",
+      "to": "Zettels_25"
+    },
+    {
+      "from": "Zettels_29",
+      "to": "Zettels_28"
+    },
+    {
+      "from": "Zettels_29",
+      "to": "Zettels_14"
+    },
+    {
+      "from": "Zettels_29",
+      "to": "Zettels_12"
+    },
+    {
+      "from": "Zettels_29",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Zettels_30",
+      "to": "Zettels_27"
+    },
+    {
+      "from": "Zettels_30",
+      "to": "Zettels_12"
+    },
+    {
+      "from": "Zettels_30",
+      "to": "Zettels_26"
+    },
+    {
+      "from": "Zettels_31",
+      "to": "Zettels_8"
+    },
+    {
+      "from": "Zettels_31",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_31",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_32",
+      "to": "Zettels_26"
+    },
+    {
+      "from": "Zettels_32",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_32",
+      "to": "Zettels_19"
+    },
+    {
+      "from": "Zettels_33",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_33",
+      "to": "Zettels_19"
+    },
+    {
+      "from": "Zettels_33",
+      "to": "Zettels_16"
+    },
+    {
+      "from": "Zettels_34",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_34",
+      "to": "Zettels_28"
+    },
+    {
+      "from": "Zettels_34",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_35",
+      "to": "Zettels_23"
+    },
+    {
+      "from": "Zettels_35",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_35",
+      "to": "Zettels_14"
+    },
+    {
+      "from": "Zettels_36",
+      "to": "Zettels_14"
+    },
+    {
+      "from": "Zettels_36",
+      "to": "Zettels_31"
+    },
+    {
+      "from": "Zettels_36",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_37",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_37",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_37",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_38",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_38",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_38",
+      "to": "Zettels_16"
+    },
+    {
+      "from": "Zettels_38",
+      "to": "Slipbox_99"
+    },
+    {
+      "from": "Zettels_39",
+      "to": "Zettels_8"
+    },
+    {
+      "from": "Zettels_39",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_39",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_40",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_40",
+      "to": "Zettels_26"
+    },
+    {
+      "from": "Zettels_40",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_41",
+      "to": "Zettels_10"
+    },
+    {
+      "from": "Zettels_41",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_41",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_41",
+      "to": "References_3"
+    },
+    {
+      "from": "Zettels_42",
+      "to": "Zettels_26"
+    },
+    {
+      "from": "Zettels_42",
+      "to": "Zettels_29"
+    },
+    {
+      "from": "Zettels_42",
+      "to": "Zettels_25"
+    },
+    {
+      "from": "Zettels_43",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_43",
+      "to": "Zettels_13"
+    },
+    {
+      "from": "Zettels_43",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_44",
+      "to": "Zettels_38"
+    },
+    {
+      "from": "Zettels_44",
+      "to": "Zettels_31"
+    },
+    {
+      "from": "Zettels_44",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_45",
+      "to": "Zettels_22"
+    },
+    {
+      "from": "Zettels_45",
+      "to": "Zettels_36"
+    },
+    {
+      "from": "Zettels_45",
+      "to": "Zettels_32"
+    },
+    {
+      "from": "Zettels_45",
+      "to": "Articles_90"
+    },
+    {
+      "from": "Zettels_46",
+      "to": "Zettels_28"
+    },
+    {
+      "from": "Zettels_46",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_46",
+      "to": "Zettels_21"
+    },
+    {
+      "from": "Zettels_46",
+      "to": "Articles_68"
+    },
+    {
+      "from": "Zettels_47",
+      "to": "Zettels_40"
+    },
+    {
+      "from": "Zettels_47",
+      "to": "Zettels_39"
+    },
+    {
+      "from": "Zettels_47",
+      "to": "Zettels_45"
+    },
+    {
+      "from": "Zettels_48",
+      "to": "Zettels_25"
+    },
+    {
+      "from": "Zettels_48",
+      "to": "Zettels_9"
+    },
+    {
+      "from": "Zettels_48",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_49",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_49",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_49",
+      "to": "Zettels_21"
+    },
+    {
+      "from": "Zettels_49",
+      "to": "References_53"
+    },
+    {
+      "from": "Zettels_50",
+      "to": "Zettels_39"
+    },
+    {
+      "from": "Zettels_50",
+      "to": "Zettels_34"
+    },
+    {
+      "from": "Zettels_50",
+      "to": "Zettels_3"
+    },
+    {
+      "from": "Zettels_50",
+      "to": "Articles_81"
+    },
+    {
+      "from": "Zettels_51",
+      "to": "Zettels_50"
+    },
+    {
+      "from": "Zettels_51",
+      "to": "Zettels_18"
+    },
+    {
+      "from": "Zettels_51",
+      "to": "Zettels_13"
+    },
+    {
+      "from": "Zettels_52",
+      "to": "Zettels_8"
+    },
+    {
+      "from": "Zettels_52",
+      "to": "Zettels_50"
+    },
+    {
+      "from": "Zettels_52",
+      "to": "Zettels_2"
+    },
+    {
+      "from": "Zettels_53",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_53",
+      "to": "Zettels_36"
+    },
+    {
+      "from": "Zettels_53",
+      "to": "Zettels_29"
+    },
+    {
+      "from": "Zettels_54",
+      "to": "Zettels_37"
+    },
+    {
+      "from": "Zettels_54",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_54",
+      "to": "Zettels_20"
+    },
+    {
+      "from": "Zettels_55",
+      "to": "Zettels_44"
+    },
+    {
+      "from": "Zettels_55",
+      "to": "Zettels_19"
+    },
+    {
+      "from": "Zettels_55",
+      "to": "Zettels_37"
+    },
+    {
+      "from": "Zettels_56",
+      "to": "Zettels_16"
+    },
+    {
+      "from": "Zettels_56",
+      "to": "Zettels_26"
+    },
+    {
+      "from": "Zettels_56",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_57",
+      "to": "Zettels_54"
+    },
+    {
+      "from": "Zettels_57",
+      "to": "Zettels_18"
+    },
+    {
+      "from": "Zettels_57",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_58",
+      "to": "Zettels_49"
+    },
+    {
+      "from": "Zettels_58",
+      "to": "Zettels_45"
+    },
+    {
+      "from": "Zettels_58",
+      "to": "Zettels_18"
+    },
+    {
+      "from": "Zettels_58",
+      "to": "Slipbox_18"
+    },
+    {
+      "from": "Zettels_59",
+      "to": "Zettels_44"
+    },
+    {
+      "from": "Zettels_59",
+      "to": "Zettels_28"
+    },
+    {
+      "from": "Zettels_59",
+      "to": "Zettels_31"
+    },
+    {
+      "from": "Zettels_60",
+      "to": "Zettels_41"
+    },
+    {
+      "from": "Zettels_60",
+      "to": "Zettels_51"
+    },
+    {
+      "from": "Zettels_60",
+      "to": "Zettels_33"
+    },
+    {
+      "from": "Zettels_61",
+      "to": "Zettels_8"
+    },
+    {
+      "from": "Zettels_61",
+      "to": "Zettels_49"
+    },
+    {
+      "from": "Zettels_61",
+      "to": "Zettels_20"
+    },
+    {
+      "from": "Zettels_62",
+      "to": "Zettels_34"
+    },
+    {
+      "from": "Zettels_62",
+      "to": "Zettels_6"
+    },
+    {
+      "from": "Zettels_62",
+      "to": "Zettels_23"
+    },
+    {
+      "from": "Zettels_63",
+      "to": "Zettels_60"
+    },
+    {
+      "from": "Zettels_63",
+      "to": "Zettels_25"
+    },
+    {
+      "from": "Zettels_63",
+      "to": "Zettels_34"
+    },
+    {
+      "from": "Zettels_64",
+      "to": "Zettels_56"
+    },
+    {
+      "from": "Zettels_64",
+      "to": "Zettels_40"
+    },
+    {
+      "from": "Zettels_64",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_65",
+      "to": "Zettels_42"
+    },
+    {
+      "from": "Zettels_65",
+      "to": "Zettels_54"
+    },
+    {
+      "from": "Zettels_65",
+      "to": "Zettels_29"
+    },
+    {
+      "from": "Zettels_66",
+      "to": "Zettels_36"
+    },
+    {
+      "from": "Zettels_66",
+      "to": "Zettels_19"
+    },
+    {
+      "from": "Zettels_66",
+      "to": "Zettels_53"
+    },
+    {
+      "from": "Zettels_66",
+      "to": "References_94"
+    },
+    {
+      "from": "Zettels_67",
+      "to": "Zettels_19"
+    },
+    {
+      "from": "Zettels_67",
+      "to": "Zettels_25"
+    },
+    {
+      "from": "Zettels_67",
+      "to": "Zettels_55"
+    },
+    {
+      "from": "Zettels_68",
+      "to": "Zettels_62"
+    },
+    {
+      "from": "Zettels_68",
+      "to": "Zettels_19"
+    },
+    {
+      "from": "Zettels_68",
+      "to": "Zettels_29"
+    },
+    {
+      "from": "Zettels_69",
+      "to": "Zettels_29"
+    },
+    {
+      "from": "Zettels_69",
+      "to": "Zettels_39"
+    },
+    {
+      "from": "Zettels_69",
+      "to": "Zettels_23"
+    },
+    {
+      "from": "Zettels_70",
+      "to": "Zettels_63"
+    },
+    {
+      "from": "Zettels_70",
+      "to": "Zettels_13"
+    },
+    {
+      "from": "Zettels_70",
+      "to": "Zettels_68"
+    },
+    {
+      "from": "Zettels_71",
+      "to": "Zettels_24"
+    },
+    {
+      "from": "Zettels_71",
+      "to": "Zettels_38"
+    },
+    {
+      "from": "Zettels_71",
+      "to": "Zettels_9"
+    },
+    {
+      "from": "Zettels_71",
+      "to": "Books_57"
+    },
+    {
+      "from": "Zettels_72",
+      "to": "Zettels_60"
+    },
+    {
+      "from": "Zettels_72",
+      "to": "Zettels_51"
+    },
+    {
+      "from": "Zettels_72",
+      "to": "Zettels_18"
+    },
+    {
+      "from": "Zettels_73",
+      "to": "Zettels_5"
+    },
+    {
+      "from": "Zettels_73",
+      "to": "Zettels_27"
+    },
+    {
+      "from": "Zettels_73",
+      "to": "Zettels_48"
+    },
+    {
+      "from": "Zettels_74",
+      "to": "Zettels_63"
+    },
+    {
+      "from": "Zettels_74",
+      "to": "Zettels_70"
+    },
+    {
+      "from": "Zettels_74",
+      "to": "Zettels_47"
+    },
+    {
+      "from": "Zettels_75",
+      "to": "Zettels_8"
+    },
+    {
+      "from": "Zettels_75",
+      "to": "Zettels_72"
+    },
+    {
+      "from": "Zettels_75",
+      "to": "Zettels_51"
+    },
+    {
+      "from": "Zettels_76",
+      "to": "Zettels_51"
+    },
+    {
+      "from": "Zettels_76",
+      "to": "Zettels_64"
+    },
+    {
+      "from": "Zettels_76",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_77",
+      "to": "Zettels_25"
+    },
+    {
+      "from": "Zettels_77",
+      "to": "Zettels_62"
+    },
+    {
+      "from": "Zettels_77",
+      "to": "Zettels_44"
+    },
+    {
+      "from": "Zettels_77",
+      "to": "Books_91"
+    },
+    {
+      "from": "Zettels_78",
+      "to": "Zettels_21"
+    },
+    {
+      "from": "Zettels_78",
+      "to": "Zettels_71"
+    },
+    {
+      "from": "Zettels_78",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_79",
+      "to": "Zettels_62"
+    },
+    {
+      "from": "Zettels_79",
+      "to": "Zettels_68"
+    },
+    {
+      "from": "Zettels_79",
+      "to": "Zettels_32"
+    },
+    {
+      "from": "Zettels_80",
+      "to": "Zettels_12"
+    },
+    {
+      "from": "Zettels_80",
+      "to": "Zettels_79"
+    },
+    {
+      "from": "Zettels_80",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_81",
+      "to": "Zettels_23"
+    },
+    {
+      "from": "Zettels_81",
+      "to": "Zettels_41"
+    },
+    {
+      "from": "Zettels_81",
+      "to": "Zettels_43"
+    },
+    {
+      "from": "Zettels_82",
+      "to": "Zettels_12"
+    },
+    {
+      "from": "Zettels_82",
+      "to": "Zettels_22"
+    },
+    {
+      "from": "Zettels_82",
+      "to": "Zettels_20"
+    },
+    {
+      "from": "Zettels_83",
+      "to": "Zettels_68"
+    },
+    {
+      "from": "Zettels_83",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_83",
+      "to": "Zettels_21"
+    },
+    {
+      "from": "Zettels_84",
+      "to": "Zettels_43"
+    },
+    {
+      "from": "Zettels_84",
+      "to": "Zettels_74"
+    },
+    {
+      "from": "Zettels_84",
+      "to": "Zettels_45"
+    },
+    {
+      "from": "Zettels_85",
+      "to": "Zettels_83"
+    },
+    {
+      "from": "Zettels_85",
+      "to": "Zettels_17"
+    },
+    {
+      "from": "Zettels_85",
+      "to": "Zettels_77"
+    },
+    {
+      "from": "Zettels_85",
+      "to": "References_54"
+    },
+    {
+      "from": "Zettels_86",
+      "to": "Zettels_51"
+    },
+    {
+      "from": "Zettels_86",
+      "to": "Zettels_13"
+    },
+    {
+      "from": "Zettels_86",
+      "to": "Zettels_63"
+    },
+    {
+      "from": "Zettels_87",
+      "to": "Zettels_34"
+    },
+    {
+      "from": "Zettels_87",
+      "to": "Zettels_73"
+    },
+    {
+      "from": "Zettels_87",
+      "to": "Zettels_62"
+    },
+    {
+      "from": "Zettels_88",
+      "to": "Zettels_69"
+    },
+    {
+      "from": "Zettels_88",
+      "to": "Zettels_41"
+    },
+    {
+      "from": "Zettels_88",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_89",
+      "to": "Zettels_1"
+    },
+    {
+      "from": "Zettels_89",
+      "to": "Zettels_26"
+    },
+    {
+      "from": "Zettels_89",
+      "to": "Zettels_14"
+    },
+    {
+      "from": "Zettels_89",
+      "to": "References_42"
+    },
+    {
+      "from": "Zettels_90",
+      "to": "Zettels_39"
+    },
+    {
+      "from": "Zettels_90",
+      "to": "Zettels_51"
+    },
+    {
+      "from": "Zettels_90",
+      "to": "Zettels_33"
+    },
+    {
+      "from": "Zettels_91",
+      "to": "Zettels_11"
+    },
+    {
+      "from": "Zettels_91",
+      "to": "Zettels_46"
+    },
+    {
+      "from": "Zettels_91",
+      "to": "Zettels_65"
+    },
+    {
+      "from": "Zettels_92",
+      "to": "Zettels_47"
+    },
+    {
+      "from": "Zettels_92",
+      "to": "Zettels_87"
+    },
+    {
+      "from": "Zettels_92",
+      "to": "Zettels_23"
+    },
+    {
+      "from": "Zettels_93",
+      "to": "Zettels_72"
+    },
+    {
+      "from": "Zettels_93",
+      "to": "Zettels_62"
+    },
+    {
+      "from": "Zettels_93",
+      "to": "Zettels_22"
+    },
+    {
+      "from": "Zettels_94",
+      "to": "Zettels_63"
+    },
+    {
+      "from": "Zettels_94",
+      "to": "Zettels_4"
+    },
+    {
+      "from": "Zettels_94",
+      "to": "Zettels_7"
+    },
+    {
+      "from": "Zettels_95",
+      "to": "Zettels_38"
+    },
+    {
+      "from": "Zettels_95",
+      "to": "Zettels_89"
+    },
+    {
+      "from": "Zettels_95",
+      "to": "Zettels_67"
+    },
+    {
+      "from": "Zettels_96",
+      "to": "Zettels_65"
+    },
+    {
+      "from": "Zettels_96",
+      "to": "Zettels_58"
+    },
+    {
+      "from": "Zettels_96",
+      "to": "Zettels_56"
+    },
+    {
+      "from": "Zettels_97",
+      "to": "Zettels_77"
+    },
+    {
+      "from": "Zettels_97",
+      "to": "Zettels_77"
+    },
+    {
+      "from": "Zettels_97",
+      "to": "Zettels_32"
+    },
+    {
+      "from": "Zettels_98",
+      "to": "Zettels_30"
+    },
+    {
+      "from": "Zettels_98",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Zettels_98",
+      "to": "Zettels_73"
+    },
+    {
+      "from": "Zettels_99",
+      "to": "Zettels_95"
+    },
+    {
+      "from": "Zettels_99",
+      "to": "Zettels_78"
+    },
+    {
+      "from": "Zettels_99",
+      "to": "Zettels_12"
+    },
+    {
+      "from": "References_1",
+      "to": "References_0"
+    },
+    {
+      "from": "References_1",
+      "to": "References_0"
+    },
+    {
+      "from": "References_1",
+      "to": "References_0"
+    },
+    {
+      "from": "References_2",
+      "to": "References_0"
+    },
+    {
+      "from": "References_2",
+      "to": "References_0"
+    },
+    {
+      "from": "References_2",
+      "to": "References_1"
+    },
+    {
+      "from": "References_3",
+      "to": "References_1"
+    },
+    {
+      "from": "References_3",
+      "to": "References_2"
+    },
+    {
+      "from": "References_3",
+      "to": "References_0"
+    },
+    {
+      "from": "References_4",
+      "to": "References_2"
+    },
+    {
+      "from": "References_4",
+      "to": "References_1"
+    },
+    {
+      "from": "References_4",
+      "to": "References_3"
+    },
+    {
+      "from": "References_4",
+      "to": "Books_76"
+    },
+    {
+      "from": "References_5",
+      "to": "References_3"
+    },
+    {
+      "from": "References_5",
+      "to": "References_3"
+    },
+    {
+      "from": "References_5",
+      "to": "References_0"
+    },
+    {
+      "from": "References_5",
+      "to": "Slipbox_72"
+    },
+    {
+      "from": "References_6",
+      "to": "References_1"
+    },
+    {
+      "from": "References_6",
+      "to": "References_3"
+    },
+    {
+      "from": "References_6",
+      "to": "References_0"
+    },
+    {
+      "from": "References_7",
+      "to": "References_2"
+    },
+    {
+      "from": "References_7",
+      "to": "References_2"
+    },
+    {
+      "from": "References_7",
+      "to": "References_5"
+    },
+    {
+      "from": "References_8",
+      "to": "References_6"
+    },
+    {
+      "from": "References_8",
+      "to": "References_7"
+    },
+    {
+      "from": "References_8",
+      "to": "References_2"
+    },
+    {
+      "from": "References_8",
+      "to": "Zettels_64"
+    },
+    {
+      "from": "References_9",
+      "to": "References_2"
+    },
+    {
+      "from": "References_9",
+      "to": "References_1"
+    },
+    {
+      "from": "References_9",
+      "to": "References_3"
+    },
+    {
+      "from": "References_9",
+      "to": "Articles_15"
+    },
+    {
+      "from": "References_10",
+      "to": "References_6"
+    },
+    {
+      "from": "References_10",
+      "to": "References_4"
+    },
+    {
+      "from": "References_10",
+      "to": "References_7"
+    },
+    {
+      "from": "References_11",
+      "to": "References_5"
+    },
+    {
+      "from": "References_11",
+      "to": "References_7"
+    },
+    {
+      "from": "References_11",
+      "to": "References_10"
+    },
+    {
+      "from": "References_12",
+      "to": "References_6"
+    },
+    {
+      "from": "References_12",
+      "to": "References_9"
+    },
+    {
+      "from": "References_12",
+      "to": "References_3"
+    },
+    {
+      "from": "References_13",
+      "to": "References_11"
+    },
+    {
+      "from": "References_13",
+      "to": "References_2"
+    },
+    {
+      "from": "References_13",
+      "to": "References_4"
+    },
+    {
+      "from": "References_14",
+      "to": "References_0"
+    },
+    {
+      "from": "References_14",
+      "to": "References_1"
+    },
+    {
+      "from": "References_14",
+      "to": "References_8"
+    },
+    {
+      "from": "References_15",
+      "to": "References_5"
+    },
+    {
+      "from": "References_15",
+      "to": "References_4"
+    },
+    {
+      "from": "References_15",
+      "to": "References_14"
+    },
+    {
+      "from": "References_16",
+      "to": "References_0"
+    },
+    {
+      "from": "References_16",
+      "to": "References_14"
+    },
+    {
+      "from": "References_16",
+      "to": "References_8"
+    },
+    {
+      "from": "References_17",
+      "to": "References_1"
+    },
+    {
+      "from": "References_17",
+      "to": "References_9"
+    },
+    {
+      "from": "References_17",
+      "to": "References_10"
+    },
+    {
+      "from": "References_18",
+      "to": "References_8"
+    },
+    {
+      "from": "References_18",
+      "to": "References_5"
+    },
+    {
+      "from": "References_18",
+      "to": "References_9"
+    },
+    {
+      "from": "References_19",
+      "to": "References_6"
+    },
+    {
+      "from": "References_19",
+      "to": "References_17"
+    },
+    {
+      "from": "References_19",
+      "to": "References_17"
+    },
+    {
+      "from": "References_20",
+      "to": "References_15"
+    },
+    {
+      "from": "References_20",
+      "to": "References_5"
+    },
+    {
+      "from": "References_20",
+      "to": "References_8"
+    },
+    {
+      "from": "References_21",
+      "to": "References_13"
+    },
+    {
+      "from": "References_21",
+      "to": "References_3"
+    },
+    {
+      "from": "References_21",
+      "to": "References_13"
+    },
+    {
+      "from": "References_22",
+      "to": "References_16"
+    },
+    {
+      "from": "References_22",
+      "to": "References_9"
+    },
+    {
+      "from": "References_22",
+      "to": "References_13"
+    },
+    {
+      "from": "References_23",
+      "to": "References_5"
+    },
+    {
+      "from": "References_23",
+      "to": "References_14"
+    },
+    {
+      "from": "References_23",
+      "to": "References_5"
+    },
+    {
+      "from": "References_24",
+      "to": "References_2"
+    },
+    {
+      "from": "References_24",
+      "to": "References_16"
+    },
+    {
+      "from": "References_24",
+      "to": "References_19"
+    },
+    {
+      "from": "References_25",
+      "to": "References_16"
+    },
+    {
+      "from": "References_25",
+      "to": "References_5"
+    },
+    {
+      "from": "References_25",
+      "to": "References_4"
+    },
+    {
+      "from": "References_26",
+      "to": "References_17"
+    },
+    {
+      "from": "References_26",
+      "to": "References_22"
+    },
+    {
+      "from": "References_26",
+      "to": "References_6"
+    },
+    {
+      "from": "References_27",
+      "to": "References_22"
+    },
+    {
+      "from": "References_27",
+      "to": "References_8"
+    },
+    {
+      "from": "References_27",
+      "to": "References_10"
+    },
+    {
+      "from": "References_28",
+      "to": "References_23"
+    },
+    {
+      "from": "References_28",
+      "to": "References_25"
+    },
+    {
+      "from": "References_28",
+      "to": "References_6"
+    },
+    {
+      "from": "References_28",
+      "to": "Slipbox_47"
+    },
+    {
+      "from": "References_29",
+      "to": "References_20"
+    },
+    {
+      "from": "References_29",
+      "to": "References_2"
+    },
+    {
+      "from": "References_29",
+      "to": "References_3"
+    },
+    {
+      "from": "References_30",
+      "to": "References_18"
+    },
+    {
+      "from": "References_30",
+      "to": "References_4"
+    },
+    {
+      "from": "References_30",
+      "to": "References_17"
+    },
+    {
+      "from": "References_30",
+      "to": "Slipbox_74"
+    },
+    {
+      "from": "References_31",
+      "to": "References_12"
+    },
+    {
+      "from": "References_31",
+      "to": "References_22"
+    },
+    {
+      "from": "References_31",
+      "to": "References_28"
+    },
+    {
+      "from": "References_32",
+      "to": "References_21"
+    },
+    {
+      "from": "References_32",
+      "to": "References_8"
+    },
+    {
+      "from": "References_32",
+      "to": "References_20"
+    },
+    {
+      "from": "References_33",
+      "to": "References_29"
+    },
+    {
+      "from": "References_33",
+      "to": "References_24"
+    },
+    {
+      "from": "References_33",
+      "to": "References_12"
+    },
+    {
+      "from": "References_34",
+      "to": "References_6"
+    },
+    {
+      "from": "References_34",
+      "to": "References_9"
+    },
+    {
+      "from": "References_34",
+      "to": "References_33"
+    },
+    {
+      "from": "References_35",
+      "to": "References_29"
+    },
+    {
+      "from": "References_35",
+      "to": "References_16"
+    },
+    {
+      "from": "References_35",
+      "to": "References_24"
+    },
+    {
+      "from": "References_36",
+      "to": "References_27"
+    },
+    {
+      "from": "References_36",
+      "to": "References_24"
+    },
+    {
+      "from": "References_36",
+      "to": "References_32"
+    },
+    {
+      "from": "References_37",
+      "to": "References_16"
+    },
+    {
+      "from": "References_37",
+      "to": "References_31"
+    },
+    {
+      "from": "References_37",
+      "to": "References_2"
+    },
+    {
+      "from": "References_38",
+      "to": "References_5"
+    },
+    {
+      "from": "References_38",
+      "to": "References_15"
+    },
+    {
+      "from": "References_38",
+      "to": "References_31"
+    },
+    {
+      "from": "References_39",
+      "to": "References_37"
+    },
+    {
+      "from": "References_39",
+      "to": "References_12"
+    },
+    {
+      "from": "References_39",
+      "to": "References_8"
+    },
+    {
+      "from": "References_40",
+      "to": "References_25"
+    },
+    {
+      "from": "References_40",
+      "to": "References_18"
+    },
+    {
+      "from": "References_40",
+      "to": "References_13"
+    },
+    {
+      "from": "References_41",
+      "to": "References_8"
+    },
+    {
+      "from": "References_41",
+      "to": "References_6"
+    },
+    {
+      "from": "References_41",
+      "to": "References_38"
+    },
+    {
+      "from": "References_41",
+      "to": "Books_96"
+    },
+    {
+      "from": "References_42",
+      "to": "References_34"
+    },
+    {
+      "from": "References_42",
+      "to": "References_36"
+    },
+    {
+      "from": "References_42",
+      "to": "References_0"
+    },
+    {
+      "from": "References_43",
+      "to": "References_33"
+    },
+    {
+      "from": "References_43",
+      "to": "References_6"
+    },
+    {
+      "from": "References_43",
+      "to": "References_23"
+    },
+    {
+      "from": "References_44",
+      "to": "References_12"
+    },
+    {
+      "from": "References_44",
+      "to": "References_39"
+    },
+    {
+      "from": "References_44",
+      "to": "References_42"
+    },
+    {
+      "from": "References_45",
+      "to": "References_5"
+    },
+    {
+      "from": "References_45",
+      "to": "References_11"
+    },
+    {
+      "from": "References_45",
+      "to": "References_17"
+    },
+    {
+      "from": "References_46",
+      "to": "References_39"
+    },
+    {
+      "from": "References_46",
+      "to": "References_44"
+    },
+    {
+      "from": "References_46",
+      "to": "References_22"
+    },
+    {
+      "from": "References_46",
+      "to": "Zettels_83"
+    },
+    {
+      "from": "References_47",
+      "to": "References_13"
+    },
+    {
+      "from": "References_47",
+      "to": "References_10"
+    },
+    {
+      "from": "References_47",
+      "to": "References_14"
+    },
+    {
+      "from": "References_48",
+      "to": "References_5"
+    },
+    {
+      "from": "References_48",
+      "to": "References_29"
+    },
+    {
+      "from": "References_48",
+      "to": "References_11"
+    },
+    {
+      "from": "References_49",
+      "to": "References_28"
+    },
+    {
+      "from": "References_49",
+      "to": "References_27"
+    },
+    {
+      "from": "References_49",
+      "to": "References_24"
+    },
+    {
+      "from": "References_50",
+      "to": "References_8"
+    },
+    {
+      "from": "References_50",
+      "to": "References_28"
+    },
+    {
+      "from": "References_50",
+      "to": "References_1"
+    },
+    {
+      "from": "References_51",
+      "to": "References_28"
+    },
+    {
+      "from": "References_51",
+      "to": "References_41"
+    },
+    {
+      "from": "References_51",
+      "to": "References_48"
+    },
+    {
+      "from": "References_52",
+      "to": "References_47"
+    },
+    {
+      "from": "References_52",
+      "to": "References_39"
+    },
+    {
+      "from": "References_52",
+      "to": "References_39"
+    },
+    {
+      "from": "References_53",
+      "to": "References_26"
+    },
+    {
+      "from": "References_53",
+      "to": "References_18"
+    },
+    {
+      "from": "References_53",
+      "to": "References_22"
+    },
+    {
+      "from": "References_54",
+      "to": "References_25"
+    },
+    {
+      "from": "References_54",
+      "to": "References_4"
+    },
+    {
+      "from": "References_54",
+      "to": "References_12"
+    },
+    {
+      "from": "References_54",
+      "to": "Zettels_56"
+    },
+    {
+      "from": "References_55",
+      "to": "References_36"
+    },
+    {
+      "from": "References_55",
+      "to": "References_20"
+    },
+    {
+      "from": "References_55",
+      "to": "References_19"
+    },
+    {
+      "from": "References_56",
+      "to": "References_22"
+    },
+    {
+      "from": "References_56",
+      "to": "References_28"
+    },
+    {
+      "from": "References_56",
+      "to": "References_32"
+    },
+    {
+      "from": "References_56",
+      "to": "Zettels_62"
+    },
+    {
+      "from": "References_57",
+      "to": "References_16"
+    },
+    {
+      "from": "References_57",
+      "to": "References_39"
+    },
+    {
+      "from": "References_57",
+      "to": "References_29"
+    },
+    {
+      "from": "References_58",
+      "to": "References_38"
+    },
+    {
+      "from": "References_58",
+      "to": "References_0"
+    },
+    {
+      "from": "References_58",
+      "to": "References_15"
+    },
+    {
+      "from": "References_59",
+      "to": "References_15"
+    },
+    {
+      "from": "References_59",
+      "to": "References_1"
+    },
+    {
+      "from": "References_59",
+      "to": "References_49"
+    },
+    {
+      "from": "References_59",
+      "to": "Books_86"
+    },
+    {
+      "from": "References_60",
+      "to": "References_51"
+    },
+    {
+      "from": "References_60",
+      "to": "References_18"
+    },
+    {
+      "from": "References_60",
+      "to": "References_41"
+    },
+    {
+      "from": "References_61",
+      "to": "References_28"
+    },
+    {
+      "from": "References_61",
+      "to": "References_11"
+    },
+    {
+      "from": "References_61",
+      "to": "References_25"
+    },
+    {
+      "from": "References_62",
+      "to": "References_58"
+    },
+    {
+      "from": "References_62",
+      "to": "References_59"
+    },
+    {
+      "from": "References_62",
+      "to": "References_48"
+    },
+    {
+      "from": "References_63",
+      "to": "References_42"
+    },
+    {
+      "from": "References_63",
+      "to": "References_7"
+    },
+    {
+      "from": "References_63",
+      "to": "References_5"
+    },
+    {
+      "from": "References_64",
+      "to": "References_10"
+    },
+    {
+      "from": "References_64",
+      "to": "References_32"
+    },
+    {
+      "from": "References_64",
+      "to": "References_39"
+    },
+    {
+      "from": "References_65",
+      "to": "References_36"
+    },
+    {
+      "from": "References_65",
+      "to": "References_41"
+    },
+    {
+      "from": "References_65",
+      "to": "References_0"
+    },
+    {
+      "from": "References_66",
+      "to": "References_62"
+    },
+    {
+      "from": "References_66",
+      "to": "References_4"
+    },
+    {
+      "from": "References_66",
+      "to": "References_29"
+    },
+    {
+      "from": "References_67",
+      "to": "References_46"
+    },
+    {
+      "from": "References_67",
+      "to": "References_15"
+    },
+    {
+      "from": "References_67",
+      "to": "References_49"
+    },
+    {
+      "from": "References_68",
+      "to": "References_47"
+    },
+    {
+      "from": "References_68",
+      "to": "References_63"
+    },
+    {
+      "from": "References_68",
+      "to": "References_60"
+    },
+    {
+      "from": "References_69",
+      "to": "References_68"
+    },
+    {
+      "from": "References_69",
+      "to": "References_21"
+    },
+    {
+      "from": "References_69",
+      "to": "References_28"
+    },
+    {
+      "from": "References_70",
+      "to": "References_60"
+    },
+    {
+      "from": "References_70",
+      "to": "References_16"
+    },
+    {
+      "from": "References_70",
+      "to": "References_26"
+    },
+    {
+      "from": "References_71",
+      "to": "References_67"
+    },
+    {
+      "from": "References_71",
+      "to": "References_21"
+    },
+    {
+      "from": "References_71",
+      "to": "References_49"
+    },
+    {
+      "from": "References_72",
+      "to": "References_53"
+    },
+    {
+      "from": "References_72",
+      "to": "References_58"
+    },
+    {
+      "from": "References_72",
+      "to": "References_27"
+    },
+    {
+      "from": "References_73",
+      "to": "References_32"
+    },
+    {
+      "from": "References_73",
+      "to": "References_56"
+    },
+    {
+      "from": "References_73",
+      "to": "References_35"
+    },
+    {
+      "from": "References_73",
+      "to": "Books_93"
+    },
+    {
+      "from": "References_74",
+      "to": "References_70"
+    },
+    {
+      "from": "References_74",
+      "to": "References_31"
+    },
+    {
+      "from": "References_74",
+      "to": "References_14"
+    },
+    {
+      "from": "References_74",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "References_75",
+      "to": "References_20"
+    },
+    {
+      "from": "References_75",
+      "to": "References_12"
+    },
+    {
+      "from": "References_75",
+      "to": "References_41"
+    },
+    {
+      "from": "References_76",
+      "to": "References_34"
+    },
+    {
+      "from": "References_76",
+      "to": "References_9"
+    },
+    {
+      "from": "References_76",
+      "to": "References_10"
+    },
+    {
+      "from": "References_77",
+      "to": "References_72"
+    },
+    {
+      "from": "References_77",
+      "to": "References_70"
+    },
+    {
+      "from": "References_77",
+      "to": "References_18"
+    },
+    {
+      "from": "References_78",
+      "to": "References_34"
+    },
+    {
+      "from": "References_78",
+      "to": "References_15"
+    },
+    {
+      "from": "References_78",
+      "to": "References_36"
+    },
+    {
+      "from": "References_78",
+      "to": "Books_22"
+    },
+    {
+      "from": "References_79",
+      "to": "References_19"
+    },
+    {
+      "from": "References_79",
+      "to": "References_11"
+    },
+    {
+      "from": "References_79",
+      "to": "References_16"
+    },
+    {
+      "from": "References_80",
+      "to": "References_18"
+    },
+    {
+      "from": "References_80",
+      "to": "References_37"
+    },
+    {
+      "from": "References_80",
+      "to": "References_24"
+    },
+    {
+      "from": "References_81",
+      "to": "References_64"
+    },
+    {
+      "from": "References_81",
+      "to": "References_65"
+    },
+    {
+      "from": "References_81",
+      "to": "References_24"
+    },
+    {
+      "from": "References_82",
+      "to": "References_29"
+    },
+    {
+      "from": "References_82",
+      "to": "References_56"
+    },
+    {
+      "from": "References_82",
+      "to": "References_62"
+    },
+    {
+      "from": "References_83",
+      "to": "References_25"
+    },
+    {
+      "from": "References_83",
+      "to": "References_32"
+    },
+    {
+      "from": "References_83",
+      "to": "References_35"
+    },
+    {
+      "from": "References_84",
+      "to": "References_32"
+    },
+    {
+      "from": "References_84",
+      "to": "References_29"
+    },
+    {
+      "from": "References_84",
+      "to": "References_58"
+    },
+    {
+      "from": "References_84",
+      "to": "Slipbox_83"
+    },
+    {
+      "from": "References_85",
+      "to": "References_33"
+    },
+    {
+      "from": "References_85",
+      "to": "References_11"
+    },
+    {
+      "from": "References_85",
+      "to": "References_40"
+    },
+    {
+      "from": "References_86",
+      "to": "References_17"
+    },
+    {
+      "from": "References_86",
+      "to": "References_84"
+    },
+    {
+      "from": "References_86",
+      "to": "References_20"
+    },
+    {
+      "from": "References_87",
+      "to": "References_54"
+    },
+    {
+      "from": "References_87",
+      "to": "References_0"
+    },
+    {
+      "from": "References_87",
+      "to": "References_20"
+    },
+    {
+      "from": "References_88",
+      "to": "References_7"
+    },
+    {
+      "from": "References_88",
+      "to": "References_33"
+    },
+    {
+      "from": "References_88",
+      "to": "References_76"
+    },
+    {
+      "from": "References_89",
+      "to": "References_20"
+    },
+    {
+      "from": "References_89",
+      "to": "References_45"
+    },
+    {
+      "from": "References_89",
+      "to": "References_23"
+    },
+    {
+      "from": "References_90",
+      "to": "References_67"
+    },
+    {
+      "from": "References_90",
+      "to": "References_8"
+    },
+    {
+      "from": "References_90",
+      "to": "References_27"
+    },
+    {
+      "from": "References_91",
+      "to": "References_71"
+    },
+    {
+      "from": "References_91",
+      "to": "References_21"
+    },
+    {
+      "from": "References_91",
+      "to": "References_11"
+    },
+    {
+      "from": "References_92",
+      "to": "References_68"
+    },
+    {
+      "from": "References_92",
+      "to": "References_77"
+    },
+    {
+      "from": "References_92",
+      "to": "References_14"
+    },
+    {
+      "from": "References_93",
+      "to": "References_9"
+    },
+    {
+      "from": "References_93",
+      "to": "References_22"
+    },
+    {
+      "from": "References_93",
+      "to": "References_9"
+    },
+    {
+      "from": "References_94",
+      "to": "References_22"
+    },
+    {
+      "from": "References_94",
+      "to": "References_31"
+    },
+    {
+      "from": "References_94",
+      "to": "References_46"
+    },
+    {
+      "from": "References_95",
+      "to": "References_28"
+    },
+    {
+      "from": "References_95",
+      "to": "References_10"
+    },
+    {
+      "from": "References_95",
+      "to": "References_35"
+    },
+    {
+      "from": "References_95",
+      "to": "Articles_83"
+    },
+    {
+      "from": "References_96",
+      "to": "References_0"
+    },
+    {
+      "from": "References_96",
+      "to": "References_81"
+    },
+    {
+      "from": "References_96",
+      "to": "References_68"
+    },
+    {
+      "from": "References_97",
+      "to": "References_94"
+    },
+    {
+      "from": "References_97",
+      "to": "References_43"
+    },
+    {
+      "from": "References_97",
+      "to": "References_2"
+    },
+    {
+      "from": "References_98",
+      "to": "References_26"
+    },
+    {
+      "from": "References_98",
+      "to": "References_70"
+    },
+    {
+      "from": "References_98",
+      "to": "References_9"
+    },
+    {
+      "from": "References_99",
+      "to": "References_23"
+    },
+    {
+      "from": "References_99",
+      "to": "References_78"
+    },
+    {
+      "from": "References_99",
+      "to": "References_25"
+    },
+    {
+      "from": "Articles_0",
+      "to": "Slipbox_14"
+    },
+    {
+      "from": "Articles_1",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_1",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_1",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_2",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_2",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_2",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_3",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_3",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_3",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_4",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_4",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_4",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_4",
+      "to": "Zettels_38"
+    },
+    {
+      "from": "Articles_5",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_5",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_5",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_6",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_6",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_6",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_7",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_7",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_7",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_8",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_8",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_8",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_9",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_9",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_9",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_10",
+      "to": "Articles_6"
+    },
+    {
+      "from": "Articles_10",
+      "to": "Articles_6"
+    },
+    {
+      "from": "Articles_10",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_11",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_11",
+      "to": "Articles_8"
+    },
+    {
+      "from": "Articles_11",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_12",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_12",
+      "to": "Articles_10"
+    },
+    {
+      "from": "Articles_12",
+      "to": "Articles_11"
+    },
+    {
+      "from": "Articles_13",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_13",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_13",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_14",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_14",
+      "to": "Articles_6"
+    },
+    {
+      "from": "Articles_14",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_15",
+      "to": "Articles_8"
+    },
+    {
+      "from": "Articles_15",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_15",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_16",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_16",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_16",
+      "to": "Articles_14"
+    },
+    {
+      "from": "Articles_17",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_17",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_17",
+      "to": "Articles_14"
+    },
+    {
+      "from": "Articles_18",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_18",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_18",
+      "to": "Articles_14"
+    },
+    {
+      "from": "Articles_19",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_19",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_19",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_20",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_20",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_20",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_21",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_21",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_21",
+      "to": "Articles_11"
+    },
+    {
+      "from": "Articles_21",
+      "to": "References_52"
+    },
+    {
+      "from": "Articles_22",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_22",
+      "to": "Articles_20"
+    },
+    {
+      "from": "Articles_22",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_23",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_23",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_23",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_24",
+      "to": "Articles_17"
+    },
+    {
+      "from": "Articles_24",
+      "to": "Articles_17"
+    },
+    {
+      "from": "Articles_24",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_25",
+      "to": "Articles_20"
+    },
+    {
+      "from": "Articles_25",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_25",
+      "to": "Articles_7"
+    },
+    {
+      "from": "Articles_26",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_26",
+      "to": "Articles_24"
+    },
+    {
+      "from": "Articles_26",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_27",
+      "to": "Articles_14"
+    },
+    {
+      "from": "Articles_27",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_27",
+      "to": "Articles_8"
+    },
+    {
+      "from": "Articles_28",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_28",
+      "to": "Articles_14"
+    },
+    {
+      "from": "Articles_28",
+      "to": "Articles_6"
+    },
+    {
+      "from": "Articles_28",
+      "to": "Books_80"
+    },
+    {
+      "from": "Articles_29",
+      "to": "Articles_7"
+    },
+    {
+      "from": "Articles_29",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_29",
+      "to": "Articles_23"
+    },
+    {
+      "from": "Articles_30",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_30",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_30",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_31",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_31",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_31",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_32",
+      "to": "Articles_8"
+    },
+    {
+      "from": "Articles_32",
+      "to": "Articles_18"
+    },
+    {
+      "from": "Articles_32",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_33",
+      "to": "Articles_24"
+    },
+    {
+      "from": "Articles_33",
+      "to": "Articles_15"
+    },
+    {
+      "from": "Articles_33",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_34",
+      "to": "Articles_28"
+    },
+    {
+      "from": "Articles_34",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_34",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_35",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_35",
+      "to": "Articles_22"
+    },
+    {
+      "from": "Articles_35",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_36",
+      "to": "Articles_13"
+    },
+    {
+      "from": "Articles_36",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_36",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_37",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_37",
+      "to": "Articles_7"
+    },
+    {
+      "from": "Articles_37",
+      "to": "Articles_30"
+    },
+    {
+      "from": "Articles_38",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_38",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_38",
+      "to": "Articles_29"
+    },
+    {
+      "from": "Articles_39",
+      "to": "Articles_26"
+    },
+    {
+      "from": "Articles_39",
+      "to": "Articles_31"
+    },
+    {
+      "from": "Articles_39",
+      "to": "Articles_38"
+    },
+    {
+      "from": "Articles_40",
+      "to": "Articles_6"
+    },
+    {
+      "from": "Articles_40",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_40",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_41",
+      "to": "Articles_27"
+    },
+    {
+      "from": "Articles_41",
+      "to": "Articles_31"
+    },
+    {
+      "from": "Articles_41",
+      "to": "Articles_23"
+    },
+    {
+      "from": "Articles_42",
+      "to": "Articles_24"
+    },
+    {
+      "from": "Articles_42",
+      "to": "Articles_13"
+    },
+    {
+      "from": "Articles_42",
+      "to": "Articles_20"
+    },
+    {
+      "from": "Articles_42",
+      "to": "Zettels_13"
+    },
+    {
+      "from": "Articles_43",
+      "to": "Articles_23"
+    },
+    {
+      "from": "Articles_43",
+      "to": "Articles_7"
+    },
+    {
+      "from": "Articles_43",
+      "to": "Articles_29"
+    },
+    {
+      "from": "Articles_44",
+      "to": "Articles_27"
+    },
+    {
+      "from": "Articles_44",
+      "to": "Articles_24"
+    },
+    {
+      "from": "Articles_44",
+      "to": "Articles_10"
+    },
+    {
+      "from": "Articles_45",
+      "to": "Articles_17"
+    },
+    {
+      "from": "Articles_45",
+      "to": "Articles_20"
+    },
+    {
+      "from": "Articles_45",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_46",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_46",
+      "to": "Articles_39"
+    },
+    {
+      "from": "Articles_46",
+      "to": "Articles_38"
+    },
+    {
+      "from": "Articles_47",
+      "to": "Articles_14"
+    },
+    {
+      "from": "Articles_47",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_47",
+      "to": "Articles_15"
+    },
+    {
+      "from": "Articles_48",
+      "to": "Articles_46"
+    },
+    {
+      "from": "Articles_48",
+      "to": "Articles_33"
+    },
+    {
+      "from": "Articles_48",
+      "to": "Articles_36"
+    },
+    {
+      "from": "Articles_49",
+      "to": "Articles_27"
+    },
+    {
+      "from": "Articles_49",
+      "to": "Articles_13"
+    },
+    {
+      "from": "Articles_49",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_50",
+      "to": "Articles_24"
+    },
+    {
+      "from": "Articles_50",
+      "to": "Articles_11"
+    },
+    {
+      "from": "Articles_50",
+      "to": "Articles_43"
+    },
+    {
+      "from": "Articles_51",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_51",
+      "to": "Articles_45"
+    },
+    {
+      "from": "Articles_51",
+      "to": "Articles_1"
+    },
+    {
+      "from": "Articles_52",
+      "to": "Articles_7"
+    },
+    {
+      "from": "Articles_52",
+      "to": "Articles_41"
+    },
+    {
+      "from": "Articles_52",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_53",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_53",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_53",
+      "to": "Articles_22"
+    },
+    {
+      "from": "Articles_54",
+      "to": "Articles_35"
+    },
+    {
+      "from": "Articles_54",
+      "to": "Articles_48"
+    },
+    {
+      "from": "Articles_54",
+      "to": "Articles_13"
+    },
+    {
+      "from": "Articles_55",
+      "to": "Articles_39"
+    },
+    {
+      "from": "Articles_55",
+      "to": "Articles_2"
+    },
+    {
+      "from": "Articles_55",
+      "to": "Articles_47"
+    },
+    {
+      "from": "Articles_56",
+      "to": "Articles_49"
+    },
+    {
+      "from": "Articles_56",
+      "to": "Articles_36"
+    },
+    {
+      "from": "Articles_56",
+      "to": "Articles_44"
+    },
+    {
+      "from": "Articles_57",
+      "to": "Articles_29"
+    },
+    {
+      "from": "Articles_57",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_57",
+      "to": "Articles_25"
+    },
+    {
+      "from": "Articles_58",
+      "to": "Articles_17"
+    },
+    {
+      "from": "Articles_58",
+      "to": "Articles_8"
+    },
+    {
+      "from": "Articles_58",
+      "to": "Articles_56"
+    },
+    {
+      "from": "Articles_59",
+      "to": "Articles_45"
+    },
+    {
+      "from": "Articles_59",
+      "to": "Articles_51"
+    },
+    {
+      "from": "Articles_59",
+      "to": "Articles_49"
+    },
+    {
+      "from": "Articles_60",
+      "to": "Articles_22"
+    },
+    {
+      "from": "Articles_60",
+      "to": "Articles_50"
+    },
+    {
+      "from": "Articles_60",
+      "to": "Articles_25"
+    },
+    {
+      "from": "Articles_61",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_61",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_61",
+      "to": "Articles_56"
+    },
+    {
+      "from": "Articles_62",
+      "to": "Articles_51"
+    },
+    {
+      "from": "Articles_62",
+      "to": "Articles_26"
+    },
+    {
+      "from": "Articles_62",
+      "to": "Articles_47"
+    },
+    {
+      "from": "Articles_63",
+      "to": "Articles_31"
+    },
+    {
+      "from": "Articles_63",
+      "to": "Articles_51"
+    },
+    {
+      "from": "Articles_63",
+      "to": "Articles_11"
+    },
+    {
+      "from": "Articles_64",
+      "to": "Articles_9"
+    },
+    {
+      "from": "Articles_64",
+      "to": "Articles_44"
+    },
+    {
+      "from": "Articles_64",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_64",
+      "to": "Zettels_0"
+    },
+    {
+      "from": "Articles_65",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_65",
+      "to": "Articles_39"
+    },
+    {
+      "from": "Articles_65",
+      "to": "Articles_11"
+    },
+    {
+      "from": "Articles_66",
+      "to": "Articles_48"
+    },
+    {
+      "from": "Articles_66",
+      "to": "Articles_10"
+    },
+    {
+      "from": "Articles_66",
+      "to": "Articles_31"
+    },
+    {
+      "from": "Articles_67",
+      "to": "Articles_37"
+    },
+    {
+      "from": "Articles_67",
+      "to": "Articles_17"
+    },
+    {
+      "from": "Articles_67",
+      "to": "Articles_26"
+    },
+    {
+      "from": "Articles_68",
+      "to": "Articles_67"
+    },
+    {
+      "from": "Articles_68",
+      "to": "Articles_66"
+    },
+    {
+      "from": "Articles_68",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_69",
+      "to": "Articles_58"
+    },
+    {
+      "from": "Articles_69",
+      "to": "Articles_11"
+    },
+    {
+      "from": "Articles_69",
+      "to": "Articles_38"
+    },
+    {
+      "from": "Articles_70",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_70",
+      "to": "Articles_60"
+    },
+    {
+      "from": "Articles_70",
+      "to": "Articles_29"
+    },
+    {
+      "from": "Articles_71",
+      "to": "Articles_7"
+    },
+    {
+      "from": "Articles_71",
+      "to": "Articles_13"
+    },
+    {
+      "from": "Articles_71",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_72",
+      "to": "Articles_45"
+    },
+    {
+      "from": "Articles_72",
+      "to": "Articles_45"
+    },
+    {
+      "from": "Articles_72",
+      "to": "Articles_24"
+    },
+    {
+      "from": "Articles_73",
+      "to": "Articles_58"
+    },
+    {
+      "from": "Articles_73",
+      "to": "Articles_64"
+    },
+    {
+      "from": "Articles_73",
+      "to": "Articles_44"
+    },
+    {
+      "from": "Articles_74",
+      "to": "Articles_69"
+    },
+    {
+      "from": "Articles_74",
+      "to": "Articles_14"
+    },
+    {
+      "from": "Articles_74",
+      "to": "Articles_72"
+    },
+    {
+      "from": "Articles_75",
+      "to": "Articles_39"
+    },
+    {
+      "from": "Articles_75",
+      "to": "Articles_48"
+    },
+    {
+      "from": "Articles_75",
+      "to": "Articles_51"
+    },
+    {
+      "from": "Articles_76",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_76",
+      "to": "Articles_75"
+    },
+    {
+      "from": "Articles_76",
+      "to": "Articles_59"
+    },
+    {
+      "from": "Articles_77",
+      "to": "Articles_4"
+    },
+    {
+      "from": "Articles_77",
+      "to": "Articles_26"
+    },
+    {
+      "from": "Articles_77",
+      "to": "Articles_36"
+    },
+    {
+      "from": "Articles_78",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_78",
+      "to": "Articles_52"
+    },
+    {
+      "from": "Articles_78",
+      "to": "Articles_40"
+    },
+    {
+      "from": "Articles_78",
+      "to": "Zettels_21"
+    },
+    {
+      "from": "Articles_79",
+      "to": "Articles_30"
+    },
+    {
+      "from": "Articles_79",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_79",
+      "to": "Articles_30"
+    },
+    {
+      "from": "Articles_80",
+      "to": "Articles_36"
+    },
+    {
+      "from": "Articles_80",
+      "to": "Articles_65"
+    },
+    {
+      "from": "Articles_80",
+      "to": "Articles_41"
+    },
+    {
+      "from": "Articles_81",
+      "to": "Articles_40"
+    },
+    {
+      "from": "Articles_81",
+      "to": "Articles_20"
+    },
+    {
+      "from": "Articles_81",
+      "to": "Articles_31"
+    },
+    {
+      "from": "Articles_81",
+      "to": "Slipbox_25"
+    },
+    {
+      "from": "Articles_82",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_82",
+      "to": "Articles_65"
+    },
+    {
+      "from": "Articles_82",
+      "to": "Articles_33"
+    },
+    {
+      "from": "Articles_83",
+      "to": "Articles_11"
+    },
+    {
+      "from": "Articles_83",
+      "to": "Articles_16"
+    },
+    {
+      "from": "Articles_83",
+      "to": "Articles_60"
+    },
+    {
+      "from": "Articles_83",
+      "to": "Zettels_51"
+    },
+    {
+      "from": "Articles_84",
+      "to": "Articles_38"
+    },
+    {
+      "from": "Articles_84",
+      "to": "Articles_73"
+    },
+    {
+      "from": "Articles_84",
+      "to": "Articles_69"
+    },
+    {
+      "from": "Articles_85",
+      "to": "Articles_82"
+    },
+    {
+      "from": "Articles_85",
+      "to": "Articles_78"
+    },
+    {
+      "from": "Articles_85",
+      "to": "Articles_80"
+    },
+    {
+      "from": "Articles_86",
+      "to": "Articles_25"
+    },
+    {
+      "from": "Articles_86",
+      "to": "Articles_83"
+    },
+    {
+      "from": "Articles_86",
+      "to": "Articles_42"
+    },
+    {
+      "from": "Articles_87",
+      "to": "Articles_26"
+    },
+    {
+      "from": "Articles_87",
+      "to": "Articles_59"
+    },
+    {
+      "from": "Articles_87",
+      "to": "Articles_28"
+    },
+    {
+      "from": "Articles_88",
+      "to": "Articles_65"
+    },
+    {
+      "from": "Articles_88",
+      "to": "Articles_15"
+    },
+    {
+      "from": "Articles_88",
+      "to": "Articles_58"
+    },
+    {
+      "from": "Articles_89",
+      "to": "Articles_43"
+    },
+    {
+      "from": "Articles_89",
+      "to": "Articles_69"
+    },
+    {
+      "from": "Articles_89",
+      "to": "Articles_26"
+    },
+    {
+      "from": "Articles_90",
+      "to": "Articles_79"
+    },
+    {
+      "from": "Articles_90",
+      "to": "Articles_3"
+    },
+    {
+      "from": "Articles_90",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_90",
+      "to": "Slipbox_23"
+    },
+    {
+      "from": "Articles_91",
+      "to": "Articles_27"
+    },
+    {
+      "from": "Articles_91",
+      "to": "Articles_75"
+    },
+    {
+      "from": "Articles_91",
+      "to": "Articles_25"
+    },
+    {
+      "from": "Articles_92",
+      "to": "Articles_44"
+    },
+    {
+      "from": "Articles_92",
+      "to": "Articles_87"
+    },
+    {
+      "from": "Articles_92",
+      "to": "Articles_88"
+    },
+    {
+      "from": "Articles_92",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Articles_93",
+      "to": "Articles_59"
+    },
+    {
+      "from": "Articles_93",
+      "to": "Articles_34"
+    },
+    {
+      "from": "Articles_93",
+      "to": "Articles_73"
+    },
+    {
+      "from": "Articles_94",
+      "to": "Articles_25"
+    },
+    {
+      "from": "Articles_94",
+      "to": "Articles_63"
+    },
+    {
+      "from": "Articles_94",
+      "to": "Articles_5"
+    },
+    {
+      "from": "Articles_95",
+      "to": "Articles_92"
+    },
+    {
+      "from": "Articles_95",
+      "to": "Articles_23"
+    },
+    {
+      "from": "Articles_95",
+      "to": "Articles_18"
+    },
+    {
+      "from": "Articles_96",
+      "to": "Articles_21"
+    },
+    {
+      "from": "Articles_96",
+      "to": "Articles_53"
+    },
+    {
+      "from": "Articles_96",
+      "to": "Articles_57"
+    },
+    {
+      "from": "Articles_97",
+      "to": "Articles_55"
+    },
+    {
+      "from": "Articles_97",
+      "to": "Articles_0"
+    },
+    {
+      "from": "Articles_97",
+      "to": "Articles_19"
+    },
+    {
+      "from": "Articles_98",
+      "to": "Articles_42"
+    },
+    {
+      "from": "Articles_98",
+      "to": "Articles_33"
+    },
+    {
+      "from": "Articles_98",
+      "to": "Articles_12"
+    },
+    {
+      "from": "Articles_99",
+      "to": "Articles_58"
+    },
+    {
+      "from": "Articles_99",
+      "to": "Articles_38"
+    },
+    {
+      "from": "Articles_99",
+      "to": "Articles_75"
+    },
+    {
+      "from": "Books_1",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_1",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_1",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_2",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_2",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_2",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_3",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_3",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_3",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_4",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_4",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_4",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_5",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_5",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_5",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_5",
+      "to": "Articles_36"
+    },
+    {
+      "from": "Books_6",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_6",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_6",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_7",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_7",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_7",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_8",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_8",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_8",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_8",
+      "to": "Articles_84"
+    },
+    {
+      "from": "Books_9",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_9",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_9",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_9",
+      "to": "Slipbox_37"
+    },
+    {
+      "from": "Books_10",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_10",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_10",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_11",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_11",
+      "to": "Books_9"
+    },
+    {
+      "from": "Books_11",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_12",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_12",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_12",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_13",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_13",
+      "to": "Books_4"
+    },
+    {
+      "from": "Books_13",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_14",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_14",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_14",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_15",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_15",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_15",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_16",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_16",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_16",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_17",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_17",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_17",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_18",
+      "to": "Books_6"
+    },
+    {
+      "from": "Books_18",
+      "to": "Books_6"
+    },
+    {
+      "from": "Books_18",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_19",
+      "to": "Books_18"
+    },
+    {
+      "from": "Books_19",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_19",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_20",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_20",
+      "to": "Books_15"
+    },
+    {
+      "from": "Books_20",
+      "to": "Books_6"
+    },
+    {
+      "from": "Books_20",
+      "to": "Slipbox_10"
+    },
+    {
+      "from": "Books_21",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_21",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_21",
+      "to": "Books_11"
+    },
+    {
+      "from": "Books_22",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_22",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_22",
+      "to": "Books_17"
+    },
+    {
+      "from": "Books_23",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_23",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_23",
+      "to": "Books_4"
+    },
+    {
+      "from": "Books_24",
+      "to": "Books_21"
+    },
+    {
+      "from": "Books_24",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_24",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_24",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Books_25",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_25",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_25",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_26",
+      "to": "Books_20"
+    },
+    {
+      "from": "Books_26",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_26",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_27",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_27",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_27",
+      "to": "Books_24"
+    },
+    {
+      "from": "Books_28",
+      "to": "Books_4"
+    },
+    {
+      "from": "Books_28",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_28",
+      "to": "Books_18"
+    },
+    {
+      "from": "Books_29",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_29",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_29",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_30",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_30",
+      "to": "Books_23"
+    },
+    {
+      "from": "Books_30",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_31",
+      "to": "Books_25"
+    },
+    {
+      "from": "Books_31",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_31",
+      "to": "Books_19"
+    },
+    {
+      "from": "Books_32",
+      "to": "Books_15"
+    },
+    {
+      "from": "Books_32",
+      "to": "Books_18"
+    },
+    {
+      "from": "Books_32",
+      "to": "Books_22"
+    },
+    {
+      "from": "Books_32",
+      "to": "Slipbox_25"
+    },
+    {
+      "from": "Books_33",
+      "to": "Books_4"
+    },
+    {
+      "from": "Books_33",
+      "to": "Books_21"
+    },
+    {
+      "from": "Books_33",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_34",
+      "to": "Books_22"
+    },
+    {
+      "from": "Books_34",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_34",
+      "to": "Books_11"
+    },
+    {
+      "from": "Books_34",
+      "to": "Zettels_16"
+    },
+    {
+      "from": "Books_35",
+      "to": "Books_19"
+    },
+    {
+      "from": "Books_35",
+      "to": "Books_26"
+    },
+    {
+      "from": "Books_35",
+      "to": "Books_29"
+    },
+    {
+      "from": "Books_36",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_36",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_36",
+      "to": "Books_28"
+    },
+    {
+      "from": "Books_37",
+      "to": "Books_17"
+    },
+    {
+      "from": "Books_37",
+      "to": "Books_29"
+    },
+    {
+      "from": "Books_37",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_38",
+      "to": "Books_4"
+    },
+    {
+      "from": "Books_38",
+      "to": "Books_15"
+    },
+    {
+      "from": "Books_38",
+      "to": "Books_11"
+    },
+    {
+      "from": "Books_39",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_39",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_39",
+      "to": "Books_35"
+    },
+    {
+      "from": "Books_40",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_40",
+      "to": "Books_12"
+    },
+    {
+      "from": "Books_40",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_41",
+      "to": "Books_30"
+    },
+    {
+      "from": "Books_41",
+      "to": "Books_11"
+    },
+    {
+      "from": "Books_41",
+      "to": "Books_1"
+    },
+    {
+      "from": "Books_42",
+      "to": "Books_18"
+    },
+    {
+      "from": "Books_42",
+      "to": "Books_25"
+    },
+    {
+      "from": "Books_42",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_42",
+      "to": "Zettels_43"
+    },
+    {
+      "from": "Books_43",
+      "to": "Books_30"
+    },
+    {
+      "from": "Books_43",
+      "to": "Books_41"
+    },
+    {
+      "from": "Books_43",
+      "to": "Books_16"
+    },
+    {
+      "from": "Books_43",
+      "to": "Articles_70"
+    },
+    {
+      "from": "Books_44",
+      "to": "Books_37"
+    },
+    {
+      "from": "Books_44",
+      "to": "Books_16"
+    },
+    {
+      "from": "Books_44",
+      "to": "Books_29"
+    },
+    {
+      "from": "Books_45",
+      "to": "Books_19"
+    },
+    {
+      "from": "Books_45",
+      "to": "Books_40"
+    },
+    {
+      "from": "Books_45",
+      "to": "Books_34"
+    },
+    {
+      "from": "Books_46",
+      "to": "Books_41"
+    },
+    {
+      "from": "Books_46",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_46",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_47",
+      "to": "Books_40"
+    },
+    {
+      "from": "Books_47",
+      "to": "Books_25"
+    },
+    {
+      "from": "Books_47",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_48",
+      "to": "Books_16"
+    },
+    {
+      "from": "Books_48",
+      "to": "Books_39"
+    },
+    {
+      "from": "Books_48",
+      "to": "Books_24"
+    },
+    {
+      "from": "Books_49",
+      "to": "Books_19"
+    },
+    {
+      "from": "Books_49",
+      "to": "Books_26"
+    },
+    {
+      "from": "Books_49",
+      "to": "Books_29"
+    },
+    {
+      "from": "Books_49",
+      "to": "Articles_57"
+    },
+    {
+      "from": "Books_50",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_50",
+      "to": "Books_39"
+    },
+    {
+      "from": "Books_50",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_51",
+      "to": "Books_34"
+    },
+    {
+      "from": "Books_51",
+      "to": "Books_33"
+    },
+    {
+      "from": "Books_51",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_52",
+      "to": "Books_19"
+    },
+    {
+      "from": "Books_52",
+      "to": "Books_40"
+    },
+    {
+      "from": "Books_52",
+      "to": "Books_6"
+    },
+    {
+      "from": "Books_53",
+      "to": "Books_49"
+    },
+    {
+      "from": "Books_53",
+      "to": "Books_18"
+    },
+    {
+      "from": "Books_53",
+      "to": "Books_14"
+    },
+    {
+      "from": "Books_54",
+      "to": "Books_44"
+    },
+    {
+      "from": "Books_54",
+      "to": "Books_20"
+    },
+    {
+      "from": "Books_54",
+      "to": "Books_40"
+    },
+    {
+      "from": "Books_55",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_55",
+      "to": "Books_29"
+    },
+    {
+      "from": "Books_55",
+      "to": "Books_35"
+    },
+    {
+      "from": "Books_56",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_56",
+      "to": "Books_38"
+    },
+    {
+      "from": "Books_56",
+      "to": "Books_23"
+    },
+    {
+      "from": "Books_57",
+      "to": "Books_48"
+    },
+    {
+      "from": "Books_57",
+      "to": "Books_37"
+    },
+    {
+      "from": "Books_57",
+      "to": "Books_50"
+    },
+    {
+      "from": "Books_58",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_58",
+      "to": "Books_17"
+    },
+    {
+      "from": "Books_58",
+      "to": "Books_22"
+    },
+    {
+      "from": "Books_59",
+      "to": "Books_29"
+    },
+    {
+      "from": "Books_59",
+      "to": "Books_14"
+    },
+    {
+      "from": "Books_59",
+      "to": "Books_46"
+    },
+    {
+      "from": "Books_60",
+      "to": "Books_51"
+    },
+    {
+      "from": "Books_60",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_60",
+      "to": "Books_50"
+    },
+    {
+      "from": "Books_61",
+      "to": "Books_21"
+    },
+    {
+      "from": "Books_61",
+      "to": "Books_15"
+    },
+    {
+      "from": "Books_61",
+      "to": "Books_19"
+    },
+    {
+      "from": "Books_62",
+      "to": "Books_59"
+    },
+    {
+      "from": "Books_62",
+      "to": "Books_21"
+    },
+    {
+      "from": "Books_62",
+      "to": "Books_35"
+    },
+    {
+      "from": "Books_63",
+      "to": "Books_45"
+    },
+    {
+      "from": "Books_63",
+      "to": "Books_23"
+    },
+    {
+      "from": "Books_63",
+      "to": "Books_56"
+    },
+    {
+      "from": "Books_64",
+      "to": "Books_17"
+    },
+    {
+      "from": "Books_64",
+      "to": "Books_37"
+    },
+    {
+      "from": "Books_64",
+      "to": "Books_51"
+    },
+    {
+      "from": "Books_65",
+      "to": "Books_17"
+    },
+    {
+      "from": "Books_65",
+      "to": "Books_39"
+    },
+    {
+      "from": "Books_65",
+      "to": "Books_22"
+    },
+    {
+      "from": "Books_66",
+      "to": "Books_58"
+    },
+    {
+      "from": "Books_66",
+      "to": "Books_23"
+    },
+    {
+      "from": "Books_66",
+      "to": "Books_8"
+    },
+    {
+      "from": "Books_67",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_67",
+      "to": "Books_38"
+    },
+    {
+      "from": "Books_67",
+      "to": "Books_41"
+    },
+    {
+      "from": "Books_68",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_68",
+      "to": "Books_49"
+    },
+    {
+      "from": "Books_68",
+      "to": "Books_9"
+    },
+    {
+      "from": "Books_69",
+      "to": "Books_52"
+    },
+    {
+      "from": "Books_69",
+      "to": "Books_57"
+    },
+    {
+      "from": "Books_69",
+      "to": "Books_38"
+    },
+    {
+      "from": "Books_70",
+      "to": "Books_2"
+    },
+    {
+      "from": "Books_70",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_70",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_71",
+      "to": "Books_59"
+    },
+    {
+      "from": "Books_71",
+      "to": "Books_70"
+    },
+    {
+      "from": "Books_71",
+      "to": "Books_48"
+    },
+    {
+      "from": "Books_72",
+      "to": "Books_54"
+    },
+    {
+      "from": "Books_72",
+      "to": "Books_7"
+    },
+    {
+      "from": "Books_72",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_73",
+      "to": "Books_47"
+    },
+    {
+      "from": "Books_73",
+      "to": "Books_54"
+    },
+    {
+      "from": "Books_73",
+      "to": "Books_36"
+    },
+    {
+      "from": "Books_74",
+      "to": "Books_61"
+    },
+    {
+      "from": "Books_74",
+      "to": "Books_9"
+    },
+    {
+      "from": "Books_74",
+      "to": "Books_73"
+    },
+    {
+      "from": "Books_75",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_75",
+      "to": "Books_23"
+    },
+    {
+      "from": "Books_75",
+      "to": "Books_52"
+    },
+    {
+      "from": "Books_76",
+      "to": "Books_57"
+    },
+    {
+      "from": "Books_76",
+      "to": "Books_72"
+    },
+    {
+      "from": "Books_76",
+      "to": "Books_60"
+    },
+    {
+      "from": "Books_76",
+      "to": "References_79"
+    },
+    {
+      "from": "Books_77",
+      "to": "Books_16"
+    },
+    {
+      "from": "Books_77",
+      "to": "Books_73"
+    },
+    {
+      "from": "Books_77",
+      "to": "Books_59"
+    },
+    {
+      "from": "Books_78",
+      "to": "Books_18"
+    },
+    {
+      "from": "Books_78",
+      "to": "Books_28"
+    },
+    {
+      "from": "Books_78",
+      "to": "Books_3"
+    },
+    {
+      "from": "Books_79",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_79",
+      "to": "Books_66"
+    },
+    {
+      "from": "Books_79",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_80",
+      "to": "Books_70"
+    },
+    {
+      "from": "Books_80",
+      "to": "Books_54"
+    },
+    {
+      "from": "Books_80",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_81",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_81",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_81",
+      "to": "Books_14"
+    },
+    {
+      "from": "Books_82",
+      "to": "Books_79"
+    },
+    {
+      "from": "Books_82",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_82",
+      "to": "Books_31"
+    },
+    {
+      "from": "Books_83",
+      "to": "Books_78"
+    },
+    {
+      "from": "Books_83",
+      "to": "Books_4"
+    },
+    {
+      "from": "Books_83",
+      "to": "Books_73"
+    },
+    {
+      "from": "Books_84",
+      "to": "Books_13"
+    },
+    {
+      "from": "Books_84",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_84",
+      "to": "Books_11"
+    },
+    {
+      "from": "Books_85",
+      "to": "Books_40"
+    },
+    {
+      "from": "Books_85",
+      "to": "Books_39"
+    },
+    {
+      "from": "Books_85",
+      "to": "Books_50"
+    },
+    {
+      "from": "Books_86",
+      "to": "Books_84"
+    },
+    {
+      "from": "Books_86",
+      "to": "Books_82"
+    },
+    {
+      "from": "Books_86",
+      "to": "Books_27"
+    },
+    {
+      "from": "Books_87",
+      "to": "Books_74"
+    },
+    {
+      "from": "Books_87",
+      "to": "Books_69"
+    },
+    {
+      "from": "Books_87",
+      "to": "Books_79"
+    },
+    {
+      "from": "Books_87",
+      "to": "Articles_82"
+    },
+    {
+      "from": "Books_88",
+      "to": "Books_75"
+    },
+    {
+      "from": "Books_88",
+      "to": "Books_85"
+    },
+    {
+      "from": "Books_88",
+      "to": "Books_44"
+    },
+    {
+      "from": "Books_88",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Books_89",
+      "to": "Books_24"
+    },
+    {
+      "from": "Books_89",
+      "to": "Books_45"
+    },
+    {
+      "from": "Books_89",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_90",
+      "to": "Books_35"
+    },
+    {
+      "from": "Books_90",
+      "to": "Books_54"
+    },
+    {
+      "from": "Books_90",
+      "to": "Books_0"
+    },
+    {
+      "from": "Books_91",
+      "to": "Books_48"
+    },
+    {
+      "from": "Books_91",
+      "to": "Books_53"
+    },
+    {
+      "from": "Books_91",
+      "to": "Books_34"
+    },
+    {
+      "from": "Books_92",
+      "to": "Books_32"
+    },
+    {
+      "from": "Books_92",
+      "to": "Books_74"
+    },
+    {
+      "from": "Books_92",
+      "to": "Books_78"
+    },
+    {
+      "from": "Books_93",
+      "to": "Books_85"
+    },
+    {
+      "from": "Books_93",
+      "to": "Books_49"
+    },
+    {
+      "from": "Books_93",
+      "to": "Books_28"
+    },
+    {
+      "from": "Books_94",
+      "to": "Books_52"
+    },
+    {
+      "from": "Books_94",
+      "to": "Books_71"
+    },
+    {
+      "from": "Books_94",
+      "to": "Books_85"
+    },
+    {
+      "from": "Books_95",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_95",
+      "to": "Books_82"
+    },
+    {
+      "from": "Books_95",
+      "to": "Books_82"
+    },
+    {
+      "from": "Books_96",
+      "to": "Books_34"
+    },
+    {
+      "from": "Books_96",
+      "to": "Books_62"
+    },
+    {
+      "from": "Books_96",
+      "to": "Books_10"
+    },
+    {
+      "from": "Books_97",
+      "to": "Books_95"
+    },
+    {
+      "from": "Books_97",
+      "to": "Books_87"
+    },
+    {
+      "from": "Books_97",
+      "to": "Books_81"
+    },
+    {
+      "from": "Books_98",
+      "to": "Books_20"
+    },
+    {
+      "from": "Books_98",
+      "to": "Books_5"
+    },
+    {
+      "from": "Books_98",
+      "to": "Books_34"
+    },
+    {
+      "from": "Books_99",
+      "to": "Books_74"
+    },
+    {
+      "from": "Books_99",
+      "to": "Books_37"
+    },
+    {
+      "from": "Books_99",
+      "to": "Books_2"
+    },
+    {
+      "from": "Slipbox_1",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_1",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_1",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_1",
+      "to": "Zettels_63"
+    },
+    {
+      "from": "Slipbox_2",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_2",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_2",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_3",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_3",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_3",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_4",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_4",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_4",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_5",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_5",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_5",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_6",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_6",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_6",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_7",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_7",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_7",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_8",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_8",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_8",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_8",
+      "to": "References_40"
+    },
+    {
+      "from": "Slipbox_9",
+      "to": "Slipbox_8"
+    },
+    {
+      "from": "Slipbox_9",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_9",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_10",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_10",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_10",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_11",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_11",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_11",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_12",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_12",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_12",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_13",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_13",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_13",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_13",
+      "to": "Articles_56"
+    },
+    {
+      "from": "Slipbox_14",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_14",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_14",
+      "to": "Slipbox_9"
+    },
+    {
+      "from": "Slipbox_15",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_15",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_15",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_16",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_16",
+      "to": "Slipbox_15"
+    },
+    {
+      "from": "Slipbox_16",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Slipbox_17",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Slipbox_17",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Slipbox_17",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_18",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_18",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_18",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_19",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_19",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_19",
+      "to": "Slipbox_14"
+    },
+    {
+      "from": "Slipbox_20",
+      "to": "Slipbox_17"
+    },
+    {
+      "from": "Slipbox_20",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_20",
+      "to": "Slipbox_11"
+    },
+    {
+      "from": "Slipbox_20",
+      "to": "References_89"
+    },
+    {
+      "from": "Slipbox_21",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_21",
+      "to": "Slipbox_8"
+    },
+    {
+      "from": "Slipbox_21",
+      "to": "Slipbox_18"
+    },
+    {
+      "from": "Slipbox_22",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_22",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_22",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_23",
+      "to": "Slipbox_10"
+    },
+    {
+      "from": "Slipbox_23",
+      "to": "Slipbox_9"
+    },
+    {
+      "from": "Slipbox_23",
+      "to": "Slipbox_14"
+    },
+    {
+      "from": "Slipbox_24",
+      "to": "Slipbox_22"
+    },
+    {
+      "from": "Slipbox_24",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_24",
+      "to": "Slipbox_9"
+    },
+    {
+      "from": "Slipbox_25",
+      "to": "Slipbox_22"
+    },
+    {
+      "from": "Slipbox_25",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_25",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_26",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_26",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_26",
+      "to": "Slipbox_23"
+    },
+    {
+      "from": "Slipbox_27",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Slipbox_27",
+      "to": "Slipbox_24"
+    },
+    {
+      "from": "Slipbox_27",
+      "to": "Slipbox_15"
+    },
+    {
+      "from": "Slipbox_28",
+      "to": "Slipbox_25"
+    },
+    {
+      "from": "Slipbox_28",
+      "to": "Slipbox_23"
+    },
+    {
+      "from": "Slipbox_28",
+      "to": "Slipbox_20"
+    },
+    {
+      "from": "Slipbox_29",
+      "to": "Slipbox_9"
+    },
+    {
+      "from": "Slipbox_29",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_29",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_30",
+      "to": "Slipbox_27"
+    },
+    {
+      "from": "Slipbox_30",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Slipbox_30",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Slipbox_30",
+      "to": "References_75"
+    },
+    {
+      "from": "Slipbox_31",
+      "to": "Slipbox_26"
+    },
+    {
+      "from": "Slipbox_31",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_31",
+      "to": "Slipbox_8"
+    },
+    {
+      "from": "Slipbox_31",
+      "to": "Articles_75"
+    },
+    {
+      "from": "Slipbox_32",
+      "to": "Slipbox_23"
+    },
+    {
+      "from": "Slipbox_32",
+      "to": "Slipbox_30"
+    },
+    {
+      "from": "Slipbox_32",
+      "to": "Slipbox_18"
+    },
+    {
+      "from": "Slipbox_32",
+      "to": "Articles_34"
+    },
+    {
+      "from": "Slipbox_33",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_33",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_33",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_34",
+      "to": "Slipbox_9"
+    },
+    {
+      "from": "Slipbox_34",
+      "to": "Slipbox_8"
+    },
+    {
+      "from": "Slipbox_34",
+      "to": "Slipbox_22"
+    },
+    {
+      "from": "Slipbox_35",
+      "to": "Slipbox_34"
+    },
+    {
+      "from": "Slipbox_35",
+      "to": "Slipbox_22"
+    },
+    {
+      "from": "Slipbox_35",
+      "to": "Slipbox_30"
+    },
+    {
+      "from": "Slipbox_36",
+      "to": "Slipbox_27"
+    },
+    {
+      "from": "Slipbox_36",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_36",
+      "to": "Slipbox_26"
+    },
+    {
+      "from": "Slipbox_36",
+      "to": "Articles_73"
+    },
+    {
+      "from": "Slipbox_37",
+      "to": "Slipbox_21"
+    },
+    {
+      "from": "Slipbox_37",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_37",
+      "to": "Slipbox_31"
+    },
+    {
+      "from": "Slipbox_38",
+      "to": "Slipbox_32"
+    },
+    {
+      "from": "Slipbox_38",
+      "to": "Slipbox_15"
+    },
+    {
+      "from": "Slipbox_38",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Slipbox_39",
+      "to": "Slipbox_8"
+    },
+    {
+      "from": "Slipbox_39",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_39",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_40",
+      "to": "Slipbox_29"
+    },
+    {
+      "from": "Slipbox_40",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_40",
+      "to": "Slipbox_33"
+    },
+    {
+      "from": "Slipbox_41",
+      "to": "Slipbox_26"
+    },
+    {
+      "from": "Slipbox_41",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_41",
+      "to": "Slipbox_33"
+    },
+    {
+      "from": "Slipbox_42",
+      "to": "Slipbox_25"
+    },
+    {
+      "from": "Slipbox_42",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_42",
+      "to": "Slipbox_32"
+    },
+    {
+      "from": "Slipbox_43",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_43",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_43",
+      "to": "Slipbox_8"
+    },
+    {
+      "from": "Slipbox_43",
+      "to": "References_0"
+    },
+    {
+      "from": "Slipbox_44",
+      "to": "Slipbox_42"
+    },
+    {
+      "from": "Slipbox_44",
+      "to": "Slipbox_33"
+    },
+    {
+      "from": "Slipbox_44",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_45",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Slipbox_45",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_45",
+      "to": "Slipbox_30"
+    },
+    {
+      "from": "Slipbox_46",
+      "to": "Slipbox_10"
+    },
+    {
+      "from": "Slipbox_46",
+      "to": "Slipbox_35"
+    },
+    {
+      "from": "Slipbox_46",
+      "to": "Slipbox_30"
+    },
+    {
+      "from": "Slipbox_47",
+      "to": "Slipbox_22"
+    },
+    {
+      "from": "Slipbox_47",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_47",
+      "to": "Slipbox_43"
+    },
+    {
+      "from": "Slipbox_48",
+      "to": "Slipbox_45"
+    },
+    {
+      "from": "Slipbox_48",
+      "to": "Slipbox_39"
+    },
+    {
+      "from": "Slipbox_48",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_49",
+      "to": "Slipbox_42"
+    },
+    {
+      "from": "Slipbox_49",
+      "to": "Slipbox_47"
+    },
+    {
+      "from": "Slipbox_49",
+      "to": "Slipbox_40"
+    },
+    {
+      "from": "Slipbox_50",
+      "to": "Slipbox_44"
+    },
+    {
+      "from": "Slipbox_50",
+      "to": "Slipbox_42"
+    },
+    {
+      "from": "Slipbox_50",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_51",
+      "to": "Slipbox_11"
+    },
+    {
+      "from": "Slipbox_51",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Slipbox_51",
+      "to": "Slipbox_38"
+    },
+    {
+      "from": "Slipbox_52",
+      "to": "Slipbox_26"
+    },
+    {
+      "from": "Slipbox_52",
+      "to": "Slipbox_41"
+    },
+    {
+      "from": "Slipbox_52",
+      "to": "Slipbox_27"
+    },
+    {
+      "from": "Slipbox_53",
+      "to": "Slipbox_18"
+    },
+    {
+      "from": "Slipbox_53",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_53",
+      "to": "Slipbox_43"
+    },
+    {
+      "from": "Slipbox_54",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_54",
+      "to": "Slipbox_10"
+    },
+    {
+      "from": "Slipbox_54",
+      "to": "Slipbox_11"
+    },
+    {
+      "from": "Slipbox_55",
+      "to": "Slipbox_37"
+    },
+    {
+      "from": "Slipbox_55",
+      "to": "Slipbox_54"
+    },
+    {
+      "from": "Slipbox_55",
+      "to": "Slipbox_29"
+    },
+    {
+      "from": "Slipbox_56",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_56",
+      "to": "Slipbox_32"
+    },
+    {
+      "from": "Slipbox_56",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Slipbox_57",
+      "to": "Slipbox_40"
+    },
+    {
+      "from": "Slipbox_57",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_57",
+      "to": "Slipbox_37"
+    },
+    {
+      "from": "Slipbox_58",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_58",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_58",
+      "to": "Slipbox_22"
+    },
+    {
+      "from": "Slipbox_59",
+      "to": "Slipbox_0"
+    },
+    {
+      "from": "Slipbox_59",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_59",
+      "to": "Slipbox_24"
+    },
+    {
+      "from": "Slipbox_60",
+      "to": "Slipbox_56"
+    },
+    {
+      "from": "Slipbox_60",
+      "to": "Slipbox_45"
+    },
+    {
+      "from": "Slipbox_60",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_61",
+      "to": "Slipbox_30"
+    },
+    {
+      "from": "Slipbox_61",
+      "to": "Slipbox_19"
+    },
+    {
+      "from": "Slipbox_61",
+      "to": "Slipbox_36"
+    },
+    {
+      "from": "Slipbox_62",
+      "to": "Slipbox_44"
+    },
+    {
+      "from": "Slipbox_62",
+      "to": "Slipbox_34"
+    },
+    {
+      "from": "Slipbox_62",
+      "to": "Slipbox_40"
+    },
+    {
+      "from": "Slipbox_63",
+      "to": "Slipbox_41"
+    },
+    {
+      "from": "Slipbox_63",
+      "to": "Slipbox_44"
+    },
+    {
+      "from": "Slipbox_63",
+      "to": "Slipbox_26"
+    },
+    {
+      "from": "Slipbox_64",
+      "to": "Slipbox_47"
+    },
+    {
+      "from": "Slipbox_64",
+      "to": "Slipbox_27"
+    },
+    {
+      "from": "Slipbox_64",
+      "to": "Slipbox_18"
+    },
+    {
+      "from": "Slipbox_65",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_65",
+      "to": "Slipbox_49"
+    },
+    {
+      "from": "Slipbox_65",
+      "to": "Slipbox_11"
+    },
+    {
+      "from": "Slipbox_66",
+      "to": "Slipbox_55"
+    },
+    {
+      "from": "Slipbox_66",
+      "to": "Slipbox_60"
+    },
+    {
+      "from": "Slipbox_66",
+      "to": "Slipbox_39"
+    },
+    {
+      "from": "Slipbox_67",
+      "to": "Slipbox_13"
+    },
+    {
+      "from": "Slipbox_67",
+      "to": "Slipbox_46"
+    },
+    {
+      "from": "Slipbox_67",
+      "to": "Slipbox_43"
+    },
+    {
+      "from": "Slipbox_68",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_68",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_68",
+      "to": "Slipbox_52"
+    },
+    {
+      "from": "Slipbox_69",
+      "to": "Slipbox_53"
+    },
+    {
+      "from": "Slipbox_69",
+      "to": "Slipbox_58"
+    },
+    {
+      "from": "Slipbox_69",
+      "to": "Slipbox_34"
+    },
+    {
+      "from": "Slipbox_70",
+      "to": "Slipbox_48"
+    },
+    {
+      "from": "Slipbox_70",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Slipbox_70",
+      "to": "Slipbox_18"
+    },
+    {
+      "from": "Slipbox_71",
+      "to": "Slipbox_69"
+    },
+    {
+      "from": "Slipbox_71",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_71",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_71",
+      "to": "Zettels_97"
+    },
+    {
+      "from": "Slipbox_72",
+      "to": "Slipbox_61"
+    },
+    {
+      "from": "Slipbox_72",
+      "to": "Slipbox_70"
+    },
+    {
+      "from": "Slipbox_72",
+      "to": "Slipbox_65"
+    },
+    {
+      "from": "Slipbox_73",
+      "to": "Slipbox_60"
+    },
+    {
+      "from": "Slipbox_73",
+      "to": "Slipbox_56"
+    },
+    {
+      "from": "Slipbox_73",
+      "to": "Slipbox_62"
+    },
+    {
+      "from": "Slipbox_74",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_74",
+      "to": "Slipbox_18"
+    },
+    {
+      "from": "Slipbox_74",
+      "to": "Slipbox_54"
+    },
+    {
+      "from": "Slipbox_75",
+      "to": "Slipbox_60"
+    },
+    {
+      "from": "Slipbox_75",
+      "to": "Slipbox_73"
+    },
+    {
+      "from": "Slipbox_75",
+      "to": "Slipbox_27"
+    },
+    {
+      "from": "Slipbox_76",
+      "to": "Slipbox_46"
+    },
+    {
+      "from": "Slipbox_76",
+      "to": "Slipbox_44"
+    },
+    {
+      "from": "Slipbox_76",
+      "to": "Slipbox_25"
+    },
+    {
+      "from": "Slipbox_77",
+      "to": "Slipbox_38"
+    },
+    {
+      "from": "Slipbox_77",
+      "to": "Slipbox_27"
+    },
+    {
+      "from": "Slipbox_77",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_78",
+      "to": "Slipbox_67"
+    },
+    {
+      "from": "Slipbox_78",
+      "to": "Slipbox_64"
+    },
+    {
+      "from": "Slipbox_78",
+      "to": "Slipbox_19"
+    },
+    {
+      "from": "Slipbox_79",
+      "to": "Slipbox_43"
+    },
+    {
+      "from": "Slipbox_79",
+      "to": "Slipbox_71"
+    },
+    {
+      "from": "Slipbox_79",
+      "to": "Slipbox_51"
+    },
+    {
+      "from": "Slipbox_80",
+      "to": "Slipbox_39"
+    },
+    {
+      "from": "Slipbox_80",
+      "to": "Slipbox_3"
+    },
+    {
+      "from": "Slipbox_80",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_81",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_81",
+      "to": "Slipbox_49"
+    },
+    {
+      "from": "Slipbox_81",
+      "to": "Slipbox_55"
+    },
+    {
+      "from": "Slipbox_82",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Slipbox_82",
+      "to": "Slipbox_39"
+    },
+    {
+      "from": "Slipbox_82",
+      "to": "Slipbox_52"
+    },
+    {
+      "from": "Slipbox_83",
+      "to": "Slipbox_16"
+    },
+    {
+      "from": "Slipbox_83",
+      "to": "Slipbox_48"
+    },
+    {
+      "from": "Slipbox_83",
+      "to": "Slipbox_9"
+    },
+    {
+      "from": "Slipbox_84",
+      "to": "Slipbox_11"
+    },
+    {
+      "from": "Slipbox_84",
+      "to": "Slipbox_83"
+    },
+    {
+      "from": "Slipbox_84",
+      "to": "Slipbox_47"
+    },
+    {
+      "from": "Slipbox_85",
+      "to": "Slipbox_82"
+    },
+    {
+      "from": "Slipbox_85",
+      "to": "Slipbox_74"
+    },
+    {
+      "from": "Slipbox_85",
+      "to": "Slipbox_69"
+    },
+    {
+      "from": "Slipbox_86",
+      "to": "Slipbox_17"
+    },
+    {
+      "from": "Slipbox_86",
+      "to": "Slipbox_69"
+    },
+    {
+      "from": "Slipbox_86",
+      "to": "Slipbox_7"
+    },
+    {
+      "from": "Slipbox_87",
+      "to": "Slipbox_61"
+    },
+    {
+      "from": "Slipbox_87",
+      "to": "Slipbox_81"
+    },
+    {
+      "from": "Slipbox_87",
+      "to": "Slipbox_15"
+    },
+    {
+      "from": "Slipbox_88",
+      "to": "Slipbox_34"
+    },
+    {
+      "from": "Slipbox_88",
+      "to": "Slipbox_28"
+    },
+    {
+      "from": "Slipbox_88",
+      "to": "Slipbox_44"
+    },
+    {
+      "from": "Slipbox_89",
+      "to": "Slipbox_37"
+    },
+    {
+      "from": "Slipbox_89",
+      "to": "Slipbox_47"
+    },
+    {
+      "from": "Slipbox_89",
+      "to": "Slipbox_10"
+    },
+    {
+      "from": "Slipbox_90",
+      "to": "Slipbox_6"
+    },
+    {
+      "from": "Slipbox_90",
+      "to": "Slipbox_69"
+    },
+    {
+      "from": "Slipbox_90",
+      "to": "Slipbox_5"
+    },
+    {
+      "from": "Slipbox_91",
+      "to": "Slipbox_41"
+    },
+    {
+      "from": "Slipbox_91",
+      "to": "Slipbox_86"
+    },
+    {
+      "from": "Slipbox_91",
+      "to": "Slipbox_2"
+    },
+    {
+      "from": "Slipbox_92",
+      "to": "Slipbox_35"
+    },
+    {
+      "from": "Slipbox_92",
+      "to": "Slipbox_66"
+    },
+    {
+      "from": "Slipbox_92",
+      "to": "Slipbox_50"
+    },
+    {
+      "from": "Slipbox_93",
+      "to": "Slipbox_87"
+    },
+    {
+      "from": "Slipbox_93",
+      "to": "Slipbox_33"
+    },
+    {
+      "from": "Slipbox_93",
+      "to": "Slipbox_4"
+    },
+    {
+      "from": "Slipbox_94",
+      "to": "Slipbox_93"
+    },
+    {
+      "from": "Slipbox_94",
+      "to": "Slipbox_25"
+    },
+    {
+      "from": "Slipbox_94",
+      "to": "Slipbox_57"
+    },
+    {
+      "from": "Slipbox_95",
+      "to": "Slipbox_53"
+    },
+    {
+      "from": "Slipbox_95",
+      "to": "Slipbox_1"
+    },
+    {
+      "from": "Slipbox_95",
+      "to": "Slipbox_84"
+    },
+    {
+      "from": "Slipbox_96",
+      "to": "Slipbox_93"
+    },
+    {
+      "from": "Slipbox_96",
+      "to": "Slipbox_23"
+    },
+    {
+      "from": "Slipbox_96",
+      "to": "Slipbox_83"
+    },
+    {
+      "from": "Slipbox_97",
+      "to": "Slipbox_65"
+    },
+    {
+      "from": "Slipbox_97",
+      "to": "Slipbox_12"
+    },
+    {
+      "from": "Slipbox_97",
+      "to": "Slipbox_61"
+    },
+    {
+      "from": "Slipbox_98",
+      "to": "Slipbox_52"
+    },
+    {
+      "from": "Slipbox_98",
+      "to": "Slipbox_94"
+    },
+    {
+      "from": "Slipbox_98",
+      "to": "Slipbox_24"
+    },
+    {
+      "from": "Slipbox_99",
+      "to": "Slipbox_70"
+    },
+    {
+      "from": "Slipbox_99",
+      "to": "Slipbox_87"
+    },
+    {
+      "from": "Slipbox_99",
+      "to": "Slipbox_79"
+    }
+  ]
+}
