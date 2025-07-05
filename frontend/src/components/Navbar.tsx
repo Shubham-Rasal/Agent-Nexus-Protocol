@@ -2,30 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
-
+import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown, GitGraph } from 'lucide-react';
 export function Navbar() {
   const pathname = usePathname();
-  const [showAgentDropdown, setShowAgentDropdown] = useState(false);
-  
-  const navigation = [
-    {
-      name: 'Task Router',
-      href: '/task-router',
-      icon: SplitSquareVertical,
-      current: pathname === '/task-router',
-    },
-  ];
-
-  const toggleAgentDropdown = () => {
-    setShowAgentDropdown(!showAgentDropdown);
-  };
 
   return (
     <nav className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-12">
           <div className="flex">
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <NavLink 
@@ -33,7 +17,7 @@ export function Navbar() {
                 icon={""}
                 isActive={pathname === '/'}
               >
-              <span className="text-purple-600 font-bold text-xl">ANP</span>
+              <span className="text-purple-600 font-bold text-lg">ANP</span>
               </NavLink>
               <NavLink 
                 href="/chat" 
@@ -63,20 +47,14 @@ export function Navbar() {
               >
                 Network
               </NavLink>
-              {/* <NavLink 
-                href="/leadgen" 
-                icon={<UserCheck className="h-5 w-5" />}
-                isActive={pathname === '/leadgen'}
-              >
-                Lead Gen
-              </NavLink>
               <NavLink 
-                href="/task-router" 
-                icon={<SplitSquareVertical className="h-5 w-5" />}
-                isActive={pathname === '/task-router'}
+                href="/kg" 
+                icon={<GitGraph className="h-5 w-5" />}
+                isActive={pathname === '/kg'}
               >
-                Task Router
-              </NavLink> */}
+                Knowledge Graph
+              </NavLink>
+              
             </div>
           </div>  
           {/* <div className="hidden sm:ml-6 sm:flex sm:items-center">

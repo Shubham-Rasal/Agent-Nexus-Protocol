@@ -6,6 +6,7 @@ import type { ExternalEntity, ExternalRelation } from './kg-adapters/adapter.js'
 import { WikidataAdapter } from './kg-adapters/wikidata.js';
 import { DBpediaAdapter } from './kg-adapters/dbpedia.js';
 import { OpenAlexAdapter } from './kg-adapters/openalex.js';
+import { serializeGraphToJsonLD, validateAndCompactJsonLD } from './graph-jsonld.js';
 
 export interface GraphDBConfig {
   ipfs?: IPFSConfig;
@@ -199,7 +200,65 @@ export class GraphDB {
     return state?.nodes.find(([nodeId]) => nodeId === id)?.[1] as Entity | undefined;
   }
 
- 
+  /**
+   * Export the current graph as JSON-LD
+   */
+  async exportAsJsonLD(options: { validate?: boolean; publishToIPFS?: boolean } = {}): Promise<{
+    jsonLd: any;
+    ipfsCid?: string;
+  }> {
+    // Convert graph to JSON-LD
+    let jsonLd = serializeGraphToJsonLD();
+
+    // Optionally validate and compact
+    if (options.validate) {
+      jsonLd = await validateAndCompactJsonLD(jsonLd);
+    }
+
+    // Optionally publish to IPFS
+    let ipfsCid: string | undefined;
+    if (options.publishToIPFS) {
+      if (!this.ipfsManager) {
+        throw new Error('IPFS support not enabled');
+      }
+
+      // Store the JSON-LD document as a special entity
+      const entities = new Map<string, Entity>();
+      entities.set('jsonld', {
+        id: 'jsonld',
+        name: 'JSON-LD Document',
+        entityType: 'JsonLdDocument',
+        observations: [JSON.stringify(jsonLd)]
+      });
+
+      // Create a snapshot with just the JSON-LD document
+      ipfsCid = await this.ipfsManager.snapshotToIPFS();
+    }
+
+    return { jsonLd, ipfsCid };
+  }
+
+  /**
+   * Load a JSON-LD document from IPFS
+   */
+  async loadJsonLDFromIPFS(cid: string): Promise<any> {
+    if (!this.ipfsManager) {
+      throw new Error('IPFS support not enabled');
+    }
+
+    // Load the snapshot
+    await this.ipfsManager.loadFromIPFS(cid);
+    
+    // Get the JSON-LD document from the special entity
+    const state = this.ipfsManager.getGraphState();
+    const jsonLdEntity = state.nodes.find(([id]) => id === 'jsonld')?.[1] as Entity;
+    
+    if (!jsonLdEntity?.observations?.[0]) {
+      throw new Error('No JSON-LD document found in snapshot');
+    }
+
+    return JSON.parse(jsonLdEntity.observations[0]);
+  }
 }
 
 // Export a factory function for creating GraphDB instances
