@@ -29,9 +29,10 @@
     "@radix-ui/react-switch": "^1.1.3",
     "@radix-ui/react-tabs": "^1.1.3",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@rainbow-me/rainbowkit": "^2.2.8",
     "@shadcn/ui": "^0.0.4",
     "@shubhamrasal/groundline": "^0.2.0",
-    "@tanstack/react-query": "^5.71.1",
+    "@tanstack/react-query": "^5.81.5",
     "@types/papaparse": "^5.3.15",
     "atom.io": "^0.33.8",
     "axios": "^1.8.4",
@@ -40,6 +41,7 @@
     "d3": "^7.9.0",
     "d3-force": "^3.0.0",
     "date-fns": "^4.1.0",
+    "ethers": "^6.15.0",
     "groundline": "file:../groundline",
     "llamaindex": "^0.9.17",
     "lucide-react": "^0.485.0",
@@ -64,6 +66,8 @@
     "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.2.5",
     "uuid": "^11.1.0",
+    "viem": "^2.31.7",
+    "wagmi": "^2.15.6",
     "zod": "^3.24.2"
   },
   "devDependencies": {
