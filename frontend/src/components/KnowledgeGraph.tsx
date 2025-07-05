@@ -719,140 +719,145 @@ export default function Neo4jGraphBrowser() {
 
         {/* Import External Graphs Drawer */}
         <Sheet open={isImportDrawerOpen} onOpenChange={setIsImportDrawerOpen}>
-          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white">
-            <SheetHeader>
-              <SheetTitle className="flex items-center gap-2">
-                <Globe2 className="w-5 h-5" />
-                Import External Graphs
-              </SheetTitle>
-              <SheetDescription>
-                Import knowledge from external graph databases
-              </SheetDescription>
-            </SheetHeader>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white flex flex-col p-0">
+            <div className="px-6">
+              <SheetHeader className="border-b pb-6">
+                <SheetTitle className="flex items-center gap-2 text-xl">
+                  <Globe2 className="w-5 h-5 text-slate-600" />
+                  Import External Graphs
+                </SheetTitle>
+                <SheetDescription className="text-slate-600">
+                  Import knowledge from external graph databases
+                </SheetDescription>
+              </SheetHeader>
+            </div>
             
-            <div className="mt-6 space-y-6">
-              {/* Import Form */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Select Data Source</Label>
-                  <Select
-                    value={importForm.adapter}
-                    onValueChange={(value) => setImportForm({ ...importForm, adapter: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a data source" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ADAPTERS.map(adapter => (
-                        <SelectItem key={adapter.id} value={adapter.id}>
-                          <div>
-                            <div className="font-medium">{adapter.name}</div>
-                            <div className="text-xs text-slate-500">{adapter.description}</div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Search Query</Label>
-                  <Textarea
-                    placeholder="Enter your search query..."
-                    value={importForm.query}
-                    onChange={(e) => setImportForm({ ...importForm, query: e.target.value })}
-                    className="min-h-[100px]"
-                  />
-                </div>
-
-                <Button 
-                  onClick={handleImport}
-                  disabled={!importForm.adapter || !importForm.query || isImporting}
-                  className="w-full"
-                >
-                  {isImporting ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Importing...
-                    </>
-                  ) : (
-                    <>
-                      <Globe2 className="w-4 h-4 mr-2" />
-                      Import Data
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {/* Import Results */}
-              {importResults && (
-                <div className="space-y-4 pt-4 border-t">
-                  <h3 className="font-medium">Import Results</h3>
-                  
+            <div className="flex-1 overflow-y-auto px-6">
+              <div className="py-6 space-y-8">
+                {/* Import Form */}
+                <div className="space-y-6">
                   <div className="space-y-3">
-                    <div className="bg-slate-50 p-3 rounded-lg">
-                      <div className="text-sm font-medium">Entities</div>
-                      <div className="text-2xl font-bold text-blue-600">
-                        {importResults.entities.length}
-                      </div>
-                    </div>
-                    
-                    <div className="bg-slate-50 p-3 rounded-lg">
-                      <div className="text-sm font-medium">Relations</div>
-                      <div className="text-2xl font-bold text-green-600">
-                        {importResults.relations.length}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm">Preview</Label>
-                      <div className="max-h-[200px] overflow-y-auto space-y-2">
-                        {importResults.entities.slice(0, 5).map((entity, idx) => (
-                          <div key={idx} className="bg-white p-2 rounded border text-sm">
-                            <div className="font-medium">{entity.name}</div>
-                            <div className="text-xs text-slate-500">{entity.entityType}</div>
-                          </div>
+                    <Label className="text-sm font-semibold text-slate-700">Select Data Source</Label>
+                    <Select
+                      value={importForm.adapter}
+                      onValueChange={(value) => setImportForm({ ...importForm, adapter: value })}
+                    >
+                      <SelectTrigger className="bg-white border-slate-200 h-12">
+                        <SelectValue placeholder="Choose a data source" className="text-slate-600" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ADAPTERS.map(adapter => (
+                          <SelectItem key={adapter.id} value={adapter.id} className="py-3">
+                            <div className="space-y-1.5">
+                              <div className="font-medium text-slate-800">{adapter.name}</div>
+                              <div className="text-xs text-slate-500 leading-relaxed">{adapter.description}</div>
+                            </div>
+                          </SelectItem>
                         ))}
-                        {importResults.entities.length > 5 && (
-                          <div className="text-xs text-center text-slate-500">
-                            And {importResults.entities.length - 5} more entities...
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold text-slate-700">Search Query</Label>
+                    <Textarea
+                      placeholder="Enter your search query..."
+                      value={importForm.query}
+                      onChange={(e) => setImportForm({ ...importForm, query: e.target.value })}
+                      className="min-h-[120px] bg-white border-slate-200 resize-none text-slate-600 placeholder:text-slate-400"
+                    />
                   </div>
 
                   <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => {
-                      setImportResults(null)
-                      setImportForm({ adapter: '', query: '' })
-                    }}
+                    onClick={handleImport}
+                    disabled={!importForm.adapter || !importForm.query || isImporting}
+                    className="w-full h-12 text-base font-medium"
                   >
-                    Clear Results
+                    {isImporting ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Importing Data...
+                      </>
+                    ) : (
+                      <>
+                        <Globe2 className="w-5 h-5 mr-2" />
+                        Import Data
+                      </>
+                    )}
                   </Button>
                 </div>
-              )}
+
+                {/* Import Results */}
+                {importResults && (
+                  <div className="space-y-6 pt-6 border-t border-slate-200">
+                    <h3 className="font-semibold text-slate-800">Import Results</h3>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-50 p-4 rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Entities</div>
+                        <div className="text-3xl font-bold text-blue-600 mt-1">
+                          {importResults.entities.length}
+                        </div>
+                      </div>
+                      
+                      <div className="bg-slate-50 p-4 rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Relations</div>
+                        <div className="text-3xl font-bold text-green-600 mt-1">
+                          {importResults.relations.length}
+                        </div>
+                      </div>
+
+                      <div className="col-span-2 space-y-3">
+                        <Label className="text-sm font-semibold text-slate-700">Preview</Label>
+                        <div className="max-h-[240px] overflow-y-auto space-y-2 pr-2">
+                          {importResults.entities.slice(0, 5).map((entity, idx) => (
+                            <div key={idx} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                              <div className="font-medium text-slate-800">{entity.name}</div>
+                              <div className="text-xs text-slate-500 mt-1">{entity.entityType}</div>
+                            </div>
+                          ))}
+                          {importResults.entities.length > 5 && (
+                            <div className="text-sm text-center text-slate-500 py-2">
+                              And {importResults.entities.length - 5} more entities...
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-11 border-slate-200 text-slate-600 hover:text-slate-700 hover:bg-slate-50"
+                      onClick={() => {
+                        setImportResults(null)
+                        setImportForm({ adapter: '', query: '' })
+                      }}
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Clear Results
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </SheetContent>
         </Sheet>
