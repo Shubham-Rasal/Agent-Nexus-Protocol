@@ -150,7 +150,7 @@ export class IPFSClient {
       const data = new TextEncoder().encode(JSON.stringify(serializedSnapshot));
       
       // Perform preflight check before upload
-      await this.performPreflightCheck(data.length, true);
+      // await this.performPreflightCheck(data.length, true);
       
       // Upload to IPFS via Synapse
       const result = await this.storage.upload(data);

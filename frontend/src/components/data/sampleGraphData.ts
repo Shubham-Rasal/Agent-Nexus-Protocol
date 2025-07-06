@@ -40,6 +40,8 @@ const linkTypes = {
   COLLABORATES: "COLLABORATES" as const
 }
 
+
+
 export const sampleGraphData: GraphData = {
   nodes: [
     // Core concepts
@@ -73,7 +75,7 @@ export const sampleGraphData: GraphData = {
     { id: "proj-3", name: "LLaMA", type: nodeType.PROJECT, properties: { status: "active" } },
 
     // Generate additional nodes for each type
-    ...Array.from({ length: 30 }, (_, i) => ({
+    ...Array.from({ length: 5 }, (_, i) => ({
       id: `node-${i}`,
       name: `Entity ${i}`,
       type: Object.values(nodeType)[i % Object.values(nodeType).length],
@@ -110,7 +112,7 @@ export const sampleGraphData: GraphData = {
     { source: "proj-3", target: "ai-1", type: linkTypes.USES },
 
     // Generate additional random connections
-    ...Array.from({ length: 50 }, () => ({
+    ...Array.from({ length: 2 }, () => ({
       source: `node-${Math.floor(Math.random() * 30)}`,
       target: `node-${Math.floor(Math.random() * 30)}`,
       type: Object.values(linkTypes)[Math.floor(Math.random() * Object.values(linkTypes).length)]
@@ -118,18 +120,24 @@ export const sampleGraphData: GraphData = {
   ]
 }
 
+
 export interface ProvenanceItem {
-  id: number
-  description: string
-  type: string
-  timestamp: string
-  source: string
-  icon: "GitMerge" | "GitCommit" | "GitBranch" | "GitPullRequest"
-  changes: {
-    added: number
-    removed: number
-    modified: number
-  }
+  action: string;
+  objectType: string;
+  id: number;
+  data?: {
+    id: string;
+    entityType: string;
+    name: string;
+    properties: Record<string, any>;
+    observations: string[];
+  };
+  timestamp: string;
+  meta?: {
+    schemaVersion: string;
+    source: string;
+    validationStatus: string;
+  };
 }
 
 export const ADAPTERS = [
@@ -153,29 +161,35 @@ export const ADAPTERS = [
 export const sampleProvenanceData: ProvenanceItem[] = [
   {
     id: 1,
-    description: "Initial graph import from Wikidata",
-    type: "Import",
+    action: "Import",
+    objectType: "Graph",
     timestamp: "2024-03-20T14:30:00Z",
-    source: "Wikidata",
-    icon: "GitCommit",
-    changes: { added: 150, removed: 0, modified: 0 }
+    meta: {
+      schemaVersion: "1.0",
+      source: "Wikidata",
+      validationStatus: "validated"
+    }
   },
   {
     id: 2,
-    description: "Merged DBpedia entities",
-    type: "Merge",
+    action: "Merge",
+    objectType: "Entity",
     timestamp: "2024-03-20T15:45:00Z",
-    source: "DBpedia",
-    icon: "GitMerge",
-    changes: { added: 45, removed: 12, modified: 23 }
+    meta: {
+      schemaVersion: "1.0",
+      source: "DBpedia",
+      validationStatus: "validated"
+    }
   },
   {
     id: 3,
-    description: "Added research paper citations",
-    type: "Update",
+    action: "Update",
+    objectType: "Citation",
     timestamp: "2024-03-21T09:15:00Z",
-    source: "OpenAlex",
-    icon: "GitBranch",
-    changes: { added: 78, removed: 0, modified: 5 }
+    meta: {
+      schemaVersion: "1.0",
+      source: "OpenAlex",
+      validationStatus: "validated"
+    }
   }
 ]

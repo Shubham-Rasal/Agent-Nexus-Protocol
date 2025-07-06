@@ -71,3 +71,20 @@ npm run dev
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/LICENSE) file for details.
 
+
+
+{
+    "command": "node",
+    "args": [
+        "dist/index.js"
+    ],
+    "env": {
+        "HOME": "/home/bluequbit",
+        "LOGNAME": "bluequbit",
+        "PATH": "/home/bluequbit/.npm/_npx/5a9d879542beca3a/node_modules/.bin:/home/bluequbit/Dev/ai-blueprints/anp/kg-mcp/node_modules/.bin:/home/bluequbit/Dev/ai-blueprints/anp/node_modules/.bin:/home/bluequbit/Dev/ai-blueprints/node_modules/.bin:/home/bluequbit/Dev/node_modules/.bin:/home/bluequbit/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/bluequbit/.nvm/versions/node/v22.11.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/bluequbit/.pyenv/shims:/home/bluequbit/.pyenv/bin:/home/bluequbit/.local/share/pnpm:/home/bluequbit/.pyenv/bin:/home/bluequbit/.nvm/versions/node/v22.11.0/bin:/home/bluequbit/.local/share/zinit/polaris/bin:/tmp/.mount_CursoruGIVk3/usr/bin/:/tmp/.mount_CursoruGIVk3/usr/sbin/:/tmp/.mount_CursoruGIVk3/usr/games/:/tmp/.mount_CursoruGIVk3/bin/:/tmp/.mount_CursoruGIVk3/sbin/:/home/bluequbit/.cargo/bin:/home/bluequbit/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/bluequbit/.local/bin:/home/bluequbit/.local/bin:/usr/local/go/bin:/home/bluequbit/Dev/Android/emulator:/home/bluequbit/Dev/Android/platform-tools:/home/bluequbit/.config/Cursor/User/globalStorage/github.copilot-chat/debugCommand:/home/bluequbit/.local/bin:/usr/local/go/bin:/home/bluequbit/Dev/Android/emulator:/home/bluequbit/Dev/Android/platform-tools",
+        "SHELL": "/usr/bin/zsh",
+        "TERM": "xterm-256color",
+        "USER": "bluequbit",
+        "FIL_PRIVATE_KEY": "8f3092541ef889aa7c0c6c3f81f0c607a63dc75204003b57c1ce2c51570b490c"
+    }
+}

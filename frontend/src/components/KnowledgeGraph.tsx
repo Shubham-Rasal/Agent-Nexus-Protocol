@@ -51,6 +51,9 @@ import {
   Plus,
   RefreshCw,
   Trash2,
+  Shield,
+  CheckCircle,
+  XCircle,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -140,17 +143,13 @@ interface GraphMetadata {
   relationTypes: string[];
   timestamp: number;
   version: string;
-  provenance?: Array<{
-    action: string;
-    objectType: string;
-    id: string;
-    timestamp: number;
-  }>;
+  provenance?: ProvenanceItem[];
 }
 
 interface GraphDataWithMetadata extends GraphData {
   metadata: GraphMetadata;
 }
+
 
 export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
   const router = useRouter()
@@ -491,18 +490,37 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
     }).format(date);
   }
 
-  const getProvenanceIcon = (action: string) => {
+  const getProvenanceIcon = (action: string, meta?: { source: string; validationStatus: string }) => {
+    // Base icon selection on action
+    let icon = GitMerge;
+    let className = "text-slate-600";
+
     switch (action.toLowerCase()) {
       case 'add':
-        return { icon: GitCommit, className: "text-green-600" };
+        icon = GitCommit;
+        className = "text-green-600";
+        break;
       case 'update':
-        return { icon: GitBranch, className: "text-blue-600" };
+        icon = GitBranch;
+        className = "text-blue-600";
+        break;
       case 'delete':
-        return { icon: GitPullRequest, className: "text-red-600" };
-      default:
-        return { icon: GitMerge, className: "text-slate-600" };
+        icon = GitPullRequest;
+        className = "text-red-600";
+        break;
     }
-  }
+
+    // Modify based on metadata if available
+    if (meta) {
+      if (meta.validationStatus === 'valid') {
+        className += " bg-green-50";
+      } else if (meta.validationStatus === 'invalid') {
+        className += " bg-red-50";
+      }
+    }
+
+    return { icon, className };
+  };
 
   const getProvenanceColor = (action: string) => {
     switch (action.toLowerCase()) {
@@ -1063,8 +1081,8 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
             <div className="overflow-y-auto h-[calc(100vh-120px)]">
               <div className="p-6 space-y-6">
                 {(metadata?.provenance?.length ?? 0) > 0 ? (
-                  metadata?.provenance?.map((item: { action: string; objectType: string; id: string; timestamp: number }, index: number) => {
-                    const { icon: Icon, className } = getProvenanceIcon(item.action);
+                  metadata?.provenance?.map((item: ProvenanceItem, index: number) => {
+                    const { icon: Icon, className } = getProvenanceIcon(item.action, item.meta);
                     return (
                       <div key={item.id} className="relative">
                         <div className="flex items-start gap-4">
@@ -1079,21 +1097,51 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
                               <Badge variant="outline" className="text-xs">
                                 {item.id}
                               </Badge>
+                              {item.meta && (
+                                <Badge variant="secondary" className="text-xs">
+                                  v{item.meta.schemaVersion}
+                                </Badge>
+                              )}
                             </div>
+                            {item.data && (
+                              <div className="mt-2 text-xs text-slate-600 bg-slate-50 rounded-md p-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">Type:</span> {item.data.entityType}
+                                </div>
+                                {Object.entries(item.data.properties).map(([key, value]) => (
+                                  <div key={key} className="flex items-center gap-2">
+                                    <span className="font-medium">{key}:</span> {String(value)}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
                               <Clock className="w-3 h-3" />
-                              {formatProvenanceDate(item.timestamp)}
-                              <span className="px-1">•</span>
-                              <span className="flex items-center gap-1">
-                                {item.action === 'add' && <Plus className="w-3 h-3 text-green-500" />}
-                                {item.action === 'update' && <RefreshCw className="w-3 h-3 text-blue-500" />}
-                                {item.action === 'delete' && <Trash2 className="w-3 h-3 text-red-500" />}
-                                {item.objectType}
-                              </span>
+                              {formatProvenanceDate(Number(item.timestamp))}
+                              {item.meta && (
+                                <>
+                                  <span className="px-1">•</span>
+                                  <span className="flex items-center gap-1">
+                                    <Database className="w-3 h-3" />
+                                    {item.meta.source}
+                                  </span>
+                                  <span className="px-1">•</span>
+                                  <Badge 
+                                    variant={item.meta.validationStatus === 'valid' ? 'default' : 'destructive'} 
+                                    className="text-[10px] flex items-center gap-1"
+                                  >
+                                    {item.meta.validationStatus === 'valid' ? (
+                                      <CheckCircle className="w-3 h-3" />
+                                    ) : (
+                                      <XCircle className="w-3 h-3" />
+                                    )}
+                                    {item.meta.validationStatus}
+                                  </Badge>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
-                        {/* Vertical timeline line */}
                         {index !== (metadata?.provenance?.length ?? 0) - 1 && (
                           <div className="absolute left-5 top-10 bottom-0 w-[1px] bg-slate-200"></div>
                         )}
