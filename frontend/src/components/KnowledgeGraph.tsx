@@ -131,7 +131,7 @@ const getNodeColor = (type: string) => {
     Paper: "#1d4ed8",       // darker blue
     Project: "#1e40af",     // darkest blue
   }
-  return colors[type as keyof typeof colors] || "#6b7280" // gray as fallback
+  return colors[type as keyof typeof colors] || "#5eead4" // teal-300 as fallback - lighter shade
 }
 
 interface KnowledgeGraphProps {
@@ -1106,9 +1106,9 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
                             {item.data && (
                               <div className="mt-2 text-xs text-slate-600 bg-slate-50 rounded-md p-2">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-medium">Type:</span> {item.data.entityType}
+                                  <span className="font-medium">Type:</span> {item.data.entityType || 'Unknown'}
                                 </div>
-                                {Object.entries(item.data.properties).map(([key, value]) => (
+                                {item.data.properties && Object.entries(item.data.properties).map(([key, value]) => (
                                   <div key={key} className="flex items-center gap-2">
                                     <span className="font-medium">{key}:</span> {String(value)}
                                   </div>
