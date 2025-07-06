@@ -19,6 +19,22 @@ Check out the implementation in our [groundline package](https://github.com/Shub
 
 ![image](https://github.com/user-attachments/assets/c4956ade-0296-42ca-9607-8ed7006738f4)
 
+### Provenance Tracking 
+![image](https://github.com/user-attachments/assets/2b2d5c36-4ee8-40da-a429-4ac1259f16a7)
+
+### MCP server built using Groundline SDK
+
+![image](https://github.com/user-attachments/assets/2564dbba-d45e-4b13-b37c-63fb790f0090)
+
+![image](https://github.com/user-attachments/assets/62681ece-c0df-4ae1-8673-9849b070d48b)
+
+## Grounding in External Knowledge Graphs (Wiki Data, DBPedia, etc)
+
+![image](https://github.com/user-attachments/assets/64a006c0-2278-4791-9312-2a8858278125)
+
+
+
+
 ---
 
 # Agent Nexus Protocol (ANP)
