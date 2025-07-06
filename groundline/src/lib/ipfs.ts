@@ -18,6 +18,7 @@ export interface GraphSnapshot {
   edges: Map<string, Relation>;
   timestamp: number;
   version: string;
+  provenance: any[];
 }
 
 export class IPFSClient {

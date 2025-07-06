@@ -222,7 +222,10 @@ export class GraphDB {
         throw new Error('IPFS support not enabled');
       }
 
-      // Store the JSON-LD document as a special entity
+      // Get provenance information
+      const provenance = this.getProvenance();
+
+      // Store the JSON-LD document and provenance as special entities
       const entities = new Map<string, Entity>();
       entities.set('jsonld', {
         id: 'jsonld',
@@ -230,9 +233,15 @@ export class GraphDB {
         entityType: 'JsonLdDocument',
         observations: [JSON.stringify(jsonLd)]
       });
+      entities.set('provenance', {
+        id: 'provenance',
+        name: 'Provenance Log',
+        entityType: 'ProvenanceLog',
+        observations: [JSON.stringify(provenance)]
+      });
 
-      // Create a snapshot with just the JSON-LD document
-      console.log('✅ Creating snapshot with JSON-LD document');
+      // Create a snapshot with the JSON-LD document and provenance
+      console.log('✅ Creating snapshot with JSON-LD document and provenance');
       ipfsCid = await this.ipfsManager.snapshotToIPFS();
     }
 
@@ -242,7 +251,10 @@ export class GraphDB {
   /**
    * Load a JSON-LD document from IPFS
    */
-  async loadJsonLDFromIPFS(cid: string): Promise<any> {
+  async loadJsonLDFromIPFS(cid: string): Promise<{
+    jsonLd: any;
+    provenance?: any[];
+  }> {
     if (!this.ipfsManager) {
       throw new Error('IPFS support not enabled');
     }
@@ -250,11 +262,22 @@ export class GraphDB {
     // Load the snapshot
     await this.ipfsManager.loadFromIPFS(cid);
     
-    // Get the JSON-LD document from the special entity
+    // Get the JSON-LD document and provenance from the special entities
     const state = this.ipfsManager.getGraphState();
     console.log('✅ State:', state);
 
-    return state;
+    // Extract JSON-LD and provenance data
+    const jsonLdEntity = state?.nodes.find(([id]) => id === 'jsonld')?.[1] as Entity | undefined;
+    const provenanceEntity = state?.nodes.find(([id]) => id === 'provenance')?.[1] as Entity | undefined;
+
+    const jsonLd = jsonLdEntity?.observations?.[0] ? JSON.parse(jsonLdEntity.observations[0]) : undefined;
+    const provenance = provenanceEntity?.observations?.[0] ? JSON.parse(provenanceEntity.observations[0]) : undefined;
+
+    if (!jsonLd) {
+      throw new Error('No JSON-LD document found in snapshot');
+    }
+
+    return { jsonLd, provenance };
   }
 }
 

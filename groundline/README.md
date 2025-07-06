@@ -1,120 +1,153 @@
 # Groundline GraphDB
 
-A powerful graph database with IPFS persistence and support for multiple external knowledge graph sources.
+A powerful decentralized graph database with IPFS persistence, CRDT-based collaboration, and seamless integration with multiple knowledge graph sources.
 
 ## Features
 
-- 🔄 IPFS Integration for decentralized storage
-- 🌐 Support for multiple knowledge graph sources (Wikidata, DBpedia, OpenAlex)
-- 📊 Graph manipulation and querying
-- 🔗 JSON-LD context support
+- 🔄 **CRDT-Based Collaboration** - Built on Yjs for real-time collaborative graph editing
+- 📦 **IPFS Integration** - Decentralized storage with Helia and optional Filecoin pinning
+- 🌐 **Knowledge Graph Integration** - Native support for:
+  - Wikidata
+  - DBpedia
+  - OpenAlex
+- 🔗 **JSON-LD Support** - Semantic web compatibility with JSON-LD context
+- 📊 **Rich Graph Operations** - Comprehensive API for graph manipulation and querying
+- 📝 **Provenance Tracking** - Track changes and maintain version history
 
 ## Installation
 
 ```bash
-npm install groundline-mcp
+npm install @shubhamrasal/groundline
 ```
 
 ## Quick Start
 
 ```typescript
-import { createGraphDB, createGraphIPFSManager } from 'groundline-mcp';
+import { createGraphDB, createGraphIPFSManager } from '@shubhamrasal/groundline';
 
 async function main() {
-  // Initialize graph database with Wikidata adapter
+  // Initialize graph database with multiple adapters
   const graphDB = createGraphDB({
-    enabledAdapters: ['wikidata']
+    enabledAdapters: ['wikidata', 'dbpedia', 'openalex']
   });
   
   await graphDB.initialize();
   
-  // Import data from Wikidata
-  const results = await graphDB.importExternalKG('wikidata', 'your-query');
+  // Import data from external knowledge graphs
+  const wikidataResults = await graphDB.importExternalKG('wikidata', {
+    query: 'your-sparql-query'
+  });
   
-  // Initialize IPFS storage
-  const ipfsManager = createGraphIPFSManager();
+  // Initialize IPFS storage with custom config
+  const ipfsManager = createGraphIPFSManager({
+    // Optional IPFS configuration
+    pinningService: 'filecoin',  // Enable Filecoin pinning
+    ipnsKey: 'your-ipns-key'     // For mutable pointers
+  });
+  
   await ipfsManager.initialize();
   
-  // Store graph in IPFS
-  const cid = await ipfsManager.snapshotToIPFS();
-  console.log('Stored in IPFS with CID:', cid);
+  // Store graph snapshot in IPFS
+  const snapshot = await ipfsManager.snapshotToIPFS();
+  console.log('Graph stored in IPFS with CID:', snapshot.cid);
   
   // Load graph from IPFS
-  await ipfsManager.loadFromIPFS(cid);
+  await ipfsManager.loadFromIPFS(snapshot.cid);
+  
+  // Get current graph state
+  const state = ipfsManager.getGraphState();
 }
 
 main().catch(console.error);
 ```
 
-## Knowledge Graph Adapters
+## Knowledge Graph Integration
 
-The library supports the following knowledge graph sources:
-
-- Wikidata
-- DBpedia
-- OpenAlex
-
-### Using Adapters
+The library provides adapters for major knowledge graph sources:
 
 ```typescript
-import { WikidataAdapter, DBpediaAdapter, OpenAlexAdapter } from 'groundline-mcp';
+import { 
+  WikidataAdapter, 
+  DBpediaAdapter, 
+  OpenAlexAdapter,
+  type KGAdapter 
+} from '@shubhamrasal/groundline';
 
 // Initialize with specific adapters
 const graphDB = createGraphDB({
-  enabledAdapters: ['wikidata', 'dbpedia', 'openalex']
-});
-```
-
-## IPFS Integration
-
-Store and retrieve your graphs using IPFS:
-
-```typescript
-import { createGraphIPFSManager, type IPFSConfig } from 'groundline-mcp';
-
-// Initialize IPFS manager with custom config
-const ipfsManager = createGraphIPFSManager({
-  // IPFS configuration options
+  enabledAdapters: ['wikidata', 'dbpedia', 'openalex'],
+  adapterConfig: {
+    wikidata: {
+      endpoint: 'https://query.wikidata.org/sparql'
+    },
+    dbpedia: {
+      endpoint: 'https://dbpedia.org/sparql'
+    }
+  }
 });
 
-await ipfsManager.initialize();
-
-// Store graph
-const cid = await ipfsManager.snapshotToIPFS();
-
-// Load graph
-await ipfsManager.loadFromIPFS(cid);
-
-// Get current graph state
-const state = ipfsManager.getGraphState();
+// Custom adapter implementation
+class CustomAdapter implements KGAdapter {
+  // Implement adapter interface
+}
 ```
 
-## Types
+## Graph Data Model
 
-The library exports TypeScript types for better development experience:
+The library uses a property graph model with support for rich entity and relation types:
 
 ```typescript
-import type { Entity, Relation, IPFSConfig, GraphSnapshot } from 'groundline-mcp';
+import type { Entity, Relation } from '@shubhamrasal/groundline';
 
 // Entity example
 const entity: Entity = {
-  name: "Example",
+  name: "Tim Berners-Lee",
   entityType: "Person",
-  observations: ["Note 1", "Note 2"],
+  observations: [
+    "Inventor of the World Wide Web",
+    "Director of W3C"
+  ],
   properties: {
-    age: 30
+    birthDate: "1955-06-08",
+    nationality: "British"
   }
 };
 
 // Relation example
 const relation: Relation = {
-  from: "entity1-id",
-  to: "entity2-id",
-  relationType: "knows",
+  from: "tim-berners-lee",
+  to: "world-wide-web",
+  relationType: "invented",
   properties: {
-    since: "2024"
+    year: 1989,
+    location: "CERN"
   }
 };
+```
+
+## IPFS Integration
+
+Store and retrieve graphs using IPFS with optional Filecoin pinning:
+
+```typescript
+import { createGraphIPFSManager, type IPFSConfig, type GraphSnapshot } from '@shubhamrasal/groundline';
+
+// Initialize IPFS manager
+const ipfsManager = createGraphIPFSManager({
+  pinningService: 'filecoin',
+  ipnsKey: 'your-ipns-key'
+});
+
+await ipfsManager.initialize();
+
+// Create and store snapshot
+const snapshot: GraphSnapshot = await ipfsManager.snapshotToIPFS();
+
+// Load specific version
+await ipfsManager.loadFromIPFS(snapshot.cid);
+
+// Get latest version via IPNS
+const latest = await ipfsManager.resolveLatest();
 ```
 
 ## Development
@@ -132,11 +165,28 @@ const relation: Relation = {
    ```bash
    npm test
    ```
+5. Format code:
+   ```bash
+   npm run format
+   ```
+6. Run linter:
+   ```bash
+   npm run lint
+   ```
+
+## Requirements
+
+- Node.js >= 18.0.0
+- NPM or compatible package manager
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 
 ISC
+
+## Author
+
+Shubham Rasal ([@Shubham-Rasal](https://github.com/Shubham-Rasal))
