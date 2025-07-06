@@ -17,7 +17,9 @@ We integrated Groundline, our powerful graph database package, to manage knowled
 
 Check out the implementation in our [groundline package](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/tree/master/groundline) and read more about its features in the [Groundline README](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/groundline/README.md)!
 
-> ⚠️ ⚠️ ⚠️
+![image](https://github.com/user-attachments/assets/c4956ade-0296-42ca-9607-8ed7006738f4)
+
+---
 
 # Agent Nexus Protocol (ANP)
 
