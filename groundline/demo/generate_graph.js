@@ -9,7 +9,7 @@ const edges = [];
 let nodeId = 0;
 
 categories.forEach((cat, idx) => {
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 10; i++) {
     const id = `${cat}_${i}`;
     nodes.push({
       id,

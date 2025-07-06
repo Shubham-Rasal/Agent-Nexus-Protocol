@@ -118,11 +118,13 @@ export class IPFSClient {
           onProofSetCreationStarted: (transaction, statusUrl) => {
             console.log(`  Creating proof set, tx: ${transaction.hash}`);
           },
-          onProofSetCreationProgress: (progress) => {
-            if (progress.transactionMined && !progress.proofSetLive) {
+          onProofSetCreationProgress: (status) => {
+            if (status.transactionMined && !status.proofSetLive) {
               console.log('  Transaction mined, waiting for proof set to be live...');
             }
           },
+        
+          
         },
       });
     } catch (error) {
@@ -153,7 +155,12 @@ export class IPFSClient {
       // await this.performPreflightCheck(data.length, true);
       
       // Upload to IPFS via Synapse
-      const result = await this.storage.upload(data);
+      const result = await this.storage.upload(data , {
+        onUploadComplete(commp) {
+          console.log(`✓ Upload complete: ${commp}`);
+          return commp.toString();
+        },
+      });
       
       return result.commp.toString(); // Convert LegacyPieceLink to string
     } catch (error: unknown) {
