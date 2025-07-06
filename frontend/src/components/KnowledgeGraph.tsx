@@ -47,7 +47,10 @@ import {
   GitPullRequest,
   ArrowRight,
   Clock,
-  Home
+  Home,
+  Plus,
+  RefreshCw,
+  Trash2,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -137,6 +140,12 @@ interface GraphMetadata {
   relationTypes: string[];
   timestamp: number;
   version: string;
+  provenance?: Array<{
+    action: string;
+    objectType: string;
+    id: string;
+    timestamp: number;
+  }>;
 }
 
 interface GraphDataWithMetadata extends GraphData {
@@ -472,14 +481,40 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
     }
   }
 
-  const formatProvenanceDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const formatProvenanceDate = (timestamp: number) => {
+    const date = new Date(timestamp);
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric'
-    }).format(date)
+    }).format(date);
+  }
+
+  const getProvenanceIcon = (action: string) => {
+    switch (action.toLowerCase()) {
+      case 'add':
+        return { icon: GitCommit, className: "text-green-600" };
+      case 'update':
+        return { icon: GitBranch, className: "text-blue-600" };
+      case 'delete':
+        return { icon: GitPullRequest, className: "text-red-600" };
+      default:
+        return { icon: GitMerge, className: "text-slate-600" };
+    }
+  }
+
+  const getProvenanceColor = (action: string) => {
+    switch (action.toLowerCase()) {
+      case 'add':
+        return 'bg-green-50';
+      case 'update':
+        return 'bg-blue-50';
+      case 'delete':
+        return 'bg-red-50';
+      default:
+        return 'bg-slate-50';
+    }
   }
 
   const handleSync = async () => {
@@ -1014,8 +1049,8 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
 
         {/* Provenance Tracking Drawer */}
         <Sheet open={isProvenanceOpen} onOpenChange={setIsProvenanceOpen}>
-          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white">
-            <SheetHeader>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white p-0">
+            <SheetHeader className="p-6 border-b">
               <SheetTitle className="flex items-center gap-2">
                 <History className="w-5 h-5" />
                 Provenance Tracking
@@ -1025,55 +1060,52 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
               </SheetDescription>
             </SheetHeader>
             
-            <div className="mt-6">
-              <div className="space-y-6">
-                {sampleProvenanceData.map((item) => (
-                  <div key={item.id} className="relative">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                        {React.createElement(iconMap[item.icon as keyof typeof iconMap], { className: "w-5 h-5 text-blue-600" })}
+            <div className="overflow-y-auto h-[calc(100vh-120px)]">
+              <div className="p-6 space-y-6">
+                {(metadata?.provenance?.length ?? 0) > 0 ? (
+                  metadata?.provenance?.map((item: { action: string; objectType: string; id: string; timestamp: number }, index: number) => {
+                    const { icon: Icon, className } = getProvenanceIcon(item.action);
+                    return (
+                      <div key={item.id} className="relative">
+                        <div className="flex items-start gap-4">
+                          <div className={`flex-shrink-0 w-10 h-10 rounded-full ${getProvenanceColor(item.action)} flex items-center justify-center`}>
+                            <Icon className={`w-5 h-5 ${className}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-slate-900">
+                                {item.action} {item.objectType}
+                              </span>
+                              <Badge variant="outline" className="text-xs">
+                                {item.id}
+                              </Badge>
+                            </div>
+                            <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                              <Clock className="w-3 h-3" />
+                              {formatProvenanceDate(item.timestamp)}
+                              <span className="px-1">•</span>
+                              <span className="flex items-center gap-1">
+                                {item.action === 'add' && <Plus className="w-3 h-3 text-green-500" />}
+                                {item.action === 'update' && <RefreshCw className="w-3 h-3 text-blue-500" />}
+                                {item.action === 'delete' && <Trash2 className="w-3 h-3 text-red-500" />}
+                                {item.objectType}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Vertical timeline line */}
+                        {index !== (metadata?.provenance?.length ?? 0) - 1 && (
+                          <div className="absolute left-5 top-10 bottom-0 w-[1px] bg-slate-200"></div>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-900">{item.description}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {item.type}
-                          </Badge>
-                        </div>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                          <Clock className="w-3 h-3" />
-                          {formatProvenanceDate(item.timestamp)}
-                          <span className="px-1">•</span>
-                          <span>Source: {item.source}</span>
-                        </div>
-                        <div className="mt-2 flex items-center gap-4">
-                          <div className="flex items-center gap-1 text-xs">
-                            <Badge variant="secondary" className="bg-green-50 text-green-700">
-                              +{item.changes.added}
-                            </Badge>
-                            <span className="text-slate-600">added</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs">
-                            <Badge variant="secondary" className="bg-red-50 text-red-700">
-                              -{item.changes.removed}
-                            </Badge>
-                            <span className="text-slate-600">removed</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs">
-                            <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                              ~{item.changes.modified}
-                            </Badge>
-                            <span className="text-slate-600">modified</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Vertical timeline line */}
-                    {item.id !== sampleProvenanceData.length && (
-                      <div className="absolute left-5 top-10 bottom-0 w-[1px] bg-slate-200"></div>
-                    )}
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-slate-500 py-8">
+                    <GitMerge className="w-8 h-8 mx-auto mb-3 text-slate-400" />
+                    No provenance available in this version
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </SheetContent>

@@ -25,6 +25,12 @@ interface IPFSGraphData {
   edges: Record<string, IPFSEdge>;
   timestamp: number;
   version: string;
+  provenance?: Array<{
+    action: string;
+    objectType: string;
+    id: string;
+    timestamp: number;
+  }>;
 }
 
 
@@ -79,6 +85,12 @@ export async function GET(
         relationTypes: string[];
         timestamp: number;
         version: string;
+        provenance?: Array<{
+          action: string;
+          objectType: string;
+          id: string;
+          timestamp: number;
+        }>;
       }
     } = { 
       nodes, 
@@ -87,7 +99,8 @@ export async function GET(
         nodeTypes: Array.from(nodeTypes),
         relationTypes: Array.from(relationTypes),
         timestamp: data.timestamp,
-        version: data.version
+        version: data.version,
+        provenance: data.provenance || []
       }
     }
 
