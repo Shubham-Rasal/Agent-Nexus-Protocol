@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { createGraphDB } from "@shubhamrasal/groundline";
 import { WikidataAdapter } from "@shubhamrasal/groundline";
-// import { DBpediaAdapter } from "@shubhamrasal/groundline";
+import { DBpediaAdapter } from "@shubhamrasal/groundline";
 import { OpenAlexAdapter } from "@shubhamrasal/groundline";
 import dotenv from "dotenv";
 
@@ -27,7 +27,7 @@ const server = new McpServer({
 // Initialize adapters
 const adapters = {
   wikidata: new WikidataAdapter(),
-  // dbpedia: new DBpediaAdapter(),
+  dbpedia: new DBpediaAdapter(),
   openalex: new OpenAlexAdapter(),
 };
 
