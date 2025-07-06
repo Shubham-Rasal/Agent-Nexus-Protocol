@@ -6,9 +6,19 @@ Agent Nexus Protocol (ANP) is a unique way for AI agents to collaborate with eac
 
 ![image](https://github.com/user-attachments/assets/17ca4ac7-4f6a-4de6-8e56-192ef9656391)
 
+## 🎯 Groundline
 
+> 🆕 Recently developed during the PL_Genesis hackathon!
 
+We integrated Groundline, our powerful graph database package, to manage knowledge graphs with IPFS persistence:
 
+- Published as an **npm package** (`groundline-mcp`) for easy integration
+- Built-in **IPFS persistence** for decentralized storage of graph data
+- Integrated with **FileCDN PDPs** using Synapse SDK for graph interactions
+- Powers the **MCP server** backend for efficient graph operations
+- Supports multiple knowledge graph sources including Wikidata, DBpedia, and OpenAlex
+
+Check out the implementation in our [groundline package](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/tree/master/groundline) and read more about its features in the [Groundline README](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/groundline/README.md)!
 
 ## 🚀 Features
 
@@ -46,28 +56,6 @@ We integrated Lilypad's powerful APIs to implement a major componant - Task Rout
 
 Check out our implementation in [task-router/route.ts](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/frontend/src/app/api/task-router/route.ts)!
 
-## Akave
-
-Akave's decentralized storage powers our secure agent marketplace:
-
-- Implemented a **storage tool** that lets agents securely store and retrieve data
-- Built an **agent marketplace** where users can browse, select, and "stake" on different specialized agents
-
-See how we did it in [akave-storage.ts](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/frontend/src/features/agents/leadgen/akave-storage.ts)!
-
-## Storacha
-
-We used Storacha to enable true agent collaboration:
-
-- Built a system where agents can **store their thinking process** and share it with other agents
-- Created tools for agents to **learn from each other's work** and build on previous insights
-- Implemented **transparent tracking** of all knowledge-sharing operations
-
-Check out our collaboration system in [storacha-tool.ts](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/frontend/src/features/agents/leadgen/storacha-tool.ts)!
-
-
-
-
 ## 🔧 Installation
 
 1. Clone the repository:
@@ -83,12 +71,20 @@ npm run dev
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/LICENSE) file for details.
 
-## 🏆 Hackathon Details
 
-This project was created during Encode AI Blueprints Hackathon . Our goal was to create a standardized protocol for agent communication that could revolutionize how AI agents interact and collaborate.
 
-### Team Members
-- [Shubham Rasal](https://github.com/Shubham-Rasal)
-- [Abhayjit Singh](https://github.com/abhayjit07)
-- [Subhojit Karmakar](https://github.com/subhojit26)
-
+{
+    "command": "node",
+    "args": [
+        "dist/index.js"
+    ],
+    "env": {
+        "HOME": "/home/bluequbit",
+        "LOGNAME": "bluequbit",
+        "PATH": "/home/bluequbit/.npm/_npx/5a9d879542beca3a/node_modules/.bin:/home/bluequbit/Dev/ai-blueprints/anp/kg-mcp/node_modules/.bin:/home/bluequbit/Dev/ai-blueprints/anp/node_modules/.bin:/home/bluequbit/Dev/ai-blueprints/node_modules/.bin:/home/bluequbit/Dev/node_modules/.bin:/home/bluequbit/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/bluequbit/.nvm/versions/node/v22.11.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/bluequbit/.pyenv/shims:/home/bluequbit/.pyenv/bin:/home/bluequbit/.local/share/pnpm:/home/bluequbit/.pyenv/bin:/home/bluequbit/.nvm/versions/node/v22.11.0/bin:/home/bluequbit/.local/share/zinit/polaris/bin:/tmp/.mount_CursoruGIVk3/usr/bin/:/tmp/.mount_CursoruGIVk3/usr/sbin/:/tmp/.mount_CursoruGIVk3/usr/games/:/tmp/.mount_CursoruGIVk3/bin/:/tmp/.mount_CursoruGIVk3/sbin/:/home/bluequbit/.cargo/bin:/home/bluequbit/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/bluequbit/.local/bin:/home/bluequbit/.local/bin:/usr/local/go/bin:/home/bluequbit/Dev/Android/emulator:/home/bluequbit/Dev/Android/platform-tools:/home/bluequbit/.config/Cursor/User/globalStorage/github.copilot-chat/debugCommand:/home/bluequbit/.local/bin:/usr/local/go/bin:/home/bluequbit/Dev/Android/emulator:/home/bluequbit/Dev/Android/platform-tools",
+        "SHELL": "/usr/bin/zsh",
+        "TERM": "xterm-256color",
+        "USER": "bluequbit",
+        "FIL_PRIVATE_KEY": "8f3092541ef889aa7c0c6c3f81f0c607a63dc75204003b57c1ce2c51570b490c"
+    }
+}

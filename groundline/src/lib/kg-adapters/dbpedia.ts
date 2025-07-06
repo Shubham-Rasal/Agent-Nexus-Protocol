@@ -64,7 +64,9 @@ export class DBpediaAdapter extends BaseKGAdapter {
       );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+      results: { bindings: any[] }
+    };
     return data.results.bindings.map((binding: any) => ({
       id: binding.entity.value.split("/").pop(),
       name: binding.label.value,
@@ -117,7 +119,9 @@ export class DBpediaAdapter extends BaseKGAdapter {
       );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+      results: { bindings: any[] }
+    };
     return data.results.bindings
       .filter((binding: any) => binding.target.type === "uri") // Only include URI relations
       .map((binding: any) => ({

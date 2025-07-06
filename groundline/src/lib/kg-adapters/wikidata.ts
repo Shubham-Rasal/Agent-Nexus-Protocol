@@ -58,7 +58,9 @@ export class WikidataAdapter extends BaseKGAdapter {
       );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+      results: { bindings: any[] }
+    };
     return data.results.bindings.map((binding: any) => ({
       id: binding.item.value.split("/").pop(),
       name: binding.itemLabel.value,
@@ -102,7 +104,9 @@ export class WikidataAdapter extends BaseKGAdapter {
       );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+      results: { bindings: any[] }
+    };
     return data.results.bindings.map((binding: any) => ({
       from: entityId,
       to: binding.value.value.split("/").pop(),

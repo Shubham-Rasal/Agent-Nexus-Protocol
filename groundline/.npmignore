@@ -1,0 +1,48 @@
+# Source files
+src/
+tests/
+demo/
+docs/
+demo.*
+
+# Development configs
+.eslintrc*
+.prettierrc*
+.editorconfig
+.gitignore
+vitest.config.*
+vitest.setup.*
+.env
+
+# Build artifacts
+coverage/
+.nyc_output/
+*.log
+.DS_Store
+
+# Development tools
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env*
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/__tests__/
+**/__mocks__/
+
+# Documentation
+*.md
+!README.md
+!LICENSE.md 

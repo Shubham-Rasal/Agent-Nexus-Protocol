@@ -1,186 +1,192 @@
-# Custom MCP Server (IPFS Knowledge Graph)
+# Groundline GraphDB
 
-This is a custom MCP server implementation for the MCP Client Chatbot project. It uses a storage layer built directly on top of IPFS as a decentralized backend for storing entities, relations, and knowledge graph data, and provides a rich set of MCP tools for graph management and external knowledge graph integration.
+A powerful decentralized graph database with IPFS persistence, CRDT-based collaboration, and seamless integration with multiple knowledge graph sources.
 
 ## Features
 
-- Entity and relation management (create, delete, search, traverse)
-- Graph traversal and search utilities
-- Integration with external knowledge graphs (Wikidata, DBpedia, OpenAlex)
-- Schema validation and transformation
-- Extensible adapter framework for new KG sources
+- 🔄 **CRDT-Based Collaboration** - Built on Yjs for real-time collaborative graph editing
+- 📦 **IPFS Integration** - Decentralized storage with Helia and optional Filecoin pinning
+- 🌐 **Knowledge Graph Integration** - Native support for:
+  - Wikidata
+  - DBpedia
+  - OpenAlex
+- 🔗 **JSON-LD Support** - Semantic web compatibility with JSON-LD context
+- 📊 **Rich Graph Operations** - Comprehensive API for graph manipulation and querying
+- 📝 **Provenance Tracking** - Track changes and maintain version history
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v18+ recommended)
-- pnpm (or npm/yarn)
-
-### Setup
+## Installation
 
 ```bash
-cd custom-mcp-server
-pnpm install
-pnpm dev # or pnpm build && pnpm start
+npm install @shubhamrasal/groundline
 ```
 
-The server will start and register all MCP tools for use by the client or any MCP-compatible agent.
+## Quick Start
 
-## 🛠️ MCP Tools
+```typescript
+import { createGraphDB, createGraphIPFSManager } from '@shubhamrasal/groundline';
 
-Below is a list of available MCP tools, their descriptions, and usage examples.
+async function main() {
+  // Initialize graph database with multiple adapters
+  const graphDB = createGraphDB({
+    enabledAdapters: ['wikidata', 'dbpedia', 'openalex']
+  });
+  
+  await graphDB.initialize();
+  
+  // Import data from external knowledge graphs
+  const wikidataResults = await graphDB.importExternalKG('wikidata', {
+    query: 'your-sparql-query'
+  });
+  
+  // Initialize IPFS storage with custom config
+  const ipfsManager = createGraphIPFSManager({
+    // Optional IPFS configuration
+    pinningService: 'filecoin',  // Enable Filecoin pinning
+    ipnsKey: 'your-ipns-key'     // For mutable pointers
+  });
+  
+  await ipfsManager.initialize();
+  
+  // Store graph snapshot in IPFS
+  const snapshot = await ipfsManager.snapshotToIPFS();
+  console.log('Graph stored in IPFS with CID:', snapshot.cid);
+  
+  // Load graph from IPFS
+  await ipfsManager.loadFromIPFS(snapshot.cid);
+  
+  // Get current graph state
+  const state = ipfsManager.getGraphState();
+}
 
-### Entity Management
+main().catch(console.error);
+```
 
-- **create_entities**
+## Knowledge Graph Integration
 
-  - **Description:** Create one or more entities in the knowledge graph.
-  - **Example:**
-    ```json
-    {
-      "entities": [
-        {
-          "name": "Alan Turing",
-          "entityType": "Person",
-          "observations": ["Mathematician"]
-        }
-      ]
+The library provides adapters for major knowledge graph sources:
+
+```typescript
+import { 
+  WikidataAdapter, 
+  DBpediaAdapter, 
+  OpenAlexAdapter,
+  type KGAdapter 
+} from '@shubhamrasal/groundline';
+
+// Initialize with specific adapters
+const graphDB = createGraphDB({
+  enabledAdapters: ['wikidata', 'dbpedia', 'openalex'],
+  adapterConfig: {
+    wikidata: {
+      endpoint: 'https://query.wikidata.org/sparql'
+    },
+    dbpedia: {
+      endpoint: 'https://dbpedia.org/sparql'
     }
-    ```
+  }
+});
 
-- **get_entity**
+// Custom adapter implementation
+class CustomAdapter implements KGAdapter {
+  // Implement adapter interface
+}
+```
 
-  - **Description:** Get an entity from the knowledge graph by ID.
-  - **Example:**
-    ```json
-    { "entity": { "id": "123" } }
-    ```
+## Graph Data Model
 
-- **delete_entity**
+The library uses a property graph model with support for rich entity and relation types:
 
-  - **Description:** Delete an entity from the knowledge graph by ID.
-  - **Example:**
-    ```json
-    { "entityId": "123" }
-    ```
+```typescript
+import type { Entity, Relation } from '@shubhamrasal/groundline';
 
-- **add_observation**
+// Entity example
+const entity: Entity = {
+  name: "Tim Berners-Lee",
+  entityType: "Person",
+  observations: [
+    "Inventor of the World Wide Web",
+    "Director of W3C"
+  ],
+  properties: {
+    birthDate: "1955-06-08",
+    nationality: "British"
+  }
+};
 
-  - **Description:** Add an observation to an entity.
-  - **Example:**
-    ```json
-    { "entityId": "123", "observation": "New observation" }
-    ```
+// Relation example
+const relation: Relation = {
+  from: "tim-berners-lee",
+  to: "world-wide-web",
+  relationType: "invented",
+  properties: {
+    year: 1989,
+    location: "CERN"
+  }
+};
+```
 
-- **delete_observation**
-  - **Description:** Delete an observation from an entity.
-  - **Example:**
-    ```json
-    { "entityId": "123", "observation": "Old observation" }
-    ```
+## IPFS Integration
 
-### Relation Management
+Store and retrieve graphs using IPFS with optional Filecoin pinning:
 
-- **create_relation**
+```typescript
+import { createGraphIPFSManager, type IPFSConfig, type GraphSnapshot } from '@shubhamrasal/groundline';
 
-  - **Description:** Create a relation between two entities.
-  - **Example:**
-    ```json
-    { "relation": { "from": "123", "to": "456", "relationType": "colleague" } }
-    ```
+// Initialize IPFS manager
+const ipfsManager = createGraphIPFSManager({
+  pinningService: 'filecoin',
+  ipnsKey: 'your-ipns-key'
+});
 
-- **delete_relation**
-  - **Description:** Delete a relation by its ID.
-  - **Example:**
-    ```json
-    { "relationId": "789" }
-    ```
+await ipfsManager.initialize();
 
-### Graph Operations
+// Create and store snapshot
+const snapshot: GraphSnapshot = await ipfsManager.snapshotToIPFS();
 
-- **search_nodes**
+// Load specific version
+await ipfsManager.loadFromIPFS(snapshot.cid);
 
-  - **Description:** Search for entities in the knowledge graph by name or type.
-  - **Example:**
-    ```json
-    { "query": "Turing" }
-    ```
+// Get latest version via IPNS
+const latest = await ipfsManager.resolveLatest();
+```
 
-- **read_graph**
-  - **Description:** Traverse the graph starting from a given entity.
-  - **Example:**
-    ```json
-    { "startEntityId": "123", "maxDepth": 2 }
-    ```
+## Development
 
-### External Knowledge Graph Integration
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Build the project:
+   ```bash
+   npm run build
+   ```
+4. Run tests:
+   ```bash
+   npm test
+   ```
+5. Format code:
+   ```bash
+   npm run format
+   ```
+6. Run linter:
+   ```bash
+   npm run lint
+   ```
 
-- **search_external_kg**
+## Requirements
 
-  - **Description:** Search for entities in external knowledge graphs (Wikidata, DBpedia, OpenAlex).
-  - **Example:**
-    ```json
-    {
-      "source": "wikidata",
-      "query": "Alan Turing",
-      "options": { "limit": 5, "language": "en" }
-    }
-    ```
-    ```json
-    {
-      "source": "dbpedia",
-      "query": "Alan Turing",
-      "options": { "limit": 5, "language": "en" }
-    }
-    ```
-    ```json
-    {
-      "source": "openalex",
-      "query": "Alan Turing",
-      "options": { "limit": 5 }
-    }
-    ```
+- Node.js >= 18.0.0
+- NPM or compatible package manager
 
-- **import_external_entity**
-  - **Description:** Import an entity and its relations from an external knowledge graph.
-  - **Example:**
-    ```json
-    {
-      "source": "wikidata",
-      "entityId": "Q7259",
-      "options": {
-        "importRelations": true,
-        "maxRelations": 5,
-        "language": "en"
-      }
-    }
-    ```
-    ```json
-    {
-      "source": "dbpedia",
-      "entityId": "Alan_Turing",
-      "options": {
-        "importRelations": true,
-        "maxRelations": 5,
-        "language": "en"
-      }
-    }
-    ```
-    ```json
-    {
-      "source": "openalex",
-      "entityId": "A2941294272",
-      "options": { "importRelations": true, "maxRelations": 5 }
-    }
-    ```
+## Contributing
 
-## Extending the Server
-
-- To add new external knowledge graph sources, implement a new adapter in `src/lib/kg-adapters/` following the `BaseKGAdapter` interface.
-- Register the adapter in `src/index.ts` and add it to the `adapters` object.
-- Update the `source` enum in the relevant tools to include your new source.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 
-MIT
+ISC
+
+## Author
+
+Shubham Rasal ([@Shubham-Rasal](https://github.com/Shubham-Rasal))

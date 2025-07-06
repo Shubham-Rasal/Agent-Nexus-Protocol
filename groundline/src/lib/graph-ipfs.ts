@@ -27,7 +27,8 @@ export class GraphIPFSManager {
       nodes: new Map(nodes.entries() as Iterable<[string, Entity]>),
       edges: new Map(edges.entries() as Iterable<[string, Relation]>),
       timestamp: Date.now(),
-      version: '1.0.0', // TODO: Get from package.json
+      version: '1.0.0',
+      provenance: getProvenanceLog()
     };
 
     // Upload to IPFS
@@ -61,8 +62,6 @@ export class GraphIPFSManager {
       provenance: getProvenanceLog()
     };
   }
-
-  
 }
 
 // Export a factory function for creating GraphIPFSManager instances

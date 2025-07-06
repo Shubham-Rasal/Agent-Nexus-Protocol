@@ -1,23 +1,14 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
-import { WikidataAdapter } from "./lib/kg-adapters/wikidata.js";
-import { DBpediaAdapter } from "./lib/kg-adapters/dbpedia.js";
-import { OpenAlexAdapter } from "./lib/kg-adapters/openalex.js";
+// Core exports
+export { createGraphDB } from './lib/graph-api';
+export { createGraphIPFSManager, GraphIPFSManager } from './lib/graph-ipfs';
+export { jsonLdContext } from './lib/jsonld-context';
 
-const server = new McpServer({
-  name: "custom-mcp-server",
-  version: "0.0.1",
-});
+// Knowledge Graph Adapters
+export { WikidataAdapter } from './lib/kg-adapters/wikidata';
+export { DBpediaAdapter } from './lib/kg-adapters/dbpedia';
+export { OpenAlexAdapter } from './lib/kg-adapters/openalex';
+export { KGAdapter } from './lib/kg-adapters/adapter';
 
-// Initialize adapters
-const adapters = {
-  wikidata: new WikidataAdapter(),
-  dbpedia: new DBpediaAdapter(),
-  openalex: new OpenAlexAdapter(),
-};
-
-
-const transport = new StdioServerTransport();
-
-await server.connect(transport);
+// Types
+export type { Entity, Relation } from './lib/graph-model';
+export type { IPFSConfig, GraphSnapshot } from './lib/ipfs';

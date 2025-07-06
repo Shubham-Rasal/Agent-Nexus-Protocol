@@ -18,6 +18,7 @@ export interface GraphSnapshot {
   edges: Map<string, Relation>;
   timestamp: number;
   version: string;
+  provenance: any[];
 }
 
 export class IPFSClient {
@@ -91,7 +92,7 @@ export class IPFSClient {
   async initialize(): Promise<void> {
     // Initialize Synapse SDK
     this.synapse = await Synapse.create({
-      privateKey : this.config.privateKey || "",
+      privateKey : this.config.privateKey,
       rpcURL: this.config.rpcURL || RPC_URLS.calibration.websocket,
       withCDN: this.config.withCDN
     });
@@ -117,11 +118,13 @@ export class IPFSClient {
           onProofSetCreationStarted: (transaction, statusUrl) => {
             console.log(`  Creating proof set, tx: ${transaction.hash}`);
           },
-          onProofSetCreationProgress: (progress) => {
-            if (progress.transactionMined && !progress.proofSetLive) {
+          onProofSetCreationProgress: (status) => {
+            if (status.transactionMined && !status.proofSetLive) {
               console.log('  Transaction mined, waiting for proof set to be live...');
             }
           },
+        
+          
         },
       });
     } catch (error) {
@@ -148,13 +151,16 @@ export class IPFSClient {
       // Convert to Uint8Array for upload
       const data = new TextEncoder().encode(JSON.stringify(serializedSnapshot));
       
-      // Perform preflight check before upload
-      await this.performPreflightCheck(data.length, true);
-      
-      // Upload to IPFS via Synapse
-      const result = await this.storage.upload(data);
-      
-      return result.commp.toString(); // Convert LegacyPieceLink to string
+      // Create a promise that resolves when upload is complete
+      return new Promise((resolve, reject) => {
+        this.storage.upload(data, {
+          onUploadComplete(commp) {
+            console.log(`✓ Upload complete: ${commp}`);
+            resolve(commp.toString());
+            return commp.toString();
+          },
+        }).catch(reject);
+      });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Failed to upload snapshot: ${message}`);

@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown, GitGraph } from 'lucide-react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+
 export function Navbar() {
   const pathname = usePathname();
 
@@ -54,14 +56,11 @@ export function Navbar() {
               >
                 Knowledge Graph
               </NavLink>
-              
             </div>
           </div>  
-          {/* <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <button className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500">
-              <Settings className="h-6 w-6" />
-            </button>
-          </div> */}
+          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <ConnectButton />
+          </div>
         </div>
       </div>
       

@@ -46,199 +46,126 @@ import {
   GitMerge,
   GitPullRequest,
   ArrowRight,
-  Clock
+  Clock,
+  Home,
+  Plus,
+  RefreshCw,
+  Trash2,
+  Shield,
+  CheckCircle,
+  XCircle,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import * as d3 from "d3"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { createGraphDB } from "@shubhamrasal/groundline"
+import { sampleGraphData, sampleProvenanceData, ADAPTERS, GraphNode, GraphLink, GraphData, ProvenanceItem } from "./data/sampleGraphData"
+import React from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { ImportGraphDrawer } from "./kg/ImportGraphDrawer"
 
-interface GraphNode {
-  id: string
+interface ExternalEntity {
+  id?: string
   name: string
-  type: "Person" | "Movie"
-  properties: Record<string, any>
-  x?: number
-  y?: number
-  fx?: number | null
-  fy?: number | null
+  type: string
+  source?: string
+  properties?: Record<string, any>
+  relations?: Array<{ type: string; target: string }>
+  identifiers?: Record<string, string | number>
 }
 
-interface GraphLink {
-  source: string | GraphNode
-  target: string | GraphNode
-  type: "ACTED_IN" | "DIRECTED"
+interface ExternalRelation {
+  from: string
+  to: string
+  type: string
   properties?: Record<string, any>
 }
 
-interface GraphData {
-  nodes: GraphNode[]
-  links: GraphLink[]
+interface ImportResults {
+  entities: ExternalEntity[]
+  relations: ExternalRelation[]
 }
 
-const sampleGraphData: GraphData = {
-  nodes: [
-    { id: "tom-hanks", name: "Tom Hanks", type: "Person", properties: { born: 1956, name: "Tom Hanks" } },
-    { id: "forrest-gump", name: "Forrest Gump", type: "Movie", properties: { title: "Forrest Gump", released: 1994 } },
-    { id: "cast-away", name: "Cast Away", type: "Movie", properties: { title: "Cast Away", released: 2000 } },
-    { id: "philadelphia", name: "Philadelphia", type: "Movie", properties: { title: "Philadelphia", released: 1993 } },
-    {
-      id: "saving-private-ryan",
-      name: "Saving Private Ryan",
-      type: "Movie",
-      properties: { title: "Saving Private Ryan", released: 1998 },
-    },
-    {
-      id: "the-green-mile",
-      name: "The Green Mile",
-      type: "Movie",
-      properties: { title: "The Green Mile", released: 1999 },
-    },
-    { id: "apollo-13", name: "Apollo 13", type: "Movie", properties: { title: "Apollo 13", released: 1995 } },
-    { id: "big", name: "Big", type: "Movie", properties: { title: "Big", released: 1988 } },
-    {
-      id: "catch-me",
-      name: "Catch Me If You Can",
-      type: "Movie",
-      properties: { title: "Catch Me If You Can", released: 2002 },
-    },
-    { id: "terminal", name: "The Terminal", type: "Movie", properties: { title: "The Terminal", released: 2004 } },
-    {
-      id: "da-vinci",
-      name: "The Da Vinci Code",
-      type: "Movie",
-      properties: { title: "The Da Vinci Code", released: 2006 },
-    },
-    // Additional person nodes
-    { id: "robin-wright", name: "Robin Wright", type: "Person", properties: { born: 1966, name: "Robin Wright" } },
-    { id: "gary-sinise", name: "Gary Sinise", type: "Person", properties: { born: 1955, name: "Gary Sinise" } },
-    { id: "sally-field", name: "Sally Field", type: "Person", properties: { born: 1946, name: "Sally Field" } },
-    {
-      id: "robert-zemeckis",
-      name: "Robert Zemeckis",
-      type: "Person",
-      properties: { born: 1951, name: "Robert Zemeckis" },
-    },
-    {
-      id: "steven-spielberg",
-      name: "Steven Spielberg",
-      type: "Person",
-      properties: { born: 1946, name: "Steven Spielberg" },
-    },
-    {
-      id: "frank-darabont",
-      name: "Frank Darabont",
-      type: "Person",
-      properties: { born: 1959, name: "Frank Darabont" },
-    },
-    { id: "ron-howard", name: "Ron Howard", type: "Person", properties: { born: 1954, name: "Ron Howard" } },
-    {
-      id: "penny-marshall",
-      name: "Penny Marshall",
-      type: "Person",
-      properties: { born: 1943, name: "Penny Marshall" },
-    },
-  ],
-  links: [
-    { source: "tom-hanks", target: "forrest-gump", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "cast-away", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "philadelphia", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "saving-private-ryan", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "the-green-mile", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "apollo-13", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "big", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "catch-me", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "terminal", type: "ACTED_IN" },
-    { source: "tom-hanks", target: "da-vinci", type: "ACTED_IN" },
-    { source: "robin-wright", target: "forrest-gump", type: "ACTED_IN" },
-    { source: "gary-sinise", target: "forrest-gump", type: "ACTED_IN" },
-    { source: "sally-field", target: "forrest-gump", type: "ACTED_IN" },
-    { source: "robert-zemeckis", target: "forrest-gump", type: "DIRECTED" },
-    { source: "steven-spielberg", target: "saving-private-ryan", type: "DIRECTED" },
-    { source: "frank-darabont", target: "the-green-mile", type: "DIRECTED" },
-    { source: "ron-howard", target: "apollo-13", type: "DIRECTED" },
-    { source: "penny-marshall", target: "big", type: "DIRECTED" },
-  ],
+interface NodeNeighbor {
+  id: string;
+  name: string;
+  type: string;
+  relationship: string;
+  direction: 'incoming' | 'outgoing';
 }
 
 const sidebarItems = [
-  { icon: Database, label: "Database", active: true },
+  { icon: Database, label: "Database" },
   { icon: History, label: "Provenance Tracking" },
   { icon: FolderSync, label: "IPFS Sync" },
-  { icon: Edit, label: "Edit Graph" },
+  { icon: Edit, label: "Edit Graph", active: true },
   { icon: Globe2, label: "Import External Graphs" },
   { icon: Settings, label: "Browser Settings" },
 ]
 
-const sampleProvenanceData = [
-  {
-    id: 1,
-    timestamp: "2024-03-15T14:30:00",
-    type: "merge",
-    description: "Merged knowledge from research papers database",
-    source: "ResearchDB",
-    changes: {
-      added: 156,
-      removed: 23,
-      modified: 45
-    },
-    icon: GitMerge
-  },
-  {
-    id: 2,
-    timestamp: "2024-03-15T12:15:00",
-    type: "commit",
-    description: "Updated entity relationships in biotech sector",
-    source: "Manual Edit",
-    changes: {
-      added: 12,
-      removed: 5,
-      modified: 8
-    },
-    icon: GitCommit
-  },
-  {
-    id: 3,
-    timestamp: "2024-03-14T16:45:00",
-    type: "branch",
-    description: "Created experimental branch for AI research",
-    source: "System",
-    changes: {
-      added: 0,
-      removed: 0,
-      modified: 0
-    },
-    icon: GitBranch
-  },
-  {
-    id: 4,
-    timestamp: "2024-03-14T11:20:00",
-    type: "pull",
-    description: "Pulled updates from external knowledge base",
-    source: "ExternalKB",
-    changes: {
-      added: 89,
-      removed: 12,
-      modified: 34
-    },
-    icon: GitPullRequest
-  }
-]
+// Add an icon map
+const iconMap = {
+  GitMerge,
+  GitCommit,
+  GitBranch,
+  GitPullRequest
+} as const
 
-export default function Neo4jGraphBrowser() {
+const getNodeColor = (type: string) => {
+  // All node types use blue shades from light to dark
+  const colors = {
+    Concept: "#dbeafe",      // lightest blue
+    Technology: "#93c5fd",  // lighter blue
+    Person: "#60a5fa",      // light blue
+    Organization: "#3b82f6",// blue
+    Dataset: "#2563eb",     // dark blue
+    Paper: "#1d4ed8",       // darker blue
+    Project: "#1e40af",     // darkest blue
+  }
+  return colors[type as keyof typeof colors] || "#6b7280" // gray as fallback
+}
+
+interface KnowledgeGraphProps {
+  rootCID?: string;
+}
+
+interface GraphMetadata {
+  nodeTypes: string[];
+  relationTypes: string[];
+  timestamp: number;
+  version: string;
+  provenance?: ProvenanceItem[];
+}
+
+interface GraphDataWithMetadata extends GraphData {
+  metadata: GraphMetadata;
+}
+
+
+export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
+  const router = useRouter()
   const svgRef = useRef<SVGSVGElement>(null)
   const [graphData, setGraphData] = useState<GraphData>(sampleGraphData)
+  const [metadata, setMetadata] = useState<GraphMetadata | null>(null)
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
   const [cypherQuery, setCypherQuery] = useState('MATCH (p:Person {name:"Tom Hanks"})-[]-(m:Movie) RETURN p,m')
   const [searchTerm, setSearchTerm] = useState("")
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [zoom, setZoom] = useState(1)
-  const [nodeLabels, setNodeLabels] = useState({ Person: 10, Movie: 10 })
-  const [relationshipTypes, setRelationshipTypes] = useState({ ACTED_IN: 19, DIRECTED: 1 })
-  const [filteredNodeTypes, setFilteredNodeTypes] = useState<Set<string>>(new Set(["Person", "Movie"]))
-  const [filteredRelationshipTypes, setFilteredRelationshipTypes] = useState<Set<string>>(
-    new Set(["ACTED_IN", "DIRECTED"]),
-  )
+  const [nodeLabels, setNodeLabels] = useState<Record<string, number>>({})
+  const [relationshipTypes, setRelationshipTypes] = useState<Record<string, number>>({})
+  const [nodeProperties, setNodeProperties] = useState<Set<string>>(new Set())
+  const [filteredNodeTypes, setFilteredNodeTypes] = useState<Set<string>>(new Set())
+  const [filteredRelationshipTypes, setFilteredRelationshipTypes] = useState<Set<string>>(new Set())
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [isProvenanceOpen, setIsProvenanceOpen] = useState(false)
   const [isIPFSDialogOpen, setIsIPFSDialogOpen] = useState(false)
@@ -247,6 +174,17 @@ export default function Neo4jGraphBrowser() {
     name: "",
     useCDN: false
   })
+  const [isImportDrawerOpen, setIsImportDrawerOpen] = useState(false)
+  const [importForm, setImportForm] = useState({
+    adapter: '',
+    query: ''
+  })
+  const [isImporting, setIsImporting] = useState(false)
+  const [importResults, setImportResults] = useState<ImportResults | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isPinned, setIsPinned] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
 
   const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null)
 
@@ -255,7 +193,7 @@ export default function Neo4jGraphBrowser() {
 
     const svg = d3.select(svgRef.current)
     const width = 800
-    const height = 500
+    const height = 600
 
     svg.selectAll("*").remove()
 
@@ -289,7 +227,8 @@ export default function Neo4jGraphBrowser() {
           .distance(100),
       )
       .force("charge", d3.forceManyBody().strength(-300))
-      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5))
+      .force("collision", d3.forceCollide().radius(30))
 
     simulationRef.current = simulation
 
@@ -324,7 +263,7 @@ export default function Neo4jGraphBrowser() {
       .enter()
       .append("circle")
       .attr("r", 18)
-      .attr("fill", (d) => (d.type === "Person" ? "#3b82f6" : "#f59e0b"))
+      .attr("fill", (d) => getNodeColor(d.type))
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
@@ -405,40 +344,104 @@ export default function Neo4jGraphBrowser() {
     initializeGraph()
   }, [initializeGraph])
 
+  // Calculate statistics from data
+  useEffect(() => {
+    // Count node types
+    const typeCounts: Record<string, number> = {}
+    const propertyKeys = new Set<string>()
+    
+    graphData.nodes.forEach(node => {
+      typeCounts[node.type] = (typeCounts[node.type] || 0) + 1
+      // Collect all unique property keys
+      Object.keys(node.properties).forEach(key => propertyKeys.add(key))
+    })
+    setNodeLabels(typeCounts)
+    setNodeProperties(propertyKeys)
+    setFilteredNodeTypes(new Set(Object.keys(typeCounts)))
+
+    // Count relationship types
+    const relationCounts: Record<string, number> = {}
+    graphData.links.forEach(link => {
+      relationCounts[link.type] = (relationCounts[link.type] || 0) + 1
+    })
+    setRelationshipTypes(relationCounts)
+    setFilteredRelationshipTypes(new Set(Object.keys(relationCounts)))
+  }, [graphData])
+
+  // Handle search functionality
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase()
+    setSearchTerm(term)
+    
+    if (simulationRef.current) {
+      // Highlight matching nodes
+      d3.selectAll("circle")
+        .attr("opacity", d => {
+          const node = d as GraphNode
+          return node.name.toLowerCase().includes(term) ? 1 : 0.3
+        })
+        .attr("r", d => {
+          const node = d as GraphNode
+          return node.name.toLowerCase().includes(term) ? 22 : 18
+        })
+    }
+  }
+
+  // Zoom controls
   const handleZoomIn = () => {
     if (svgRef.current) {
       const svg = d3.select(svgRef.current)
-      svg.transition().call(d3.zoom<SVGSVGElement, unknown>().scaleBy as any, 1.5)
+      svg.transition().duration(300).call(d3.zoom<SVGSVGElement, unknown>().scaleBy as any, 1.5)
     }
   }
 
   const handleZoomOut = () => {
     if (svgRef.current) {
       const svg = d3.select(svgRef.current)
-      svg.transition().call(d3.zoom<SVGSVGElement, unknown>().scaleBy as any, 1 / 1.5)
+      svg.transition().duration(300).call(d3.zoom<SVGSVGElement, unknown>().scaleBy as any, 1 / 1.5)
     }
   }
 
   const handleFitToScreen = () => {
     if (svgRef.current) {
       const svg = d3.select(svgRef.current)
-      svg.transition().call(d3.zoom<SVGSVGElement, unknown>().transform as any, d3.zoomIdentity)
+      svg.transition().duration(300).call(d3.zoom<SVGSVGElement, unknown>().transform as any, d3.zoomIdentity)
     }
+  }
+
+  
+
+  // Toggle fullscreen
+  const handleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+      setIsFullScreen(true)
+    } else {
+      document.exitFullscreen()
+      setIsFullScreen(false)
+    }
+  }
+
+  // Handle pin/unpin
+  const handlePin = () => {
+    setIsPinned(!isPinned)
+    // You can implement persistence logic here
+  }
+
+  // Handle favorite
+  const handleFavorite = () => {
+    setIsFavorite(!isFavorite)
+    // You can implement persistence logic here
+  }
+
+  // Handle rerun query
+  const handleRerun = () => {
+    initializeGraph()
   }
 
   const runQuery = () => {
     console.log("Running query:", cypherQuery)
     initializeGraph()
-  }
-
-  const toggleNodeType = (nodeType: string) => {
-    const newFilteredTypes = new Set(filteredNodeTypes)
-    if (newFilteredTypes.has(nodeType)) {
-      newFilteredTypes.delete(nodeType)
-    } else {
-      newFilteredTypes.add(nodeType)
-    }
-    setFilteredNodeTypes(newFilteredTypes)
   }
 
   const toggleRelationshipType = (relType: string) => {
@@ -451,26 +454,85 @@ export default function Neo4jGraphBrowser() {
     setFilteredRelationshipTypes(newFilteredTypes)
   }
 
+  const toggleNodeType = (nodeType: string) => {
+    const newFilteredTypes = new Set(filteredNodeTypes)
+    if (newFilteredTypes.has(nodeType)) {
+      newFilteredTypes.delete(nodeType)
+    } else {
+      newFilteredTypes.add(nodeType)
+    }
+    setFilteredNodeTypes(newFilteredTypes)
+  }
+
   const filteredNodes = graphData.nodes.filter(
     (node) => node.name.toLowerCase().includes(searchTerm.toLowerCase()) && filteredNodeTypes.has(node.type),
   )
 
   const handleSidebarItemClick = (label: string) => {
-    if (label === "Provenance Tracking") {
+    if (label === "Database") {
+      router.push("/kg")
+    } else if (label === "Provenance Tracking") {
       setIsProvenanceOpen(true)
     } else if (label === "IPFS Sync") {
       setIsIPFSDialogOpen(true)
+    } else if (label === "Import External Graphs") {
+      setIsImportDrawerOpen(true)
     }
   }
 
-  const formatProvenanceDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const formatProvenanceDate = (timestamp: number) => {
+    const date = new Date(timestamp);
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric'
-    }).format(date)
+    }).format(date);
+  }
+
+  const getProvenanceIcon = (action: string, meta?: { source: string; validationStatus: string }) => {
+    // Base icon selection on action
+    let icon = GitMerge;
+    let className = "text-slate-600";
+
+    switch (action.toLowerCase()) {
+      case 'add':
+        icon = GitCommit;
+        className = "text-green-600";
+        break;
+      case 'update':
+        icon = GitBranch;
+        className = "text-blue-600";
+        break;
+      case 'delete':
+        icon = GitPullRequest;
+        className = "text-red-600";
+        break;
+    }
+
+    // Modify based on metadata if available
+    if (meta) {
+      if (meta.validationStatus === 'valid') {
+        className += " bg-green-50";
+      } else if (meta.validationStatus === 'invalid') {
+        className += " bg-red-50";
+      }
+    }
+
+    return { icon, className };
+  };
+
+  const getProvenanceColor = (action: string) => {
+    switch (action.toLowerCase()) {
+      case 'add':
+        return 'bg-green-50';
+      case 'update':
+        return 'bg-blue-50';
+      case 'delete':
+        return 'bg-red-50';
+      default:
+        return 'bg-slate-50';
+    }
   }
 
   const handleSync = async () => {
@@ -483,14 +545,232 @@ export default function Neo4jGraphBrowser() {
     setSyncForm({ name: "", useCDN: false })
   }
 
+  const handleImport = async (adapter: string, query: string) => {
+    try {
+      setIsImporting(true)
+      setError(null)
+
+      const response = await fetch(`/api/kg/import/${adapter}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Import failed: ${response.statusText}`)
+      }
+
+      const results = await response.json()
+      setImportResults(results)
+      toast.success('Graph imported successfully')
+    } catch (err) {
+      console.error('Import error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to import graph')
+      toast.error('Failed to import graph')
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleAddToGraph = () => {
+    if (!importResults) return
+
+    const newNodes = importResults.entities.map((entity: ExternalEntity) => ({
+      id: entity.id || entity.name,
+      name: entity.name,
+      type: entity.type,
+      properties: entity.properties || {},
+    }))
+
+    const newLinks = importResults.relations.map((relation: ExternalRelation) => ({
+      source: relation.from,
+      target: relation.to,
+      type: relation.type,
+      properties: relation.properties || {},
+    }))
+
+    setGraphData(prevData => ({
+      nodes: [...prevData.nodes, ...newNodes],
+      links: [...prevData.links, ...newLinks],
+    }))
+
+    setIsImportDrawerOpen(false)
+    setImportResults(null)
+    toast.success('Data added to graph')
+  }
+
+  useEffect(() => {
+    const loadGraphData = async () => {
+      if (!rootCID) {
+        setGraphData(sampleGraphData)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // Fetch the graph data directly using the CID
+        const graphResponse = await fetch(`/api/kg/graph/${rootCID}`)
+        if (!graphResponse.ok) {
+          throw new Error('Failed to fetch graph data')
+        }
+        const fetchedData: GraphDataWithMetadata = await graphResponse.json()
+
+        // Update graph data and metadata
+        setGraphData({ nodes: fetchedData.nodes, links: fetchedData.links })
+        setMetadata(fetchedData.metadata)
+
+        // Update node and relationship type filters with inferred types
+        setNodeLabels(
+          fetchedData.metadata.nodeTypes.reduce((acc, type) => {
+            acc[type] = fetchedData.nodes.filter(node => node.type === type).length
+            return acc
+          }, {} as Record<string, number>)
+        )
+
+        setRelationshipTypes(
+          fetchedData.metadata.relationTypes.reduce((acc, type) => {
+            acc[type] = fetchedData.links.filter(link => link.type === type).length
+            return acc
+          }, {} as Record<string, number>)
+        )
+
+        // Initialize filters to show all types
+        setFilteredNodeTypes(new Set(fetchedData.metadata.nodeTypes))
+        setFilteredRelationshipTypes(new Set(fetchedData.metadata.relationTypes))
+
+      } catch (err) {
+        console.error('Error loading graph data:', err)
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load graph data'
+        setError(errorMessage)
+        toast.error('Error loading graph', {
+          description: errorMessage,
+          duration: 5000,
+        })
+        setGraphData(sampleGraphData)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadGraphData()
+  }, [rootCID])
+
+  const getNodeNeighbors = useCallback((nodeId: string): NodeNeighbor[] => {
+    const neighbors: NodeNeighbor[] = [];
+    
+    graphData.links.forEach(link => {
+      if (link.source === nodeId) {
+        const targetNode = graphData.nodes.find(n => n.id === link.target);
+        if (targetNode) {
+          neighbors.push({
+            id: targetNode.id,
+            name: targetNode.name,
+            type: targetNode.type,
+            relationship: link.type,
+            direction: 'outgoing'
+          });
+        }
+      }
+      if (link.target === nodeId) {
+        const sourceNode = graphData.nodes.find(n => n.id === link.source);
+        if (sourceNode) {
+          neighbors.push({
+            id: sourceNode.id,
+            name: sourceNode.name,
+            type: sourceNode.type,
+            relationship: link.type,
+            direction: 'incoming'
+          });
+        }
+      }
+    });
+
+    return neighbors;
+  }, [graphData]);
+
+  const renderNodeDetails = () => {
+    if (!selectedNode) return null;
+
+    const neighbors = getNodeNeighbors(selectedNode.id);
+    const observations: string[] = selectedNode.properties?.observations || [];
+
+    return (
+      <div className="p-4 border-t">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-slate-900">{selectedNode.name}</h3>
+          <Badge variant="outline">{selectedNode.type}</Badge>
+        </div>
+
+        {/* Properties */}
+        {Object.entries(selectedNode.properties || {}).map(([key, value]) => {
+          if (key === 'observations') return null;
+          return (
+            <div key={key} className="mb-2">
+              <span className="text-sm font-medium text-slate-700">{key}: </span>
+              <span className="text-sm text-slate-600">{value as string}</span>
+            </div>
+          );
+        })}
+
+        {/* Observations */}
+        {observations.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-slate-900 mb-2">Observations</h4>
+            <ul className="list-disc pl-4 space-y-1">
+              {observations.map((observation: string, index: number) => (
+                <li key={index} className="text-sm text-slate-600">{observation}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Neighbors */}
+        {neighbors.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-slate-900 mb-2">Connected Nodes</h4>
+            <div className="space-y-2">
+              {neighbors.map((neighbor) => (
+                <div
+                  key={`${neighbor.id}-${neighbor.direction}`}
+                  className="flex items-center gap-2 p-2 rounded-md bg-slate-50"
+                >
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getNodeColor(neighbor.type) }} />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-slate-700">{neighbor.name}</div>
+                    <div className="text-xs text-slate-500 flex items-center gap-1">
+                      {neighbor.direction === 'incoming' ? (
+                        <>
+                          <span>← {neighbor.relationship}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{neighbor.relationship} →</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-xs">{neighbor.type}</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <TooltipProvider>
-      <div className="flex h-screen bg-white">
-        {/* Collapsible Sidebar */}
+      <div className="flex min-h-screen bg-white relative">
+        {/* Collapsible Sidebar - Fixed */}
         <div
           className={`${
             sidebarCollapsed ? "w-16" : "w-64"
-          } bg-slate-50 border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out`}
+          } bg-slate-50 border-r border-slate-200 flex flex-col fixed top-0 left-0 h-screen transition-all duration-300 ease-in-out`}
         >
           {/* Header */}
           <div className="p-4 border-b border-slate-200 flex items-center justify-between">
@@ -530,12 +810,265 @@ export default function Neo4jGraphBrowser() {
               </Tooltip>
             ))}
           </nav>
+
+          
+        </div>
+
+        {/* Main Content - Scrollable */}
+        <div className={`flex-1 flex flex-col min-h-screen ${sidebarCollapsed ? "ml-16" : "ml-64"}`}>
+          {/* Fixed Headers */}
+          <div className=" top-0 z-30 bg-white">
+            {/* Top Navigation */}
+            <div className="bg-white border-b border-slate-200 px-6 py-3">
+            </div>
+
+            {/* Query Editor */}
+            <div className="bg-slate-50 border-b border-slate-200 p-1">
+              <div className="flex items-start space-x-3">
+                <span className="text-xs text-slate-500 mt-3 font-mono">neo4j$</span>
+                <div className="flex-1">
+                  <Textarea
+                    value={cypherQuery}
+                    onChange={(e) => setCypherQuery(e.target.value)}
+                    className="font-mono text-sm border-slate-300 bg-white"
+                    placeholder="Enter Cypher query..."
+                  />
+                </div>
+                <Button 
+                  onClick={runQuery} 
+                  size="sm" 
+                  className="mt-1 shadow-sm transition-colors"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Run
+                </Button>
+              </div>
+            </div>
+
+            {/* Overview Section */}
+            <div className="bg-white border-b border-slate-200 px-1 py-1">
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent className="p-3">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <h4 className="text-xs font-medium text-slate-500 mb-2">Node Types</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {Object.entries(nodeLabels).map(([type, count]) => (
+                          <Badge
+                            key={type}
+                            variant={filteredNodeTypes.has(type) ? "default" : "secondary"}
+                            className={`text-xs cursor-pointer transition-colors ${
+                              filteredNodeTypes.has(type)
+                                ? "hover:bg-opacity-80"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                            onClick={() => toggleNodeType(type)}
+                          >
+                            <div
+                              className="w-1.5 h-1.5 rounded-full mr-1"
+                              style={{ backgroundColor: getNodeColor(type) }}
+                            />
+                            {type} ({count})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-medium text-slate-500 mb-2">Relationship Types</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {Object.entries(relationshipTypes).map(([type, count]) => (
+                          <Badge
+                            key={type}
+                            variant={filteredRelationshipTypes.has(type) ? "default" : "secondary"}
+                            className={`text-xs cursor-pointer transition-colors ${
+                              filteredRelationshipTypes.has(type)
+                                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                            onClick={() => toggleRelationshipType(type)}
+                          >
+                            {type} ({count})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-medium text-slate-500 mb-2">Property Keys</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {Array.from(nodeProperties).map(prop => (
+                          <Badge
+                            key={prop}
+                            variant="secondary"
+                            className="text-xs bg-slate-100 text-slate-600"
+                          >
+                            {prop}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-500 mt-3 pt-2 border-t border-slate-200">
+                    Displaying {graphData.nodes.filter(node => filteredNodeTypes.has(node.type)).length} nodes,{" "}
+                    {graphData.links.filter(link => filteredRelationshipTypes.has(link.type)).length} relationships
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Scrollable Graph Area */}
+          <div className="flex-1 relative">
+            {/* Graph Controls */}
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Input
+                  placeholder="Search nodes..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="pl-10 border-slate-300 w-[200px]"
+                />
+              </div>
+
+              {/* Zoom Controls */}
+              <div className="flex items-center gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 border-slate-300"
+                        onClick={handleZoomIn}
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Zoom in</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 border-slate-300"
+                        onClick={handleZoomOut}
+                      >
+                        <ZoomOut className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Zoom out</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 border-slate-300"
+                        onClick={handleFitToScreen}
+                      >
+                        <Maximize className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Fit to screen</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <span className="text-xs text-slate-500 ml-2">
+                  {Math.round(zoom * 100)}%
+                </span>
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-8 w-8 border-slate-300">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={handleFullScreen}>
+                    <Maximize2 className="w-4 h-4 mr-2" />
+                    {isFullScreen ? "Exit full screen" : "Full screen"}
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem onClick={handlePin}>
+                    <Pin className={`w-4 h-4 mr-2 ${isPinned ? "text-blue-500" : ""}`} />
+                    {isPinned ? "Unpin" : "Pin at top"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleFavorite}>
+                    <Star className={`w-4 h-4 mr-2 ${isFavorite ? "text-yellow-500" : ""}`} />
+                    {isFavorite ? "Remove from favorites" : "Save as favorite"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleRerun}>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Rerun query
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Node Properties Popover */}
+            {selectedNode && (
+              <div className="absolute top-16 right-4 z-10 w-[300px]">
+                {renderNodeDetails()}
+              </div>
+            )}
+
+            {/* Search Results Popover */}
+            {searchTerm && filteredNodes.length > 0 && (
+              <div className="absolute top-16 left-4 z-10 w-[250px]">
+                <Card className="border-slate-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold text-slate-700">Search Results</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {filteredNodes.map((node) => (
+                        <div
+                          key={node.id}
+                          className="flex items-center space-x-3 p-2 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
+                          onClick={() => setSelectedNode(node)}
+                        >
+                          <div
+                            className="w-3 h-3 rounded-full"
+                          />
+                          <span className="text-xs text-slate-700">{node.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Graph Visualization */}
+            <div className="p-6 ">
+              <h3 className="text-lg font-semibold mb-6 text-slate-800">Result frame views</h3>
+              <svg
+                ref={svgRef}
+                width="100%"
+                height="600"
+                className="border border-slate-200 rounded-xl bg-slate-50/30"
+                viewBox="0 0 800 600"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Provenance Tracking Drawer */}
         <Sheet open={isProvenanceOpen} onOpenChange={setIsProvenanceOpen}>
-          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white">
-            <SheetHeader>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white p-0">
+            <SheetHeader className="p-6 border-b">
               <SheetTitle className="flex items-center gap-2">
                 <History className="w-5 h-5" />
                 Provenance Tracking
@@ -545,55 +1078,82 @@ export default function Neo4jGraphBrowser() {
               </SheetDescription>
             </SheetHeader>
             
-            <div className="mt-6">
-              <div className="space-y-6">
-                {sampleProvenanceData.map((item) => (
-                  <div key={item.id} className="relative">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                        <item.icon className="w-5 h-5 text-blue-600" />
+            <div className="overflow-y-auto h-[calc(100vh-120px)]">
+              <div className="p-6 space-y-6">
+                {(metadata?.provenance?.length ?? 0) > 0 ? (
+                  metadata?.provenance?.map((item: ProvenanceItem, index: number) => {
+                    const { icon: Icon, className } = getProvenanceIcon(item.action, item.meta);
+                    return (
+                      <div key={item.id} className="relative">
+                        <div className="flex items-start gap-4">
+                          <div className={`flex-shrink-0 w-10 h-10 rounded-full ${getProvenanceColor(item.action)} flex items-center justify-center`}>
+                            <Icon className={`w-5 h-5 ${className}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-slate-900">
+                                {item.action} {item.objectType}
+                              </span>
+                              <Badge variant="outline" className="text-xs">
+                                {item.id}
+                              </Badge>
+                              {item.meta && (
+                                <Badge variant="secondary" className="text-xs">
+                                  v{item.meta.schemaVersion}
+                                </Badge>
+                              )}
+                            </div>
+                            {item.data && (
+                              <div className="mt-2 text-xs text-slate-600 bg-slate-50 rounded-md p-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">Type:</span> {item.data.entityType}
+                                </div>
+                                {Object.entries(item.data.properties).map(([key, value]) => (
+                                  <div key={key} className="flex items-center gap-2">
+                                    <span className="font-medium">{key}:</span> {String(value)}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                              <Clock className="w-3 h-3" />
+                              {formatProvenanceDate(Number(item.timestamp))}
+                              {item.meta && (
+                                <>
+                                  <span className="px-1">•</span>
+                                  <span className="flex items-center gap-1">
+                                    <Database className="w-3 h-3" />
+                                    {item.meta.source}
+                                  </span>
+                                  <span className="px-1">•</span>
+                                  <Badge 
+                                    variant={item.meta.validationStatus === 'valid' ? 'default' : 'destructive'} 
+                                    className="text-[10px] flex items-center gap-1"
+                                  >
+                                    {item.meta.validationStatus === 'valid' ? (
+                                      <CheckCircle className="w-3 h-3" />
+                                    ) : (
+                                      <XCircle className="w-3 h-3" />
+                                    )}
+                                    {item.meta.validationStatus}
+                                  </Badge>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {index !== (metadata?.provenance?.length ?? 0) - 1 && (
+                          <div className="absolute left-5 top-10 bottom-0 w-[1px] bg-slate-200"></div>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-900">{item.description}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {item.type}
-                          </Badge>
-                        </div>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                          <Clock className="w-3 h-3" />
-                          {formatProvenanceDate(item.timestamp)}
-                          <span className="px-1">•</span>
-                          <span>Source: {item.source}</span>
-                        </div>
-                        <div className="mt-2 flex items-center gap-4">
-                          <div className="flex items-center gap-1 text-xs">
-                            <Badge variant="secondary" className="bg-green-50 text-green-700">
-                              +{item.changes.added}
-                            </Badge>
-                            <span className="text-slate-600">added</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs">
-                            <Badge variant="secondary" className="bg-red-50 text-red-700">
-                              -{item.changes.removed}
-                            </Badge>
-                            <span className="text-slate-600">removed</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs">
-                            <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                              ~{item.changes.modified}
-                            </Badge>
-                            <span className="text-slate-600">modified</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Vertical timeline line */}
-                    {item.id !== sampleProvenanceData.length && (
-                      <div className="absolute left-5 top-10 bottom-0 w-[1px] bg-slate-200"></div>
-                    )}
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-slate-500 py-8">
+                    <GitMerge className="w-8 h-8 mx-auto mb-3 text-slate-400" />
+                    No provenance available in this version
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </SheetContent>
@@ -669,266 +1229,35 @@ export default function Neo4jGraphBrowser() {
           </DialogContent>
         </Dialog>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Top Navigation */}
-          <div className="bg-white border-b border-slate-200 px-6 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <span className="text-sm font-medium text-slate-700">Cypher editor</span>
-                <span className="text-sm text-slate-500">Reusable result frame</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Button variant="outline" size="sm" className="border-slate-300 bg-transparent">
-                  Run query
-                </Button>
-                <Button variant="outline" size="sm" className="border-slate-300 bg-transparent">
-                  Full screen editor
-                </Button>
-              </div>
+        {/* Import External Graphs Drawer */}
+        <Sheet open={isImportDrawerOpen} onOpenChange={setIsImportDrawerOpen}>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white flex flex-col p-0">
+            <h1>Import External Graphs</h1>
+          </SheetContent>
+        </Sheet>
+
+        {/* Loading and error states */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-50">
+            <div className="flex flex-col items-center gap-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <p className="text-sm text-slate-600">Loading graph data...</p>
             </div>
           </div>
+        )}
 
-          {/* Query Editor */}
-          <div className="bg-slate-50 border-b border-slate-200 p-6">
-            <div className="flex items-start space-x-3">
-              <span className="text-xs text-slate-500 mt-3 font-mono">neo4j$</span>
-              <div className="flex-1">
-                <Textarea
-                  value={cypherQuery}
-                  onChange={(e) => setCypherQuery(e.target.value)}
-                  className="min-h-[80px] font-mono text-sm border-slate-300 bg-white resize-none"
-                  placeholder="Enter Cypher query..."
-                />
-              </div>
-              <Button onClick={runQuery} size="sm" className="mt-1 bg-blue-600 hover:bg-blue-700">
-                <Play className="w-4 h-4 mr-2" />
-                Run
-              </Button>
-            </div>
-          </div>
+        <ImportGraphDrawer
+          isOpen={isImportDrawerOpen}
+          onClose={() => {
+            setIsImportDrawerOpen(false)
+            setImportResults(null)
+          }}
+          onImport={handleImport}
+          isImporting={isImporting}
+          importResults={importResults}
+          onAddToGraph={handleAddToGraph}
+        />
 
-          {/* Main Content Area */}
-          <div className="flex-1 flex">
-            {/* Graph Visualization */}
-            <div className="flex-1 relative bg-white">
-              <div className="absolute top-4 right-4 z-10">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="border-slate-300 bg-white/80 backdrop-blur-sm">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem onClick={() => setIsFullScreen(!isFullScreen)}>
-                      <Maximize2 className="w-4 h-4 mr-2" />
-                      Full screen result frame
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Download className="w-4 h-4 mr-2" />
-                      Export
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <X className="w-4 h-4 mr-2" />
-                      Collapse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Star className="w-4 h-4 mr-2" />
-                      Save as Favorite
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Pin className="w-4 h-4 mr-2" />
-                      Pin at top
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Rerun a query
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-6 text-slate-800">Result frame views</h3>
-                <svg
-                  ref={svgRef}
-                  width="100%"
-                  height="500"
-                  className="border border-slate-200 rounded-xl bg-slate-50/30"
-                  viewBox="0 0 800 500"
-                />
-              </div>
-            </div>
-
-            {/* Right Panel */}
-            <div className="w-80 bg-slate-50/50 border-l border-slate-200 p-6 space-y-6 overflow-y-auto">
-              {/* Search */}
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <Input
-                      placeholder="Search nodes..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 border-slate-300"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Overview */}
-              <Card className="border-slate-200 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-slate-700">Overview</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-xs font-medium text-slate-500 mb-3">Node labels</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(nodeLabels).map(([label, count]) => (
-                          <Badge
-                            key={label}
-                            variant={filteredNodeTypes.has(label) ? "default" : "secondary"}
-                            className={`cursor-pointer transition-colors ${
-                              filteredNodeTypes.has(label)
-                                ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                            }`}
-                            onClick={() => toggleNodeType(label)}
-                          >
-                            <div
-                              className={`w-2 h-2 rounded-full mr-2 ${
-                                label === "Person" ? "bg-blue-500" : "bg-amber-500"
-                              }`}
-                            />
-                            {label} {count}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-medium text-slate-500 mb-3">Relationship Types</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(relationshipTypes).map(([type, count]) => (
-                          <Badge
-                            key={type}
-                            variant={filteredRelationshipTypes.has(type) ? "default" : "secondary"}
-                            className={`cursor-pointer transition-colors ${
-                              filteredRelationshipTypes.has(type)
-                                ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                            }`}
-                            onClick={() => toggleRelationshipType(type)}
-                          >
-                            {type} {count}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-xs text-slate-500 pt-2 border-t border-slate-200">
-                      Displaying {filteredNodes.length} nodes, {graphData.links.length} relationships.
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Node Properties */}
-              {selectedNode && (
-                <Card className="border-slate-200 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold text-slate-700">Node Properties</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`w-4 h-4 rounded-full ${
-                            selectedNode.type === "Person" ? "bg-blue-500" : "bg-amber-500"
-                          }`}
-                        />
-                        <span className="font-medium text-slate-800">{selectedNode.name}</span>
-                      </div>
-                      <div className="text-xs text-slate-500">Type: {selectedNode.type}</div>
-                      <div className="space-y-2 pt-2 border-t border-slate-200">
-                        {Object.entries(selectedNode.properties).map(([key, value]) => (
-                          <div key={key} className="text-xs">
-                            <span className="font-medium text-slate-600">{key}:</span>{" "}
-                            <span className="text-slate-800">{value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Zoom Controls */}
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start hover:bg-slate-100"
-                      onClick={handleZoomIn}
-                    >
-                      <ZoomIn className="w-4 h-4 mr-2" />
-                      Zoom in
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start hover:bg-slate-100"
-                      onClick={handleZoomOut}
-                    >
-                      <ZoomOut className="w-4 h-4 mr-2" />
-                      Zoom out
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start hover:bg-slate-100"
-                      onClick={handleFitToScreen}
-                    >
-                      <Maximize className="w-4 h-4 mr-2" />
-                      Fit to screen
-                    </Button>
-                  </div>
-                  <div className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200">
-                    Zoom: {Math.round(zoom * 100)}%
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Search Results */}
-              {searchTerm && (
-                <Card className="border-slate-200 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold text-slate-700">Search Results</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {filteredNodes.map((node) => (
-                        <div
-                          key={node.id}
-                          className="flex items-center space-x-3 p-2 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
-                          onClick={() => setSelectedNode(node)}
-                        >
-                          <div
-                            className={`w-3 h-3 rounded-full ${node.type === "Person" ? "bg-blue-500" : "bg-amber-500"}`}
-                          />
-                          <span className="text-xs text-slate-700">{node.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </TooltipProvider>
   )
