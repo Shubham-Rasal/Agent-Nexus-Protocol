@@ -1,6 +1,6 @@
 {
   "name": "@shubhamrasal/groundline",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Groundline GraphDB with IPFS persistence",
   "type": "module",
   "main": "dist/index.js",

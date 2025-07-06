@@ -151,18 +151,16 @@ export class IPFSClient {
       // Convert to Uint8Array for upload
       const data = new TextEncoder().encode(JSON.stringify(serializedSnapshot));
       
-      // Perform preflight check before upload
-      // await this.performPreflightCheck(data.length, true);
-      
-      // Upload to IPFS via Synapse
-      const result = await this.storage.upload(data , {
-        onUploadComplete(commp) {
-          console.log(`✓ Upload complete: ${commp}`);
-          return commp.toString();
-        },
+      // Create a promise that resolves when upload is complete
+      return new Promise((resolve, reject) => {
+        this.storage.upload(data, {
+          onUploadComplete(commp) {
+            console.log(`✓ Upload complete: ${commp}`);
+            resolve(commp.toString());
+            return commp.toString();
+          },
+        }).catch(reject);
       });
-      
-      return result.commp.toString(); // Convert LegacyPieceLink to string
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Failed to upload snapshot: ${message}`);
