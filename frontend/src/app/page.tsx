@@ -54,6 +54,9 @@ export default function Home() {
               <Button variant="outline" size="lg">
                 <Link href="/agents">Explore Agent Directory</Link>
               </Button>
+              <Button variant="outline" size="lg">
+                <Link href="/mcp">Explore MCP Functionality</Link>
+              </Button>
             </div>
           </div>
         </div>
