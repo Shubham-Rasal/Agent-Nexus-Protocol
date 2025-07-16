@@ -2,29 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Settings, Plus, X, Play, ChevronDown, ChevronRight, Trash2, Server, Link, Activity, Monitor, Globe, Upload, RefreshCw } from 'lucide-react';
-
-interface MCPServer {
-  id: string;
-  name: string;
-  type: 'http' | 'local';
-  url?: string;
-  command?: string;
-  args?: string[];
-  env?: Record<string, string>;
-  workingDirectory?: string;
-  status: 'connecting' | 'connected' | 'error';
-  tools: any[];
-  error?: string;
-}
-
-interface ToolCall {
-  serverId: string;
-  toolName: string;
-  arguments: Record<string, any>;
-  result?: any;
-  error?: string;
-  timestamp: number;
-}
+import { MCPServer, ToolCall } from '../../types/mcpTypes';
+import { MCPApiService } from '@/services/mcpApiService';
 
 export default function MCPServerManager() {
   const [servers, setServers] = useState<MCPServer[]>([]);
@@ -47,11 +26,8 @@ export default function MCPServerManager() {
   // Load servers from API
   const loadServers = async () => {
     try {
-      const response = await fetch('/api/mcp?action=list');
-      const data = await response.json();
-      if (data.servers) {
-        setServers(data.servers);
-      }
+      const loadedServers = await MCPApiService.loadServers();
+      setServers(loadedServers);
     } catch (error) {
       console.error('Failed to load servers:', error);
     }
@@ -81,27 +57,20 @@ export default function MCPServerManager() {
     setLoading(prev => ({ ...prev, [server.id]: true }));
     
     try {
-      const response = await fetch('/api/mcp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'connect', server })
-      });
-
-      const data = await response.json();
+      const result = await MCPApiService.connectToServer(server);
       
-      if (data.success) {
+      if (result.success) {
         setServers(prev => prev.map(s =>
-          s.id === server.id ? data.server : s
+          s.id === server.id ? result.server! : s
         ));
       } else {
         setServers(prev => prev.map(s =>
           s.id === server.id
-            ? { ...s, status: 'error', error: data.error }
+            ? { ...s, status: 'error', error: result.error }
             : s
         ));
       }
     } catch (error) {
-      console.error(`Failed to connect to server ${server.name}:`, error);
       setServers(prev => prev.map(s =>
         s.id === server.id
           ? {
@@ -174,10 +143,7 @@ export default function MCPServerManager() {
   // Remove a server
   const removeServer = async (serverId: string) => {
     try {
-      await fetch(`/api/mcp?serverId=${serverId}`, {
-        method: 'DELETE'
-      });
-
+      await MCPApiService.removeServer(serverId);
       setServers(prev => prev.filter(server => server.id !== serverId));
       setToolCalls(prev => prev.filter(call => call.serverId !== serverId));
     } catch (error) {
@@ -221,37 +187,27 @@ export default function MCPServerManager() {
     setLoading(prev => ({ ...prev, toolCall: true }));
 
     try {
-      const response = await fetch('/api/mcp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'callTool',
-          toolCall: {
-            serverId: selectedServer,
-            toolName: selectedTool,
-            arguments: parsedArguments
-          }
-        })
+      const result = await MCPApiService.callTool({
+        serverId: selectedServer,
+        toolName: selectedTool,
+        arguments: parsedArguments
       });
 
-      const data = await response.json();
-
-      if (data.result) {
+      if (result.result) {
         setToolCalls(prev => prev.map(call =>
           call.timestamp === callRecord.timestamp
-            ? { ...call, result: data.result }
+            ? { ...call, result: result.result }
             : call
         ));
       } else {
         setToolCalls(prev => prev.map(call =>
           call.timestamp === callRecord.timestamp
-            ? { ...call, error: data.error || 'Unknown error' }
+            ? { ...call, error: result.error || 'Unknown error' }
             : call
         ));
       }
 
     } catch (error) {
-      console.error('Tool call failed:', error);
       setToolCalls(prev => prev.map(call =>
         call.timestamp === callRecord.timestamp
           ? {
