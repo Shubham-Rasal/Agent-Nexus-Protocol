@@ -2,9 +2,8 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BrainCircuit, Wrench } from 'lucide-react';
+import { BrainCircuit } from 'lucide-react';
 import { Agent } from '@/features/agents/schema';
-import { PRESET_TOOLS } from '@/features/tools/presets';
 
 interface AgentCardProps {
   agent: Agent;
@@ -12,11 +11,6 @@ interface AgentCardProps {
 }
 
 const AgentCard = ({ agent, showTools = false }: AgentCardProps) => {
-  // Get the tool data for display
-  const tools = agent.tools.map(toolId => {
-    return PRESET_TOOLS.find(tool => tool.id === toolId);
-  }).filter(Boolean);
-
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-3">
@@ -40,16 +34,15 @@ const AgentCard = ({ agent, showTools = false }: AgentCardProps) => {
           )}
         </div>
         
-        {showTools && tools.length > 0 && (
+        {showTools && agent.tools.length > 0 && (
           <div className="mt-2 border-t pt-2">
             <div className="text-xs text-gray-500 mb-1">Agent Skills:</div>
             <div className="flex flex-wrap gap-1">
-              {tools.map(tool => tool && (
-                <Badge key={tool.id} variant="outline" className="text-xs flex items-center gap-1">
-                  <Wrench className="h-3 w-3" />
-                  {tool.name}
+              {/* {agent.tools.map(toolId => (
+                <Badge key={toolId} variant="outline" className="text-xs">
+                  {toolId}
                 </Badge>
-              ))}
+              ))} */}
             </div>
           </div>
         )}
