@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Plus, X, ChevronDown, Settings, Trash2, Play, Bot } from 'lucide-react';
+import { Plus, X, ChevronDown, Settings, Trash2, Play, Bot, Server, Check } from 'lucide-react';
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 
@@ -9,6 +9,25 @@ const google = createGoogleGenerativeAI({
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY || 'your-api-key-here',
 });
 
+// Import MCP types
+interface MCPServer {
+  id: string;
+  name: string;
+  type: 'http' | 'local';
+  url?: string;
+  command?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  workingDirectory?: string;
+  status: 'connecting' | 'connected' | 'error' | 'disconnected';
+  tools: Array<{
+    name: string;
+    description?: string;
+    inputSchema?: any;
+  }>;
+  error?: string;
+}
+
 interface AgentData {
   id: string;
   name: string;
@@ -16,7 +35,8 @@ interface AgentData {
   systemPrompt: string;
   tags: string[];
   llmProvider: string;
-  tools: string[];
+  tools: string[]; // Keep for backward compatibility
+  mcpServers: string[]; // New field for MCP server IDs
   createdAt: string;
   lastUsed?: string;
   usageCount: number;
@@ -29,7 +49,11 @@ interface TestResult {
   timestamp: string;
 }
 
-const AIAgentManager: React.FC = () => {
+interface AIAgentManagerProps {
+  mcpServers?: MCPServer[]; // Optional prop to receive MCP servers
+}
+
+const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
@@ -44,7 +68,8 @@ const AIAgentManager: React.FC = () => {
     systemPrompt: '',
     tags: [],
     llmProvider: '',
-    tools: []
+    tools: [],
+    mcpServers: []
   });
 
   const [tagInput, setTagInput] = useState('');
@@ -58,6 +83,9 @@ const AIAgentManager: React.FC = () => {
     { id: 'mistral', name: 'Mistral', model: 'mistral-7b' },
   ];
 
+  // Get connected MCP servers
+  const connectedMCPServers = mcpServers.filter(server => server.status === 'connected');
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -65,7 +93,8 @@ const AIAgentManager: React.FC = () => {
       systemPrompt: '',
       tags: [],
       llmProvider: '',
-      tools: []
+      tools: [],
+      mcpServers: []
     });
     setTagInput('');
     setToolInput('');
@@ -93,7 +122,7 @@ const AIAgentManager: React.FC = () => {
     setTestQuery('');
   };
 
-  const handleInputChange = (field: keyof Omit<AgentData, 'id' | 'createdAt' | 'usageCount'>, value: string) => {
+  const handleInputChange = (field: keyof Omit<AgentData, 'id' | 'createdAt' | 'usageCount'>, value: string | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -117,20 +146,12 @@ const AIAgentManager: React.FC = () => {
     }));
   };
 
-  const addTool = () => {
-    if (toolInput.trim() && !formData.tools.includes(toolInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tools: [...prev.tools, toolInput.trim()]
-      }));
-      setToolInput('');
-    }
-  };
-
-  const removeTool = (toolToRemove: string) => {
+  const toggleMCPServer = (serverId: string) => {
     setFormData(prev => ({
       ...prev,
-      tools: prev.tools.filter(tool => tool !== toolToRemove)
+      mcpServers: prev.mcpServers.includes(serverId)
+        ? prev.mcpServers.filter(id => id !== serverId)
+        : [...prev.mcpServers, serverId]
     }));
   };
 
@@ -160,9 +181,25 @@ const AIAgentManager: React.FC = () => {
       let response = '';
       
       if (selectedAgent.llmProvider === 'google') {
+        // Build system prompt with MCP server context
+        let systemPromptWithTools = selectedAgent.systemPrompt;
+        console.log('System Prompt:', systemPromptWithTools);
+        
+        if (selectedAgent.mcpServers.length > 0) {
+          const availableTools = selectedAgent.mcpServers
+            .map(serverId => mcpServers.find(s => s.id === serverId))
+            .filter(Boolean)
+            .flatMap(server => server!.tools.map(tool => `${server!.name}.${tool.name}: ${tool.description || 'No description'}`));
+          
+          if (availableTools.length > 0) {
+            systemPromptWithTools += `\n\nAvailable MCP Tools:\n${availableTools.join('\n')}`;
+            console.log('Available Tools:', availableTools);
+          }
+        }
+
         const { text } = await generateText({
           model: google("models/gemini-1.5-flash"),
-          prompt: `${selectedAgent.systemPrompt}\n\nUser query: ${testQuery}`,
+          prompt: `${systemPromptWithTools}\n\nUser query: ${testQuery}`,
         });
         response = text;
       } else {
@@ -195,8 +232,9 @@ const AIAgentManager: React.FC = () => {
         timestamp: new Date().toISOString()
       };
       setTestResults(prev => [errorResult, ...prev]);
+    } finally {
+      setIsTestingAgent(false);
     }
-    setIsTestingAgent(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
@@ -217,9 +255,23 @@ const AIAgentManager: React.FC = () => {
     if (!agent) throw new Error('Agent not found');
 
     if (agent.llmProvider === 'google') {
+      // Build system prompt with MCP server context
+      let systemPromptWithTools = agent.systemPrompt;
+      
+      if (agent.mcpServers.length > 0) {
+        const availableTools = agent.mcpServers
+          .map(serverId => mcpServers.find(s => s.id === serverId))
+          .filter(Boolean)
+          .flatMap(server => server!.tools.map(tool => `${server!.name}.${tool.name}: ${tool.description || 'No description'}`));
+        
+        if (availableTools.length > 0) {
+          systemPromptWithTools += `\n\nAvailable MCP Tools:\n${availableTools.join('\n')}`;
+        }
+      }
+
       const { text } = await generateText({
         model: google("models/gemini-1.5-flash"),
-        prompt: `${agent.systemPrompt}\n\nUser query: ${userQuery}`,
+        prompt: `${systemPromptWithTools}\n\nUser query: ${userQuery}`,
       });
       
       // Update usage stats
@@ -252,26 +304,6 @@ const AIAgentManager: React.FC = () => {
             Create Agent
           </button>
         </div>
-
-        {/* Stats */}
-        {agents.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">{agents.length}</div>
-              <div className="text-sm text-gray-500">Total Agents</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-green-600">
-                {agents.reduce((sum, agent) => sum + agent.usageCount, 0)}
-              </div>
-              <div className="text-sm text-gray-500">Total Executions</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-2xl font-bold text-purple-600">{testResults.length}</div>
-              <div className="text-sm text-gray-500">Test Runs</div>
-            </div>
-          </div>
-        )}
 
         {/* Agents Grid */}
         {agents.length === 0 ? (
@@ -309,7 +341,7 @@ const AIAgentManager: React.FC = () => {
 
                 <div className="space-y-3">
                   <div>
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">LLM Provider</span>
+                    <span className="text-xs font-medium text-gray-700 uppercase tracking-wide">LLM Provider</span>
                     <p className="text-sm text-gray-800 mt-1">{agent.llmProvider}</p>
                   </div>
 
@@ -332,9 +364,9 @@ const AIAgentManager: React.FC = () => {
                     <div>
                       <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tags</span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {agent.tags.map(tag => (
+                        {agent.tags.map((tag, index) => (
                           <span
-                            key={tag}
+                            key={`${agent.id}-tag-${index}`}
                             className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
                           >
                             {tag}
@@ -344,13 +376,33 @@ const AIAgentManager: React.FC = () => {
                     </div>
                   )}
 
+                  {agent.mcpServers.length > 0 && (
+                    <div>
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">MCP Servers</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {agent.mcpServers.map((serverId, index) => {
+                          const server = mcpServers.find(s => s.id === serverId);
+                          return server ? (
+                            <span
+                              key={`${agent.id}-server-${index}`}
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
+                            >
+                              <Server className="h-3 w-3" />
+                              {server.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {agent.tools.length > 0 && (
                     <div>
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tools</span>
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Custom Tools</span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {agent.tools.map(tool => (
+                        {agent.tools.map((tool, index) => (
                           <span
-                            key={tool}
+                            key={`${agent.id}-tool-${index}`}
                             className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs"
                           >
                             {tool}
@@ -451,6 +503,73 @@ const AIAgentManager: React.FC = () => {
                   </div>
                 </div>
 
+                {/* MCP Servers Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    MCP Servers ({connectedMCPServers.length} available)
+                  </label>
+                  {connectedMCPServers.length === 0 ? (
+                    <div className="bg-gray-50 rounded-lg p-4 text-center">
+                      <Server className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">No MCP servers connected</p>
+                      <p className="text-xs text-gray-400 mt-1">Connect to MCP servers first to use them in agents</p>
+                    </div>
+                  ) : (
+                    <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
+                      {connectedMCPServers.map(server => (
+                        <div
+                          key={server.id}
+                          className="flex items-center p-3 hover:bg-gray-50 border-b last:border-b-0 cursor-pointer"
+                          onClick={() => toggleMCPServer(server.id)}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <Server className="h-4 w-4 text-gray-400" />
+                                <span className="font-medium text-gray-900">{server.name}</span>
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                  {server.type}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
+                              </p>
+                            </div>
+                            <div className="ml-3">
+                              {formData.mcpServers.includes(server.id) ? (
+                                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <Check className="h-3 w-3 text-white" />
+                                </div>
+                              ) : (
+                                <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {formData.mcpServers.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-500 mb-2">Selected servers:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {formData.mcpServers.map((serverId, index) => {
+                          const server = mcpServers.find(s => s.id === serverId);
+                          return server ? (
+                            <span
+                              key={`selected-server-${index}`}
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
+                            >
+                              <Server className="h-3 w-3" />
+                              {server.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Tags Field */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -477,9 +596,9 @@ const AIAgentManager: React.FC = () => {
                     </div>
                     {formData.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2">
-                        {formData.tags.map(tag => (
+                        {formData.tags.map((tag, index) => (
                           <span
-                            key={tag}
+                            key={`form-tag-${index}`}
                             className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
                           >
                             {tag}
@@ -487,52 +606,6 @@ const AIAgentManager: React.FC = () => {
                               type="button"
                               onClick={() => removeTag(tag)}
                               className="hover:bg-blue-200 rounded-full p-1 transition-colors"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Tools Field */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Available Tools
-                  </label>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={toolInput}
-                        onChange={(e) => setToolInput(e.target.value)}
-                        onKeyPress={(e) => handleKeyPress(e, addTool)}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="e.g., web_search, calculator, file_reader"
-                      />
-                      <button
-                        type="button"
-                        onClick={addTool}
-                        className="px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add
-                      </button>
-                    </div>
-                    {formData.tools.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {formData.tools.map(tool => (
-                          <span
-                            key={tool}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                          >
-                            {tool}
-                            <button
-                              type="button"
-                              onClick={() => removeTool(tool)}
-                              className="hover:bg-green-200 rounded-full p-1 transition-colors"
                             >
                               <X className="h-3 w-3" />
                             </button>
@@ -574,6 +647,25 @@ const AIAgentManager: React.FC = () => {
               <div className="p-6 border-b border-gray-200">
                 <h2 className="text-xl font-bold text-gray-900">Test Agent: {selectedAgent.name}</h2>
                 <p className="text-gray-600 mt-1">{selectedAgent.description}</p>
+                {selectedAgent.mcpServers.length > 0 && (
+                  <div className="mt-2">
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Connected MCP Servers:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedAgent.mcpServers.map((serverId, index) => {
+                        const server = mcpServers.find(s => s.id === serverId);
+                        return server ? (
+                          <span
+                            key={`test-server-${index}`}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
+                          >
+                            <Server className="h-3 w-3" />
+                            {server.name} ({server.tools.length} tools)
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="p-6">
@@ -611,7 +703,7 @@ const AIAgentManager: React.FC = () => {
                     {testResults
                       .filter(result => result.agentId === selectedAgent.id)
                       .map((result, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <div key={`test-result-${selectedAgent.id}-${index}`} className="bg-gray-50 rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <strong className="text-sm text-gray-700">Query:</strong>
                           <span className="text-xs text-gray-500">
