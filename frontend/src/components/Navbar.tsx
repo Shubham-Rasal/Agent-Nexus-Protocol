@@ -29,13 +29,6 @@ export function Navbar() {
                 Chat
               </NavLink>
               <NavLink 
-                href="/tools" 
-                icon={<Wrench className="h-5 w-5" />}
-                isActive={pathname === '/tools'}
-              >
-                Tools
-              </NavLink>
-              <NavLink 
                 href="/agents" 
                 icon={<User className="h-5 w-5" />}
                 isActive={pathname === '/agents'}
