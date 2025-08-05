@@ -234,13 +234,13 @@ export default function MCPServerManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-100">
+    <div className="mt-12 min-h-screen bg-background text-foreground">
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold mb-2 text-foreground">
             {currentView === 'servers' ? 'MCP Server Manager' : 'AI Agent Manager'}
           </h1>
-          <p className="text-gray-600 mb-4">
+          <p className="mb-4 text-muted-foreground">
             {currentView === 'servers' 
               ? 'Manage Model Context Protocol servers and test their tools'
               : 'Create and manage AI agents with MCP server integration'
@@ -251,10 +251,10 @@ export default function MCPServerManager() {
           <div className="flex gap-2">
             <button
               onClick={() => setCurrentView('servers')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
                 currentView === 'servers'
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'border-gray-600 text-gray-600 hover:border-gray-500 hover:text-gray-800'
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'bg-card border-border text-foreground hover:border-border/80'
               }`}
             >
               <Server className="w-4 h-4" />
@@ -262,10 +262,10 @@ export default function MCPServerManager() {
             </button>
             <button
               onClick={() => setCurrentView('agents')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
                 currentView === 'agents'
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'border-gray-600 text-gray-600 hover:border-gray-500 hover:text-gray-800'
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'bg-card border-border text-foreground hover:border-border/80'
               }`}
             >
               <Bot className="w-4 h-4" />
@@ -279,33 +279,35 @@ export default function MCPServerManager() {
             {/* Left Column - Server Configuration */}
             <div className="space-y-6">
               {/* Add Server Section */}
-              <div className="bg-gray-800 rounded-lg p-6">
+              <div className="rounded-lg p-6 shadow-sm bg-card border border-border">
                 <div className="flex items-center gap-2 mb-4">
-                  <Settings className="w-5 h-5 text-gray-400" />
-                  <h2 className="text-lg font-medium">Add New Server</h2>
+                  <Settings className="w-5 h-5 text-muted-foreground" />
+                  <h2 className="text-lg font-medium text-foreground">Add New Server</h2>
                 </div>
 
                 <div className="space-y-4">
                   {/* Server Type Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Server Type</label>
+                    <label className="block text-sm font-medium mb-2 text-foreground">Server Type</label>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setServerType('http')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'http'
-                            ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'border-gray-600 text-gray-400 hover:border-gray-500'
-                          }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                          serverType === 'http'
+                            ? 'bg-primary border-primary text-primary-foreground'
+                            : 'bg-card border-border text-foreground hover:border-border/80'
+                        }`}
                       >
                         <Globe className="w-4 h-4" />
                         HTTP Server
                       </button>
                       <button
                         onClick={() => setServerType('local')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'local'
-                            ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'border-gray-600 text-gray-400 hover:border-gray-500'
-                          }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                          serverType === 'local'
+                            ? 'bg-primary border-primary text-primary-foreground'
+                            : 'bg-card border-border text-foreground hover:border-border/80'
+                        }`}
                       >
                         <Monitor className="w-4 h-4" />
                         Local Server
@@ -317,29 +319,33 @@ export default function MCPServerManager() {
                   {serverType === 'http' && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Server Name</label>
+                        <label className="block text-sm font-medium mb-2 text-foreground">Server Name</label>
                         <input
                           type="text"
                           value={newServerName}
                           onChange={(e) => setNewServerName(e.target.value)}
                           placeholder="Calculator Server"
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-input border border-border text-foreground placeholder:text-muted-foreground"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Connection URL</label>
+                        <label className="block text-sm font-medium mb-2 text-foreground">Connection URL</label>
                         <input
                           type="url"
                           value={newServerUrl}
                           onChange={(e) => setNewServerUrl(e.target.value)}
                           placeholder="https://server.example.com/mcp"
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-input border border-border text-foreground placeholder:text-muted-foreground"
                         />
                       </div>
                       <button
                         onClick={addHttpServer}
                         disabled={!newServerName.trim() || !newServerUrl.trim()}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed ${
+                          (!newServerName.trim() || !newServerUrl.trim())
+                            ? 'bg-muted text-muted-foreground'
+                            : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        }`}
                       >
                         <Plus className="w-4 h-4" />
                         Add HTTP Server
@@ -351,7 +357,7 @@ export default function MCPServerManager() {
                   {serverType === 'local' && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-medium mb-2 text-foreground">
                           MCP Servers JSON Configuration
                         </label>
                         <textarea
@@ -375,16 +381,20 @@ export default function MCPServerManager() {
     }
   }
 }`}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm h-64 resize-y"
+                          className="w-full px-3 py-2 rounded-lg font-mono text-sm h-64 resize-y transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-input border border-border text-foreground placeholder:text-muted-foreground"
                         />
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs mt-1 text-muted-foreground">
                           Paste your complete MCP servers JSON configuration
                         </p>
                       </div>
                       <button
                         onClick={addLocalServersFromJson}
                         disabled={!jsonConfig.trim()}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed ${
+                          !jsonConfig.trim()
+                            ? 'bg-muted text-muted-foreground'
+                            : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        }`}
                       >
                         <Upload className="w-4 h-4" />
                         Add Local Servers
@@ -395,16 +405,16 @@ export default function MCPServerManager() {
               </div>
 
               {/* Server List */}
-              <div className="bg-gray-800 rounded-lg p-6">
+              <div className="rounded-lg p-6 shadow-sm bg-card border border-border">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Server className="w-5 h-5 text-gray-400" />
-                    <h2 className="text-lg font-medium">Connected Servers ({servers.length})</h2>
+                    <Server className="w-5 h-5 text-muted-foreground" />
+                    <h2 className="text-lg font-medium text-foreground">Connected Servers ({servers.length})</h2>
                   </div>
                   <button
                     onClick={refreshServers}
                     disabled={loading.refresh}
-                    className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors"
+                    className="flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg p-2 text-muted-foreground hover:text-foreground"
                   >
                     <RefreshCw className={`w-4 h-4 ${loading.refresh ? 'animate-spin' : ''}`} />
                     Refresh
@@ -412,7 +422,7 @@ export default function MCPServerManager() {
                 </div>
 
                 {servers.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Server className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No servers connected yet. Add one above to get started.</p>
                   </div>

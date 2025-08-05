@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown, GitGraph } from 'lucide-react';
+import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown, GitGraph, Server } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export function Navbar() {
@@ -43,6 +43,13 @@ export function Navbar() {
                 Agents
               </NavLink>
               <NavLink 
+                href="/mcp" 
+                icon={<Server className="h-5 w-5" />}
+                isActive={pathname === '/mcp'}
+              >
+                MCP
+              </NavLink>
+              <NavLink 
                 href="/network" 
                 icon={<Users className="h-5 w-5" />}
                 isActive={pathname === '/network'}
@@ -66,7 +73,7 @@ export function Navbar() {
       
       {/* Mobile navigation */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe">
-        <div className="grid grid-cols-6 h-16">
+        <div className="grid grid-cols-7 h-16">
           <MobileNavLink 
             href="/" 
             icon={<Home className="h-5 w-5" />}
@@ -94,6 +101,13 @@ export function Navbar() {
             isActive={pathname.startsWith('/agents')}
           >
             Agents
+          </MobileNavLink>
+          <MobileNavLink 
+            href="/mcp" 
+            icon={<Server className="h-5 w-5" />}
+            isActive={pathname === '/mcp'}
+          >
+            MCP
           </MobileNavLink>
           <MobileNavLink 
             href="/leadgen" 
