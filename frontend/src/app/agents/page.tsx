@@ -427,7 +427,7 @@ const AIAgentsPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Agent Management System</h1>
           <p className="text-gray-600 mb-6">Create, test, and manage custom AI agents with MCP tool integration</p>
           <button
