@@ -60,10 +60,10 @@ export default function MCPServerManager() {
   // Connect to server via API
   const connectToServer = async (server: MCPServer) => {
     setLoading(prev => ({ ...prev, [server.id]: true }));
-    
+
     try {
       const result = await MCPApiService.connectToServer(server);
-      
+
       if (result.success) {
         setServers(prev => prev.map(s =>
           s.id === server.id ? result.server! : s
@@ -233,6 +233,98 @@ export default function MCPServerManager() {
     setLoading(prev => ({ ...prev, refresh: false }));
   };
 
+  // MCP Tool Call Handler for AI Agents
+  const handleMCPToolCall = async (serverId: string, toolName: string, args: any): Promise<any> => {
+    try {
+      console.log(`Executing MCP tool: ${serverId}.${toolName}`, args);
+
+      // Find the server to ensure it's connected
+      const server = servers.find(s => s.id === serverId);
+      if (!server) {
+        throw new Error(`Server ${serverId} not found`);
+      }
+
+      if (server.status !== 'connected') {
+        throw new Error(`Server ${serverId} is not connected (status: ${server.status})`);
+      }
+
+      // Check if the tool exists on the server
+      const tool = server.tools.find(t => t.name === toolName);
+      if (!tool) {
+        throw new Error(`Tool ${toolName} not found on server ${serverId}`);
+      }
+
+      // Create a tool call record for history tracking
+      const callRecord: ToolCall = {
+        serverId: serverId,
+        toolName: toolName,
+        arguments: args,
+        timestamp: Date.now()
+      };
+
+      // Add to tool calls history
+      setToolCalls(prev => [callRecord, ...prev]);
+
+      // Call the MCP API service
+      const result = await MCPApiService.callTool({
+        serverId: serverId,
+        toolName: toolName,
+        arguments: args
+      });
+
+      if (result.result) {
+        // Update the tool call record with the result
+        setToolCalls(prev => prev.map(call =>
+          call.timestamp === callRecord.timestamp
+            ? { ...call, result: result.result }
+            : call
+        ));
+
+        console.log(`MCP tool result:`, result.result);
+        return result.result;
+      } else {
+        // Update the tool call record with the error
+        const error = result.error || 'Unknown error occurred';
+        setToolCalls(prev => prev.map(call =>
+          call.timestamp === callRecord.timestamp
+            ? { ...call, error: error }
+            : call
+        ));
+
+        // Return error info instead of throwing, so the AI can handle it gracefully
+        return {
+          success: false,
+          error: error,
+          toolName: toolName,
+          serverId: serverId,
+          args: args
+        };
+      }
+
+    } catch (error) {
+      console.error(`Error executing MCP tool ${serverId}.${toolName}:`, error);
+
+      // Update tool calls history with error
+      setToolCalls(prev => prev.map(call =>
+        call.timestamp === (prev[0]?.timestamp || 0)
+          ? {
+            ...call,
+            error: error instanceof Error ? error.message : 'Tool execution failed'
+          }
+          : call
+      ));
+
+      // Return error info instead of throwing, so the AI can handle it gracefully
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Tool execution failed',
+        toolName: toolName,
+        serverId: serverId,
+        args: args
+      };
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 text-gray-100">
       <div className="max-w-7xl mx-auto p-6">
@@ -241,32 +333,30 @@ export default function MCPServerManager() {
             {currentView === 'servers' ? 'MCP Server Manager' : 'AI Agent Manager'}
           </h1>
           <p className="text-gray-600 mb-4">
-            {currentView === 'servers' 
+            {currentView === 'servers'
               ? 'Manage Model Context Protocol servers and test their tools'
               : 'Create and manage AI agents with MCP server integration'
             }
           </p>
-          
+
           {/* View Switcher */}
           <div className="flex gap-2">
             <button
               onClick={() => setCurrentView('servers')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                currentView === 'servers'
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${currentView === 'servers'
                   ? 'bg-blue-600 border-blue-600 text-white'
                   : 'border-gray-600 text-gray-600 hover:border-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               <Server className="w-4 h-4" />
               MCP Servers
             </button>
             <button
               onClick={() => setCurrentView('agents')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                currentView === 'agents'
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${currentView === 'agents'
                   ? 'bg-blue-600 border-blue-600 text-white'
                   : 'border-gray-600 text-gray-600 hover:border-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               <Bot className="w-4 h-4" />
               AI Agents
@@ -293,8 +383,8 @@ export default function MCPServerManager() {
                       <button
                         onClick={() => setServerType('http')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'http'
-                            ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'border-gray-600 text-gray-400 hover:border-gray-500'
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'border-gray-600 text-gray-400 hover:border-gray-500'
                           }`}
                       >
                         <Globe className="w-4 h-4" />
@@ -303,8 +393,8 @@ export default function MCPServerManager() {
                       <button
                         onClick={() => setServerType('local')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'local'
-                            ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'border-gray-600 text-gray-400 hover:border-gray-500'
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'border-gray-600 text-gray-400 hover:border-gray-500'
                           }`}
                       >
                         <Monitor className="w-4 h-4" />
@@ -454,8 +544,11 @@ export default function MCPServerManager() {
             </div>
           </div>
         ) : (
-          // AI Agent Manager with MCP servers passed as props
-          <AIAgentManager mcpServers={servers} />
+          // AI Agent Manager with MCP servers and tool call handler
+          <AIAgentManager
+            mcpServers={servers}
+            onMCPToolCall={handleMCPToolCall}
+          />
         )}
       </div>
     </div>

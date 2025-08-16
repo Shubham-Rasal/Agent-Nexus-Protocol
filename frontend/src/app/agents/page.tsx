@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Plus, X, ChevronDown, Settings, Trash2, Play, Bot, Server, Check } from 'lucide-react';
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText } from "ai";
+import { generateText, tool} from "ai";
+import { z } from "zod";
 
 // Initialize AI providers
 const google = createGoogleGenerativeAI({
@@ -10,6 +11,16 @@ const google = createGoogleGenerativeAI({
 });
 
 // Import MCP types
+interface MCPTool {
+  name: string;
+  description?: string;
+  inputSchema?: {
+    type: string;
+    properties: Record<string, any>;
+    required?: string[];
+  };
+}
+
 interface MCPServer {
   id: string;
   name: string;
@@ -20,11 +31,7 @@ interface MCPServer {
   env?: Record<string, string>;
   workingDirectory?: string;
   status: 'connecting' | 'connected' | 'error' | 'disconnected';
-  tools: Array<{
-    name: string;
-    description?: string;
-    inputSchema?: any;
-  }>;
+  tools: MCPTool[];
   error?: string;
 }
 
@@ -47,13 +54,22 @@ interface TestResult {
   query: string;
   response: string;
   timestamp: string;
+  toolCalls?: Array<{
+    toolName: string;
+    args: any;
+    result: any;
+  }>;
 }
 
 interface AIAgentManagerProps {
   mcpServers?: MCPServer[]; // Optional prop to receive MCP servers
+  onMCPToolCall?: (serverId: string, toolName: string, args: any) => Promise<any>; // Callback for MCP tool execution
 }
 
-const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
+const AIAgentManager: React.FC<AIAgentManagerProps> = ({ 
+  mcpServers = [], 
+  onMCPToolCall 
+}) => {
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
@@ -85,6 +101,97 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
 
   // Get connected MCP servers
   const connectedMCPServers = mcpServers.filter(server => server.status === 'connected');
+
+  // Convert MCP tool schema to Zod schema
+  const convertMCPSchemaToZod = (schema: any): z.ZodType<any> => {
+    if (!schema || !schema.properties) {
+      return z.object({});
+    }
+
+    const zodObject: Record<string, z.ZodType<any>> = {};
+
+    Object.entries(schema.properties).forEach(([key, prop]: [string, any]) => {
+      switch (prop.type) {
+        case 'string':
+          zodObject[key] = z.string().describe(prop.description || '');
+          break;
+        case 'number':
+          zodObject[key] = z.number().describe(prop.description || '');
+          break;
+        case 'boolean':
+          zodObject[key] = z.boolean().describe(prop.description || '');
+          break;
+        case 'array':
+          zodObject[key] = z.array(z.any()).describe(prop.description || '');
+          break;
+        case 'object':
+          zodObject[key] = z.object({}).describe(prop.description || '');
+          break;
+        default:
+          zodObject[key] = z.any().describe(prop.description || '');
+      }
+
+      // Make optional if not in required array
+      if (!schema.required?.includes(key)) {
+        zodObject[key] = zodObject[key].optional();
+      }
+    });
+
+    return z.object(zodObject);
+  };
+
+  // Create AI SDK tools from MCP servers
+  const createToolsFromMCPServers = (serverIds: string[]) => {
+    const tools: Record<string, any> = {};
+
+    serverIds.forEach(serverId => {
+      const server = mcpServers.find(s => s.id === serverId);
+      if (!server || server.status !== 'connected') return;
+
+      server.tools.forEach(mcpTool => {
+        const toolKey = `${server.name}_${mcpTool.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        
+        tools[toolKey] = tool({
+          description: mcpTool.description || `Tool from ${server.name}`,
+          parameters: mcpTool.inputSchema 
+            ? convertMCPSchemaToZod(mcpTool.inputSchema)
+            : z.object({}),
+          execute: async (args) => {
+            console.log(`Attempting to execute MCP tool: ${server.name}.${mcpTool.name}`, args);
+            console.log(`onMCPToolCall handler provided:`, !!onMCPToolCall);
+            
+            if (onMCPToolCall) {
+              try {
+                console.log(`Calling MCP tool: ${serverId} -> ${mcpTool.name}`);
+                const result = await onMCPToolCall(serverId, mcpTool.name, args);
+                console.log(`MCP tool result:`, result);
+                return result;
+              } catch (error) {
+                console.error(`Error executing MCP tool ${mcpTool.name}:`, error);
+                return {
+                  success: false,
+                  error: `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                  toolName: mcpTool.name,
+                  serverId: serverId,
+                  args: args
+                };
+              }
+            } else {
+              // Fallback: Mock execution for testing when no handler is provided
+              console.warn(`MCP tool execution handler not provided for ${mcpTool.name}. Using mock response.`);
+              return {
+                success: false,
+                error: 'MCP tool execution handler not configured',
+                mockResponse: `This would execute ${mcpTool.name} with args: ${JSON.stringify(args)}`
+              };
+            }
+          }
+        });
+      });
+    });
+
+    return tools;
+  };
 
   const resetForm = () => {
     setFormData({
@@ -175,33 +282,44 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
     if (!selectedAgent || !testQuery.trim()) return;
     
     setIsTestingAgent(true);
+    const toolCalls: Array<{ toolName: string; args: any; result: any }> = [];
+    
     try {
-      // For now, only Google Gemini is implemented
-      // You can extend this to support other providers
       let response = '';
       
       if (selectedAgent.llmProvider === 'google') {
-        // Build system prompt with MCP server context
-        let systemPromptWithTools = selectedAgent.systemPrompt;
-        console.log('System Prompt:', systemPromptWithTools);
+        // Create tools from MCP servers
+        const tools = createToolsFromMCPServers(selectedAgent.mcpServers);
         
-        if (selectedAgent.mcpServers.length > 0) {
-          const availableTools = selectedAgent.mcpServers
-            .map(serverId => mcpServers.find(s => s.id === serverId))
-            .filter(Boolean)
-            .flatMap(server => server!.tools.map(tool => `${server!.name}.${tool.name}: ${tool.description || 'No description'}`));
-          
-          if (availableTools.length > 0) {
-            systemPromptWithTools += `\n\nAvailable MCP Tools:\n${availableTools.join('\n')}`;
-            console.log('Available Tools:', availableTools);
-          }
-        }
+        console.log('Available tools:', Object.keys(tools));
+        console.log('System Prompt:', selectedAgent.systemPrompt);
 
-        const { text } = await generateText({
+        const result = await generateText({
           model: google("models/gemini-1.5-flash"),
-          prompt: `${systemPromptWithTools}\n\nUser query: ${testQuery}`,
+          system: selectedAgent.systemPrompt,
+          prompt: testQuery,
+          tools: tools,
+          // maxToolRoundtrips: 5, // Allow multiple tool calls
+          // stopWhen: stepCountIs(10), // Stop after 10 steps to prevent infinite loops
         });
-        response = text;
+
+        response = result.text;
+
+        // Extract tool calls and results from steps
+        if (result.steps) {
+          result.steps.forEach((step: any) => {
+            if (step.toolCalls && step.toolResults) {
+              step.toolCalls.forEach((toolCall: any, index: number) => {
+                const toolResult = step.toolResults[index];
+                toolCalls.push({
+                  toolName: toolCall.toolName,
+                  args: toolCall.args,
+                  result: toolResult?.result || toolResult
+                });
+              });
+            }
+          });
+        }
       } else {
         response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
       }
@@ -210,7 +328,8 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
         agentId: selectedAgent.id,
         query: testQuery,
         response,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        toolCalls: toolCalls.length > 0 ? toolCalls : undefined
       };
 
       setTestResults(prev => [testResult, ...prev]);
@@ -249,43 +368,56 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
     setTestResults(prev => prev.filter(result => result.agentId !== agentId));
   };
 
-  // Function to execute an agent (this would be called by your chatbot)
-  const executeAgent = async (agentId: string, userQuery: string): Promise<string> => {
-    const agent = agents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
+  // // Function to execute an agent (this would be called by your chatbot)
+  // const executeAgent = async (agentId: string, userQuery: string): Promise<{ text: string; toolCalls?: any[] }> => {
+  //   const agent = agents.find(a => a.id === agentId);
+  //   if (!agent) throw new Error('Agent not found');
 
-    if (agent.llmProvider === 'google') {
-      // Build system prompt with MCP server context
-      let systemPromptWithTools = agent.systemPrompt;
-      
-      if (agent.mcpServers.length > 0) {
-        const availableTools = agent.mcpServers
-          .map(serverId => mcpServers.find(s => s.id === serverId))
-          .filter(Boolean)
-          .flatMap(server => server!.tools.map(tool => `${server!.name}.${tool.name}: ${tool.description || 'No description'}`));
-        
-        if (availableTools.length > 0) {
-          systemPromptWithTools += `\n\nAvailable MCP Tools:\n${availableTools.join('\n')}`;
-        }
-      }
+  //   if (agent.llmProvider === 'google') {
+  //     // Create tools from MCP servers
+  //     const tools = createToolsFromMCPServers(agent.mcpServers);
+  //     const toolCalls: any[] = [];
 
-      const { text } = await generateText({
-        model: google("models/gemini-1.5-flash"),
-        prompt: `${systemPromptWithTools}\n\nUser query: ${userQuery}`,
-      });
+  //     const result = await generateText({
+  //       model: google("models/gemini-1.5-flash"),
+  //       system: agent.systemPrompt,
+  //       prompt: userQuery,
+  //       tools: tools,
+  //       maxToolRoundtrips: 5,
+  //       stopWhen: stepCountIs(10), // Stop after 10 steps to prevent infinite loops
+  //     });
       
-      // Update usage stats
-      setAgents(prev => prev.map(a => 
-        a.id === agentId 
-          ? { ...a, usageCount: a.usageCount + 1, lastUsed: new Date().toISOString() }
-          : a
-      ));
+  //     // Extract tool calls and results from steps
+  //     if (result.steps) {
+  //       result.steps.forEach((step: any) => {
+  //         if (step.toolCalls && step.toolResults) {
+  //           step.toolCalls.forEach((toolCall: any, index: number) => {
+  //             const toolResult = step.toolResults[index];
+  //             toolCalls.push({
+  //               toolName: toolCall.toolName,
+  //               args: toolCall.args,
+  //               result: toolResult?.result || toolResult
+  //             });
+  //           });
+  //         }
+  //       });
+  //     }
       
-      return text;
-    }
+  //     // Update usage stats
+  //     setAgents(prev => prev.map(a => 
+  //       a.id === agentId 
+  //         ? { ...a, usageCount: a.usageCount + 1, lastUsed: new Date().toISOString() }
+  //         : a
+  //     ));
+      
+  //     return { 
+  //       text: result.text, 
+  //       toolCalls: toolCalls.length > 0 ? toolCalls : undefined 
+  //     };
+  //   }
     
-    throw new Error(`Provider ${agent.llmProvider} not implemented`);
-  };
+  //   throw new Error(`Provider ${agent.llmProvider} not implemented`);
+  // };
 
   const isFormValid = formData.name && formData.description && formData.systemPrompt && formData.llmProvider;
 
@@ -295,7 +427,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Agent Management System</h1>
-          <p className="text-gray-600 mb-6">Create, test, and manage custom AI agents for your chatbot</p>
+          <p className="text-gray-600 mb-6">Create, test, and manage custom AI agents with MCP tool integration</p>
           <button
             onClick={openModal}
             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
@@ -388,7 +520,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                               className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
                             >
                               <Server className="h-3 w-3" />
-                              {server.name}
+                              {server.name} ({server.tools.length})
                             </span>
                           ) : null;
                         })}
@@ -450,7 +582,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="e.g., Code Assistant, Content Writer, Data Analyst"
                   />
                 </div>
@@ -464,7 +596,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     type="text"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Brief description of what this agent does"
                   />
                 </div>
@@ -478,7 +610,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     rows={4}
                     value={formData.systemPrompt}
                     onChange={(e) => handleInputChange('systemPrompt', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-vertical"
+                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-vertical"
                     placeholder="Define the agent's behavior, personality, and capabilities..."
                   />
                 </div>
@@ -492,7 +624,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     <select
                       value={formData.llmProvider}
                       onChange={(e) => handleInputChange('llmProvider', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white"
                     >
                       <option value="">Select a provider...</option>
                       {llmProviders.map(provider => (
@@ -534,6 +666,9 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                               <p className="text-sm text-gray-500 mt-1">
                                 {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
                               </p>
+                              <div className="text-xs text-gray-400 mt-1">
+                                Tools: {server.tools.map(t => t.name).join(', ')}
+                              </div>
                             </div>
                             <div className="ml-3">
                               {formData.mcpServers.includes(server.id) ? (
@@ -561,7 +696,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                               className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
                             >
                               <Server className="h-3 w-3" />
-                              {server.name}
+                              {server.name} ({server.tools.length} tools)
                             </span>
                           ) : null;
                         })}
@@ -582,7 +717,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyPress={(e) => handleKeyPress(e, addTag)}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         placeholder="e.g., coding, writing, analysis"
                       />
                       <button
@@ -664,6 +799,15 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                         ) : null;
                       })}
                     </div>
+                    <div className="mt-2">
+                      <span className="text-xs font-medium text-gray-500">Available Tools:</span>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {selectedAgent.mcpServers.flatMap(serverId => {
+                          const server = mcpServers.find(s => s.id === serverId);
+                          return server ? server.tools.map(tool => `${server.name}.${tool.name}${tool.description ? ` - ${tool.description}` : ''}`) : [];
+                        }).join(' • ')}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -711,6 +855,27 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                           </span>
                         </div>
                         <p className="text-sm text-gray-800 mb-3">{result.query}</p>
+                        
+                        {/* Show tool calls if any */}
+                        {result.toolCalls && result.toolCalls.length > 0 && (
+                          <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+                            <strong className="text-sm text-blue-700">Tool Calls:</strong>
+                            {result.toolCalls.map((toolCall, toolIndex) => (
+                              <div key={toolIndex} className="mt-2 p-2 bg-white rounded border-l-4 border-blue-300">
+                                <div className="text-sm font-medium text-blue-800">
+                                  🔧 {toolCall.toolName}
+                                </div>
+                                <div className="text-xs text-gray-600 mt-1">
+                                  <strong>Args:</strong> {JSON.stringify(toolCall.args, null, 2)}
+                                </div>
+                                <div className="text-xs text-gray-600 mt-1">
+                                  <strong>Result:</strong> {JSON.stringify(toolCall.result, null, 2)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
                         <strong className="text-sm text-gray-700">Response:</strong>
                         <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{result.response}</p>
                       </div>
