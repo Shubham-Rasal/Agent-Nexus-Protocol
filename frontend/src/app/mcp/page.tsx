@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Settings, Plus, Server, Upload, RefreshCw, Globe, Monitor, Bot } from 'lucide-react';
+import { Settings, Plus, Server, Upload, RefreshCw, Globe, Monitor } from 'lucide-react';
 import { MCPServer, ToolCall } from '../../types/mcpTypes';
 import { MCPApiService } from '../../services/mcpApiService';
 import ServerComponent from './ServerComponent';
 import ToolTestingComponent from './ToolTestingComponent';
 import ToolHistoryComponent from './ToolHistoryComponent';
-import AIAgentManager from '../agents/page';
 
 export default function MCPServerManager() {
   const [servers, setServers] = useState<MCPServer[]>([]);
@@ -21,7 +20,6 @@ export default function MCPServerManager() {
   const [toolArguments, setToolArguments] = useState<string>('{}');
   const [expandedServers, setExpandedServers] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-  const [currentView, setCurrentView] = useState<'servers' | 'agents'>('servers');
 
   // Load servers on mount
   useEffect(() => {
@@ -233,221 +231,101 @@ export default function MCPServerManager() {
     setLoading(prev => ({ ...prev, refresh: false }));
   };
 
-  // MCP Tool Call Handler for AI Agents
-  const handleMCPToolCall = async (serverId: string, toolName: string, args: any): Promise<any> => {
-    try {
-      console.log(`Executing MCP tool: ${serverId}.${toolName}`, args);
-
-      // Find the server to ensure it's connected
-      const server = servers.find(s => s.id === serverId);
-      if (!server) {
-        throw new Error(`Server ${serverId} not found`);
-      }
-
-      if (server.status !== 'connected') {
-        throw new Error(`Server ${serverId} is not connected (status: ${server.status})`);
-      }
-
-      // Check if the tool exists on the server
-      const tool = server.tools.find(t => t.name === toolName);
-      if (!tool) {
-        throw new Error(`Tool ${toolName} not found on server ${serverId}`);
-      }
-
-      // Create a tool call record for history tracking
-      const callRecord: ToolCall = {
-        serverId: serverId,
-        toolName: toolName,
-        arguments: args,
-        timestamp: Date.now()
-      };
-
-      // Add to tool calls history
-      setToolCalls(prev => [callRecord, ...prev]);
-
-      // Call the MCP API service
-      const result = await MCPApiService.callTool({
-        serverId: serverId,
-        toolName: toolName,
-        arguments: args
-      });
-
-      if (result.result) {
-        // Update the tool call record with the result
-        setToolCalls(prev => prev.map(call =>
-          call.timestamp === callRecord.timestamp
-            ? { ...call, result: result.result }
-            : call
-        ));
-
-        console.log(`MCP tool result:`, result.result);
-        return result.result;
-      } else {
-        // Update the tool call record with the error
-        const error = result.error || 'Unknown error occurred';
-        setToolCalls(prev => prev.map(call =>
-          call.timestamp === callRecord.timestamp
-            ? { ...call, error: error }
-            : call
-        ));
-
-        // Return error info instead of throwing, so the AI can handle it gracefully
-        return {
-          success: false,
-          error: error,
-          toolName: toolName,
-          serverId: serverId,
-          args: args
-        };
-      }
-
-    } catch (error) {
-      console.error(`Error executing MCP tool ${serverId}.${toolName}:`, error);
-
-      // Update tool calls history with error
-      setToolCalls(prev => prev.map(call =>
-        call.timestamp === (prev[0]?.timestamp || 0)
-          ? {
-            ...call,
-            error: error instanceof Error ? error.message : 'Tool execution failed'
-          }
-          : call
-      ));
-
-      // Return error info instead of throwing, so the AI can handle it gracefully
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Tool execution failed',
-        toolName: toolName,
-        serverId: serverId,
-        args: args
-      };
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-100">
+    <div className="min-h-screen bg-white text-gray-900">
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {currentView === 'servers' ? 'MCP Server Manager' : 'AI Agent Manager'}
+            MCP Server Manager
           </h1>
           <p className="text-gray-600 mb-4">
-            {currentView === 'servers'
-              ? 'Manage Model Context Protocol servers and test their tools'
-              : 'Create and manage AI agents with MCP server integration'
-            }
+            Manage Model Context Protocol servers and test their tools
           </p>
-
-          {/* View Switcher */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentView('servers')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${currentView === 'servers'
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'border-gray-600 text-gray-600 hover:border-gray-500 hover:text-gray-800'
-                }`}
-            >
-              <Server className="w-4 h-4" />
-              MCP Servers
-            </button>
-            <button
-              onClick={() => setCurrentView('agents')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${currentView === 'agents'
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'border-gray-600 text-gray-600 hover:border-gray-500 hover:text-gray-800'
-                }`}
-            >
-              <Bot className="w-4 h-4" />
-              AI Agents
-            </button>
-          </div>
         </div>
 
-        {currentView === 'servers' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - Server Configuration */}
-            <div className="space-y-6">
-              {/* Add Server Section */}
-              <div className="bg-gray-800 rounded-lg p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Settings className="w-5 h-5 text-gray-400" />
-                  <h2 className="text-lg font-medium">Add New Server</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Server Configuration */}
+          <div className="space-y-6">
+            {/* Add Server Section */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <Settings className="w-5 h-5 text-gray-500" />
+                <h2 className="text-lg font-medium text-gray-900">Add New Server</h2>
+              </div>
+
+              <div className="space-y-4">
+                {/* Server Type Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Server Type</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setServerType('http')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'http'
+                        ? 'bg-blue-500 border-blue-500 text-white'
+                        : 'border-gray-300 text-gray-500 hover:border-gray-400'
+                        }`}
+                    >
+                      <Globe className="w-4 h-4" />
+                      HTTP Server
+                    </button>
+                    <button
+                      onClick={() => setServerType('local')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'local'
+                        ? 'bg-blue-500 border-blue-500 text-white'
+                        : 'border-gray-300 text-gray-500 hover:border-gray-400'
+                        }`}
+                    >
+                      <Monitor className="w-4 h-4" />
+                      Local Server
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Server Type Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Server Type</label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setServerType('http')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'http'
-                          ? 'bg-blue-600 border-blue-600 text-white'
-                          : 'border-gray-600 text-gray-400 hover:border-gray-500'
-                          }`}
-                      >
-                        <Globe className="w-4 h-4" />
-                        HTTP Server
-                      </button>
-                      <button
-                        onClick={() => setServerType('local')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${serverType === 'local'
-                          ? 'bg-blue-600 border-blue-600 text-white'
-                          : 'border-gray-600 text-gray-400 hover:border-gray-500'
-                          }`}
-                      >
-                        <Monitor className="w-4 h-4" />
-                        Local Server
-                      </button>
+                {/* HTTP Server Configuration */}
+                {serverType === 'http' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Server Name</label>
+                      <input
+                        type="text"
+                        value={newServerName}
+                        onChange={(e) => setNewServerName(e.target.value)}
+                        placeholder="Calculator Server"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
                     </div>
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Connection URL</label>
+                      <input
+                        type="url"
+                        value={newServerUrl}
+                        onChange={(e) => setNewServerUrl(e.target.value)}
+                        placeholder="https://server.example.com/mcp"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <button
+                      onClick={addHttpServer}
+                      disabled={!newServerName.trim() || !newServerUrl.trim()}
+                      className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-200 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add HTTP Server
+                    </button>
+                  </>
+                )}
 
-                  {/* HTTP Server Configuration */}
-                  {serverType === 'http' && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Server Name</label>
-                        <input
-                          type="text"
-                          value={newServerName}
-                          onChange={(e) => setNewServerName(e.target.value)}
-                          placeholder="Calculator Server"
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Connection URL</label>
-                        <input
-                          type="url"
-                          value={newServerUrl}
-                          onChange={(e) => setNewServerUrl(e.target.value)}
-                          placeholder="https://server.example.com/mcp"
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <button
-                        onClick={addHttpServer}
-                        disabled={!newServerName.trim() || !newServerUrl.trim()}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add HTTP Server
-                      </button>
-                    </>
-                  )}
-
-                  {/* Local Server Configuration */}
-                  {serverType === 'local' && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          MCP Servers JSON Configuration
-                        </label>
-                        <textarea
-                          value={jsonConfig}
-                          onChange={(e) => setJsonConfig(e.target.value)}
-                          placeholder={`{
+                {/* Local Server Configuration */}
+                {serverType === 'local' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        MCP Servers JSON Configuration
+                      </label>
+                      <textarea
+                        value={jsonConfig}
+                        onChange={(e) => setJsonConfig(e.target.value)}
+                        placeholder={`{
   "mcpServers": {
     "filesystem": {
       "command": "npx",
@@ -465,91 +343,84 @@ export default function MCPServerManager() {
     }
   }
 }`}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm h-64 resize-y"
-                        />
-                        <p className="text-xs text-gray-400 mt-1">
-                          Paste your complete MCP servers JSON configuration
-                        </p>
-                      </div>
-                      <button
-                        onClick={addLocalServersFromJson}
-                        disabled={!jsonConfig.trim()}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <Upload className="w-4 h-4" />
-                        Add Local Servers
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Server List */}
-              <div className="bg-gray-800 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Server className="w-5 h-5 text-gray-400" />
-                    <h2 className="text-lg font-medium">Connected Servers ({servers.length})</h2>
-                  </div>
-                  <button
-                    onClick={refreshServers}
-                    disabled={loading.refresh}
-                    className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loading.refresh ? 'animate-spin' : ''}`} />
-                    Refresh
-                  </button>
-                </div>
-
-                {servers.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <Server className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No servers connected yet. Add one above to get started.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {servers.map((server) => (
-                      <ServerComponent
-                        key={server.id}
-                        server={server}
-                        isExpanded={expandedServers.has(server.id)}
-                        isLoading={loading[server.id] || false}
-                        onToggleExpansion={toggleServerExpansion}
-                        onRemove={removeServer}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm h-64 resize-y"
                       />
-                    ))}
-                  </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Paste your complete MCP servers JSON configuration
+                      </p>
+                    </div>
+                    <button
+                      onClick={addLocalServersFromJson}
+                      disabled={!jsonConfig.trim()}
+                      className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-200 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Add Local Servers
+                    </button>
+                  </>
                 )}
               </div>
             </div>
 
-            {/* Right Column - Tool Testing and History */}
-            <div className="space-y-6">
-              <ToolTestingComponent
-                servers={servers}
-                selectedServer={selectedServer}
-                selectedTool={selectedTool}
-                toolArguments={toolArguments}
-                isLoading={loading.toolCall || false}
-                onServerChange={setSelectedServer}
-                onToolChange={setSelectedTool}
-                onArgumentsChange={setToolArguments}
-                onRunTool={testTool}
-              />
+            {/* Server List */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Server className="w-5 h-5 text-gray-500" />
+                  <h2 className="text-lg font-medium text-gray-900">Connected Servers ({servers.length})</h2>
+                </div>
+                <button
+                  onClick={refreshServers}
+                  disabled={loading.refresh}
+                  className="flex items-center gap-2 text-blue-500 hover:text-blue-700 transition-colors disabled:text-gray-400"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading.refresh ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
+              </div>
 
-              <ToolHistoryComponent
-                toolCalls={toolCalls}
-                servers={servers}
-              />
+              {servers.length === 0 ? (
+                <div className="text-center py-8 text-gray-100">
+                  <Server className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                  <p className="text-gray-500">No servers connected yet. Add one above to get started.</p>
+                </div>
+              ) : (
+                <div className="space-y-3 bg-white">
+                  {servers.map((server) => (
+                    <ServerComponent
+                      key={server.id}
+                      server={server}
+                      isExpanded={expandedServers.has(server.id)}
+                      isLoading={loading[server.id] || false}
+                      onToggleExpansion={toggleServerExpansion}
+                      onRemove={removeServer}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        ) : (
-          // AI Agent Manager with MCP servers and tool call handler
-          <AIAgentManager
-            mcpServers={servers}
-            onMCPToolCall={handleMCPToolCall}
-          />
-        )}
+
+          {/* Right Column - Tool Testing and History */}
+          <div className="space-y-6 bg-white">
+            <ToolTestingComponent
+              servers={servers}
+              selectedServer={selectedServer}
+              selectedTool={selectedTool}
+              toolArguments={toolArguments}
+              isLoading={loading.toolCall || false}
+              onServerChange={setSelectedServer}
+              onToolChange={setSelectedTool}
+              onArgumentsChange={setToolArguments}
+              onRunTool={testTool}
+            />
+
+            <ToolHistoryComponent
+              toolCalls={toolCalls}
+              servers={servers}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

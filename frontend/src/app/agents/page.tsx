@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X, ChevronDown, Settings, Trash2, Play, Bot, Server, Check } from 'lucide-react';
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText, tool} from "ai";
 import { z } from "zod";
+import { MCPApiService } from '../../services/mcpApiService';
 
 // Initialize AI providers
 const google = createGoogleGenerativeAI({
@@ -61,16 +62,9 @@ interface TestResult {
   }>;
 }
 
-interface AIAgentManagerProps {
-  mcpServers?: MCPServer[]; // Optional prop to receive MCP servers
-  onMCPToolCall?: (serverId: string, toolName: string, args: any) => Promise<any>; // Callback for MCP tool execution
-}
-
-const AIAgentManager: React.FC<AIAgentManagerProps> = ({ 
-  mcpServers = [], 
-  onMCPToolCall 
-}) => {
+const AIAgentsPage: React.FC = () => {
   const [agents, setAgents] = useState<AgentData[]>([]);
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
@@ -99,8 +93,80 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({
     { id: 'mistral', name: 'Mistral', model: 'mistral-7b' },
   ];
 
+  // Load MCP servers on component mount
+  useEffect(() => {
+    loadMCPServers();
+  }, []);
+
+  // Load MCP servers from API
+  const loadMCPServers = async () => {
+    try {
+      const loadedServers = await MCPApiService.loadServers();
+      setMcpServers(loadedServers);
+    } catch (error) {
+      console.error('Failed to load MCP servers:', error);
+    }
+  };
+
   // Get connected MCP servers
   const connectedMCPServers = mcpServers.filter(server => server.status === 'connected');
+
+  // MCP Tool Call Handler
+  const handleMCPToolCall = async (serverId: string, toolName: string, args: any): Promise<any> => {
+    try {
+      console.log(`Executing MCP tool: ${serverId}.${toolName}`, args);
+
+      // Find the server to ensure it's connected
+      const server = mcpServers.find(s => s.id === serverId);
+      if (!server) {
+        throw new Error(`Server ${serverId} not found`);
+      }
+
+      if (server.status !== 'connected') {
+        throw new Error(`Server ${serverId} is not connected (status: ${server.status})`);
+      }
+
+      // Check if the tool exists on the server
+      const tool = server.tools.find(t => t.name === toolName);
+      if (!tool) {
+        throw new Error(`Tool ${toolName} not found on server ${serverId}`);
+      }
+
+      // Call the MCP API service
+      const result = await MCPApiService.callTool({
+        serverId: serverId,
+        toolName: toolName,
+        arguments: args
+      });
+
+      if (result.result) {
+        console.log(`MCP tool result:`, result.result);
+        return result.result;
+      } else {
+        // Return error info instead of throwing, so the AI can handle it gracefully
+        const error = result.error || 'Unknown error occurred';
+        return {
+          success: false,
+          error: error,
+          toolName: toolName,
+          serverId: serverId,
+          args: args
+        };
+      }
+
+    } catch (error) {
+      console.error(`Error executing MCP tool ${serverId}.${toolName}:`, error);
+
+      // Return error info instead of throwing, so the AI can handle it gracefully
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Tool execution failed',
+        toolName: toolName,
+        serverId: serverId,
+        args: args
+      };
+    }
+  };
 
   // Convert MCP tool schema to Zod schema
   const convertMCPSchemaToZod = (schema: any): z.ZodType<any> => {
@@ -158,31 +224,20 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({
             : z.object({}),
           execute: async (args) => {
             console.log(`Attempting to execute MCP tool: ${server.name}.${mcpTool.name}`, args);
-            console.log(`onMCPToolCall handler provided:`, !!onMCPToolCall);
             
-            if (onMCPToolCall) {
-              try {
-                console.log(`Calling MCP tool: ${serverId} -> ${mcpTool.name}`);
-                const result = await onMCPToolCall(serverId, mcpTool.name, args);
-                console.log(`MCP tool result:`, result);
-                return result;
-              } catch (error) {
-                console.error(`Error executing MCP tool ${mcpTool.name}:`, error);
-                return {
-                  success: false,
-                  error: `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                  toolName: mcpTool.name,
-                  serverId: serverId,
-                  args: args
-                };
-              }
-            } else {
-              // Fallback: Mock execution for testing when no handler is provided
-              console.warn(`MCP tool execution handler not provided for ${mcpTool.name}. Using mock response.`);
+            try {
+              console.log(`Calling MCP tool: ${serverId} -> ${mcpTool.name}`);
+              const result = await handleMCPToolCall(serverId, mcpTool.name, args);
+              console.log(`MCP tool result:`, result);
+              return result;
+            } catch (error) {
+              console.error(`Error executing MCP tool ${mcpTool.name}:`, error);
               return {
                 success: false,
-                error: 'MCP tool execution handler not configured',
-                mockResponse: `This would execute ${mcpTool.name} with args: ${JSON.stringify(args)}`
+                error: `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                toolName: mcpTool.name,
+                serverId: serverId,
+                args: args
               };
             }
           }
@@ -299,8 +354,6 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({
           system: selectedAgent.systemPrompt,
           prompt: testQuery,
           tools: tools,
-          // maxToolRoundtrips: 5, // Allow multiple tool calls
-          // stopWhen: stepCountIs(10), // Stop after 10 steps to prevent infinite loops
         });
 
         response = result.text;
@@ -368,61 +421,10 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({
     setTestResults(prev => prev.filter(result => result.agentId !== agentId));
   };
 
-  // // Function to execute an agent (this would be called by your chatbot)
-  // const executeAgent = async (agentId: string, userQuery: string): Promise<{ text: string; toolCalls?: any[] }> => {
-  //   const agent = agents.find(a => a.id === agentId);
-  //   if (!agent) throw new Error('Agent not found');
-
-  //   if (agent.llmProvider === 'google') {
-  //     // Create tools from MCP servers
-  //     const tools = createToolsFromMCPServers(agent.mcpServers);
-  //     const toolCalls: any[] = [];
-
-  //     const result = await generateText({
-  //       model: google("models/gemini-1.5-flash"),
-  //       system: agent.systemPrompt,
-  //       prompt: userQuery,
-  //       tools: tools,
-  //       maxToolRoundtrips: 5,
-  //       stopWhen: stepCountIs(10), // Stop after 10 steps to prevent infinite loops
-  //     });
-      
-  //     // Extract tool calls and results from steps
-  //     if (result.steps) {
-  //       result.steps.forEach((step: any) => {
-  //         if (step.toolCalls && step.toolResults) {
-  //           step.toolCalls.forEach((toolCall: any, index: number) => {
-  //             const toolResult = step.toolResults[index];
-  //             toolCalls.push({
-  //               toolName: toolCall.toolName,
-  //               args: toolCall.args,
-  //               result: toolResult?.result || toolResult
-  //             });
-  //           });
-  //         }
-  //       });
-  //     }
-      
-  //     // Update usage stats
-  //     setAgents(prev => prev.map(a => 
-  //       a.id === agentId 
-  //         ? { ...a, usageCount: a.usageCount + 1, lastUsed: new Date().toISOString() }
-  //         : a
-  //     ));
-      
-  //     return { 
-  //       text: result.text, 
-  //       toolCalls: toolCalls.length > 0 ? toolCalls : undefined 
-  //     };
-  //   }
-    
-  //   throw new Error(`Provider ${agent.llmProvider} not implemented`);
-  // };
-
   const isFormValid = formData.name && formData.description && formData.systemPrompt && formData.llmProvider;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 pt-16">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -435,6 +437,47 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({
             <Plus className="h-5 w-5" />
             Create Agent
           </button>
+        </div>
+
+        {/* MCP Servers Status */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Server className="w-5 h-5 text-gray-400" />
+            <h2 className="text-lg font-medium text-gray-900">Available MCP Servers</h2>
+            <button
+              onClick={loadMCPServers}
+              className="ml-auto text-sm text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
+          {connectedMCPServers.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">
+              <Server className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No MCP servers connected</p>
+              <p className="text-xs text-gray-400 mt-1">Go to MCP Servers to connect servers first</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {connectedMCPServers.map(server => (
+                <div key={server.id} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Server className="w-4 h-4 text-green-500" />
+                    <span className="font-medium text-gray-900">{server.name}</span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      {server.type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
+                  </p>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {server.tools.map(t => t.name).join(', ')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Agents Grid */}
@@ -900,4 +943,4 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({
   );
 };
 
-export default AIAgentManager;
+export default AIAgentsPage;
