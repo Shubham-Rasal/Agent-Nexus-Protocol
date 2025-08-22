@@ -4,6 +4,7 @@
       "id": "general_purpose",
       "name": "General Assistant",
       "description": "Answers general questions and handles queries that don't require specialized agents",
+      "systemPrompt": "You are a helpful, knowledgeable general assistant. Provide clear, accurate, and concise answers to user questions. Be friendly and professional in your responses.",
       "knowledge_sources": [
         "recall:general_knowledge",
         "akave:web_search"
@@ -15,98 +16,6 @@
       ],
       "stake": 1000,
       "privacy_level": "low"
-    },
-    {
-      "id": "lead-qualifier",
-      "name": "Lead Qualifier",
-      "description": "Qualifies leads based on criteria and assigns a score",
-      "knowledge_sources": [
-        "recall:lead_scoring_kg",
-        "akave:crm_data"
-      ],
-      "tools": [
-        "data-aggregate",
-        "csv-processor"
-      ],
-      "stake": 2200,
-      "privacy_level": "medium"
-    },
-    {
-      "id": "email-outreach",
-      "name": "Email Outreach Agent",
-      "description": "Sends personalized email sequences to leads",
-      "knowledge_sources": [
-        "recall:email_templates_kg",
-        "storache:campaign_metrics"
-      ],
-      "tools": [
-        "gmail-send"
-      ],
-      "stake": 1900,
-      "privacy_level": "medium"
-    },
-    {
-      "id": "meeting-scheduler",
-      "name": "Meeting Scheduler",
-      "description": "Schedules sales calls and demos with qualified leads",
-      "knowledge_sources": [
-        "recall:calendar_kg",
-        "akave:availability_feeds"
-      ],
-      "tools": [
-        "calendar-create",
-        "gmail-send"
-      ],
-      "stake": 1700,
-      "privacy_level": "low"
-    },
-    {
-      "id": "data-analyzer",
-      "name": "Data Analyzer",
-      "description": "Analyzes lead and customer data for insights",
-      "knowledge_sources": [
-        "recall:analytics_kg",
-        "akave:customer_behavior"
-      ],
-      "tools": [
-        "data-aggregate",
-        "sheets-read",
-        "csv-processor"
-      ],
-      "stake": 2800,
-      "privacy_level": "high"
-    },
-    {
-      "id": "follow-up-manager",
-      "name": "Follow-up Manager",
-      "description": "Manages follow-up communications with leads",
-      "knowledge_sources": [
-        "recall:engagement_patterns",
-        "storache:response_templates"
-      ],
-      "tools": [
-        "gmail-send",
-        "calendar-create"
-      ],
-      "stake": 1500,
-      "privacy_level": "medium"
-    },
-    {
-      "id": "email_finder",
-      "name": "Email Finder",
-      "description": "Searches the web to find email addresses from various inputs",
-      "knowledge_sources": [
-        "akave:web_crawler",
-        "recall:domain_patterns_kg",
-        "recall:contact_extraction_kg"
-      ],
-      "tools": [
-        "web_scraper",
-        "email_validator",
-        "data_formatter"
-      ],
-      "stake": 1800,
-      "privacy_level": "medium"
     }
   ]
 }
