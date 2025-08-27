@@ -43,8 +43,8 @@ interface AgentData {
   systemPrompt: string;
   tags: string[];
   llmProvider: string;
-  tools: string[]; // Keep for backward compatibility
-  mcpServers: string[]; // New field for MCP server IDs
+  tools: string[]; 
+  mcpServers: string[]; 
   createdAt: string;
   lastUsed?: string;
   usageCount: number;
