@@ -9,7 +9,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Navbar } from "@/components/Navbar";
-import Footer from "@/components/ui/Footer";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -41,18 +40,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>Fil services demo</title>
+        <title>ANP - AI Network Protocol</title>
         <meta
           name="description"
-          content="Demo dApp Powered by synapse-sdk. Upload files to Filecoin with USDFC."
+          content="AI Network Protocol (ANP) - A decentralized platform for AI agents, MCP servers, and intelligent network interactions. Build, deploy, and manage AI agents with blockchain integration."
         />
         <meta
           name="keywords"
-          content="Filecoin, Demo, synapse-sdk, pdp, upload, filecoin, usdfc"
+          content="AI Network Protocol, ANP, artificial intelligence, AI agents, MCP servers, blockchain, decentralized AI, machine learning, AI tools, knowledge graph, network automation"
         />
-        <meta name="author" content="FIL-Builders" />
-        <meta name="viewport" content="width=device-width, initial-scale=0.6" />
-        <link rel="icon" href="/filecoin.svg" />
+        <meta name="author" content="ANP Team" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta property="og:title" content="ANP - AI Network Protocol" />
+        <meta property="og:description" content="A decentralized platform for AI agents, MCP servers, and intelligent network interactions." />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ANP" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="ANP - AI Network Protocol" />
+        <meta name="twitter:description" content="A decentralized platform for AI agents, MCP servers, and intelligent network interactions." />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <QueryClientProvider client={queryClient}>
@@ -66,7 +73,6 @@ export default function RootLayout({
                   {children}
                   <Toaster richColors />
                 </main>
-                <Footer />
               </RainbowKitProvider>
             </WagmiProvider>
           </QueryClientProvider>
