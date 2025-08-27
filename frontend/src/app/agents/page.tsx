@@ -86,7 +86,7 @@ const AIAgentsPage: React.FC = () => {
   const [toolInput, setToolInput] = useState('');
 
   const llmProviders = [
-    { id: 'google', name: 'Google Gemini', model: 'models/gemini-1.5-flash' },
+    { id: 'google', name: 'Google Gemini', model: 'models/gemini-2.5-flash' },
     { id: 'openai', name: 'OpenAI', model: 'gpt-3.5-turbo' },
     { id: 'anthropic', name: 'Anthropic Claude', model: 'claude-3-sonnet' },
     { id: 'cohere', name: 'Cohere', model: 'command' },
@@ -219,28 +219,9 @@ const AIAgentsPage: React.FC = () => {
         
         tools[toolKey] = tool({
           description: mcpTool.description || `Tool from ${server.name}`,
-          parameters: mcpTool.inputSchema 
+          inputSchema: mcpTool.inputSchema 
             ? convertMCPSchemaToZod(mcpTool.inputSchema)
             : z.object({}),
-          execute: async (args) => {
-            console.log(`Attempting to execute MCP tool: ${server.name}.${mcpTool.name}`, args);
-            
-            try {
-              console.log(`Calling MCP tool: ${serverId} -> ${mcpTool.name}`);
-              const result = await handleMCPToolCall(serverId, mcpTool.name, args);
-              console.log(`MCP tool result:`, result);
-              return result;
-            } catch (error) {
-              console.error(`Error executing MCP tool ${mcpTool.name}:`, error);
-              return {
-                success: false,
-                error: `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                toolName: mcpTool.name,
-                serverId: serverId,
-                args: args
-              };
-            }
-          }
         });
       });
     });
@@ -350,7 +331,7 @@ const AIAgentsPage: React.FC = () => {
         console.log('System Prompt:', selectedAgent.systemPrompt);
 
         const result = await generateText({
-          model: google("models/gemini-1.5-flash"),
+          model: google("models/gemini-2.5-flash"),
           system: selectedAgent.systemPrompt,
           prompt: testQuery,
           tools: tools,

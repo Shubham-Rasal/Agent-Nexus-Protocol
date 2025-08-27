@@ -42,13 +42,13 @@ export function Navbar() {
               >
                 Agents
               </NavLink>
-              <NavLink 
+              {/* <NavLink 
                 href="/mcp" 
                 icon={<Server className="h-5 w-5" />}
                 isActive={pathname === '/mcp'}
               >
                 MCP
-              </NavLink>
+              </NavLink> */}
               <NavLink 
                 href="/network" 
                 icon={<Users className="h-5 w-5" />}
