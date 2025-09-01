@@ -1,184 +1,148 @@
-Thanks, Shubham. Here's the **updated and merged PRD** that combines your original requirements with **MCP compatibility**, **provenance tracking**, and **external KG integration**:
+# PRD: Groundline GraphDB on Filecoin Onchain Cloud
+
+## 1. Goal
+
+Build a decentralized knowledge graph database query engine (local + cloud) that removes the ETL bottleneck, enables cost-efficient graph storage, and provides granular pay-as-you-go pricing via Filecoin Onchain Cloud.
+
+Knowledge Graphs have risen in popularity recently due to their value in grounding for AI. But managing and exploring knowledge graphs is still a great bottleneck requiring specialized solutions.
+
+Most graph database query solutions don't run on data lakes or storage directly. This gap can be exploited for filecoin since it is made possible by the recent warmStorage solution. 
+
+## 2. Problem Context
+
+- Knowledge graphs are central to AI grounding (esp. RAG/Graph RAG).
+- Existing graph databases (Neo4j, Neptune) are costly, siloed, and ETL-heavy.
+- Current solutions don’t natively query from decentralized storage like Filcoin.
+
+**Opportunity:** Filecoin WarmStorage + FilecoinPay enable a **cheaper, verifiable, pay-as-you-go alternative** with instant retrieval and streaming payments.
+
+## 3. Target Customers
+
+1. **Enterprise Graph DB Users** — companies already on Neo4j or Neptune looking to cut costs.
+
+2. **Research Labs** — with large connected data sets needing flexible query infra.
+
+3. **AI Teams (RAG/Graph RAG)** — LLM-powered products requiring knowledge graph grounding.
+    
+
+Note: Research Labs include researchers who are already using open knowledge graphs.
+
 
 ---
 
-# 🧠 MCP-Compatible GraphDB Package with IPFS Persistence — Product Requirements Document (PRD)
+## 4. Solution Overview
+
+### Local Version 
+
+- Distributed as **npm package + Docker container**.
+- Developers can import schema + data and query without ETL.
+- Integrates with Filecoin via Synapse SDK for storage/retrieval.
+    
+
+### Cloud Version (v1.2)
+
+- Managed graph database hosted on **Filecoin Onchain Cloud**.
+    
+- Warm storage ensures instant retrieval, FilecoinPay enables hybrid billing.
+    
+- Supports AI integrations (Graph RAG tooling, LLM connectors).
+    
+<img width="1335" height="669" alt="image" src="https://github.com/user-attachments/assets/d85da956-7536-4549-a829-a396e96f6c81" />
 
 ---
 
-## 🔍 Overview
+## 5. Value Proposition
 
-**Goal**:
-Build a **reusable package (library/module)** that implements a **graph database** with:
+- **Cheaper  Storage** → Store graphs on Filecoin WarmStorage at a fraction of traditional DB cost.
 
-* **Decentralized storage** (via IPFS/IPNS)
-* **Provenance tracking** (CID chains, logs, optional blockchain anchoring)
-* **External KG integration** (Wikidata, DBpedia, OpenAlex, etc.)
-* **Programmatic API** for graph operations (create, edit, import, publish, provenance, etc.)
+- **No ETL Overhead** → Query directly on Filecoin-hosted data.
 
-This package can be used as the backend for a **REST API server**, an **MCP server**, or embedded in other applications. It is not a monolithic server, but a core engine that can be wrapped with different interfaces.
+- **Granular Pricing** → Hybrid model combining storage + query usage.
 
----
+- **Verifiable Guarantees** → PDP ensures storage proofs, SLA enforced via FilecoinPay.
 
-## 1. 🎯 Core Features
-
-### ✅ Graph Lifecycle
-
-| Phase      | Feature                                                              |
-| ---------- | -------------------------------------------------------------------- |
-| Drafting   | Create/edit graphs locally via CRDT (Yjs)                            |
-| Import     | Import from JSON, CSV, RDF, GraphML or external KGs (Wikidata, etc.) |
-| Publishing | Serialize + publish to IPFS, update IPNS, store provenance           |
-| Discovery  | Browse/import published graphs via CID or search                     |
-| MCP Access | Expose programmatic API for MCP/REST to read/write/query/export      |
+- **AI-Native** → Directly usable in Graph RAG pipelines for LLMs.
 
 ---
 
-## 2. 🛠️ Package Architecture
+## 6. Technical Design
 
-| Layer                 | Tech/Approach                                      |
-| --------------------- | -------------------------------------------------- |
-| Local Graph Store     | CRDT (Yjs), property graph format                  |
-| IPFS Publishing Layer | Helia + Filecoin for permanent pinning             |
-| Provenance Tracker    | CID chain, changelogs, optional Ethereum anchor    |
-| External KG Adapter   | SPARQL + REST wrappers for Wikidata, DBpedia, etc. |
-| Programmatic API      | Expose all graph operations as JS/TS API           |
+- **Architecture**
+    
+    - Off-chain query engine (Docker service).
+        
+    - Schema + data separation.
+        
+    - Provenance tracking (optional future).
+        
+    - FilecoinWarmStorageService handles storage & retrieval proofs.
+        
+    - FilecoinPay validates query and storage payments.
+        
+    - Synapse SDK provides integration hooks.
+        
 
----
-
-## 3. 🧩 Package API & Graph Operations
-
-The package exposes a programmatic API (JS/TS) for all graph operations. This API can be used to build REST endpoints, MCP tools, or other interfaces.
-
-| Method/Action         | Description                                            |
-| --------------------- | ------------------------------------------------------ |
-| `createEntities`      | Create one or more nodes/entities                      |
-| `createRelations`     | Link nodes with directional edges                      |
-| `addObservations`     | Attach descriptions or attributes to entities          |
-| `deleteEntities`      | Remove entity and attached relations                   |
-| `snapshotGraph`       | Serialize graph → upload to IPFS → return CID          |
-| `pinSnapshot`         | Store CID on Filecoin (via Web3.storage or Lighthouse) |
-| `resolveLatest`       | Resolve latest version from IPNS pointer               |
-| `importExternalKG`    | Import entities/edges from Wikidata, DBpedia, OpenAlex |
-| `getProvenance`       | Return change history, CID lineage, and logs           |
-| `loadGraphByCID`      | Load a published graph from IPFS by CID                |
-
----
-
-## 4. 🧑‍💻 Usage Scenarios
-
-### As a Backend for REST or MCP Server
-
-- Import the package in a Node.js server
-- Use the programmatic API to implement REST endpoints or MCP tool handlers
-- All persistence, provenance, and KG integration handled by the package
-
-### As a Standalone Library
-
-- Use in scripts, CLIs, or other apps to manage graphs with IPFS persistence
-- Directly call API methods for graph CRUD, import/export, provenance, etc.
+- **Data Model**
+    
+    - JSON-LD for semantic compatibility.
+        
+    - Vector embeddings stored alongside graph nodes/edges.
+        
+    - Import/export to IPFS/Filecoin.
+        
+- **Query**
+    
+    - GraphQL + Cypher-like API.
+        
+    - Vector search via embeddings.
+        
+    - AI connectors (planned): Graph RAG API.
+        
 
 ---
 
-## 5. 🧬 Provenance Design
+## 7. Pricing Model (Hybrid)
 
-### Data Stored per Graph Change
+- **Storage (WarmStorage)**
+    
+    - Base: ~2 USDFC/TiB/month (without CDN).
+        
+    - Optional CDN: 2.5 USDFC/TiB/month.
+        
+    - One-time dataset creation fee.
+        
+- **Query Usage (FilecoinPay)**
+    
+    - Tiered per-query pricing (per 1K queries).
+        
+    - Pricing based on query complexity (simple lookup vs vector search).
+        
+    - Granular pay-as-you-go via streaming rails.
+        
+---
 
-```json
-{
-  "timestamp": 1728548391,
-  "updated_by": "agent://gpt-4o",
-  "prev": "QmPrev...",
-  "current": "QmCurrent...",
-  "change_log": ["+ Added node Q42", "+ Linked to DBpedia"]
-}
-```
+## 8. Metrics
 
-* Chain forms a **provenance DAG**
-* Snapshots are **deterministically hashed**
-* Optionally **anchor hashes on blockchain** (Ethereum via Light Clients or third-party services)
+**Initial (first 2 weeks)**
+
+- Amount of data stored (GB/TiB).
+    
+- Query latency benchmarks.
+    
+- npm package downloads.
+    
+- Volume of queries executed.
+    
+- Storage consumption growth (TiB).
+    
 
 ---
 
-## 6. 🌐 External KG Integration
+## 9. Future Extensions
 
-| Source     | Method              | Adapter              |
-| ---------- | ------------------- | -------------------- |
-| Wikidata   | SPARQL + EntityData | `wikidata-adapter`   |
-| DBpedia    | SPARQL              | `dbpedia-adapter`    |
-| OpenAlex   | REST                | `openalex-adapter`   |
-| ConceptNet | REST                | `conceptnet-adapter` |
-
-Each adapter:
-
-* Accepts structured query (e.g., entity label)
-* Fetches data
-* Maps schema to `{ name, entityType, observations[] }`
-* Returns structured JSON for import
-
----
-
-## 7. 📁 Data Format
-
-### Internal Graph Model
-
-```ts
-type Entity = {
-  name: string;
-  entityType: string;
-  observations: string[];
-};
-
-type Relation = {
-  from: string;
-  to: string;
-  relationType: string;
-};
-```
-
-### Storage Format
-
-* JSON-LD or DAG-JSON for snapshot serialization
-* Stored on IPFS
-* Indexed by CIDs and optionally by IPNS
-
----
-
-## 8. 🔐 Security & Access Control
-
-| Graph Type   | Access Type               |
-| ------------ | ------------------------- |
-| Draft        | Local CRDT only (private) |
-| Published    | Read-only via IPFS        |
-| Imported     | Forked → private draft    |
-| MCP/REST     | Auth via API key/JWT      |
-
----
-
-## 9. 📦 Deliverables
-
-| Component            | Description                                 |
-| -------------------- | ------------------------------------------- |
-| GraphDB Package      | Core library for graph + IPFS + provenance  |
-| Programmatic API     | JS/TS API for all graph operations          |
-| External KG Adapters | Modular wrapper for each data source        |
-| Provenance Tracker   | CID lineage + changelog tracking            |
-| Example REST Server  | (Optional) Example REST API using package   |
-| Example MCP Server   | (Optional) Example MCP server using package |
-
----
-
-## 10. 📆 Timeline (8 Weeks)
-
-| Week | Deliverable                               |
-| ---- | ----------------------------------------- |
-| 1    | GraphDB package MVP (CRDT, API, IPFS)     |
-| 2    | File import: JSON/CSV/RDF/GraphML         |
-| 3    | External KG adapter (Wikidata)            |
-| 4    | Provenance chain + CID history            |
-| 5    | Example REST/MCP server                   |
-| 6    | Public registry & import by CID           |
-| 7    | Final polish + test coverage              |
-| 8    | Documentation & release                   |
-
----
+- Managed provenance/versioning for auditability in AI.
+    
+- Consumer-facing knowledge graph explorer.
+    
+- Native Graph RAG tooling (prebuilt pipelines for LLMs).
+    
