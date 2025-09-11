@@ -1,15 +1,227 @@
 "use client";
-import React, { useState } from 'react';
-import { Plus, X, ChevronDown, Settings, Trash2, Play, Bot, Server, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, X, ChevronDown, Trash2, Play, Bot, Server, Check } from 'lucide-react';
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText } from "ai";
+import { generateText, tool} from "ai";
+import { z } from "zod";
+import { MCPApiService } from '../../services/mcpApiService';
 
 // Initialize AI providers
 const google = createGoogleGenerativeAI({
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY || 'your-api-key-here',
 });
 
+// IndexedDB Service
+class IndexedDBService {
+  private dbName = 'AIAgentsDB';
+  private version = 1;
+  private db: IDBDatabase | null = null;
+
+  async init(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
+
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        
+        // Create agents store
+        if (!db.objectStoreNames.contains('agents')) {
+          const agentsStore = db.createObjectStore('agents', { keyPath: 'id' });
+          agentsStore.createIndex('createdAt', 'createdAt', { unique: false });
+        }
+
+        // Create testResults store
+        if (!db.objectStoreNames.contains('testResults')) {
+          const resultsStore = db.createObjectStore('testResults', { keyPath: 'id' });
+          resultsStore.createIndex('agentId', 'agentId', { unique: false });
+          resultsStore.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+      };
+    });
+  }
+
+  async saveAgent(agent: AgentData): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['agents'], 'readwrite');
+      const store = transaction.objectStore('agents');
+      const request = store.put(agent);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  }
+
+  async getAllAgents(): Promise<AgentData[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['agents'], 'readonly');
+      const store = transaction.objectStore('agents');
+      const request = store.getAll();
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  async deleteAgent(agentId: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['agents'], 'readwrite');
+      const store = transaction.objectStore('agents');
+      const request = store.delete(agentId);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  }
+
+  async saveTestResult(result: TestResult): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const resultWithId = {
+      ...result,
+      id: `${result.agentId}-${Date.now()}-${Math.random()}`
+    };
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['testResults'], 'readwrite');
+      const store = transaction.objectStore('testResults');
+      const request = store.put(resultWithId);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  }
+
+  async getAllTestResults(): Promise<TestResult[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['testResults'], 'readonly');
+      const store = transaction.objectStore('testResults');
+      const request = store.getAll();
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  async getTestResultsByAgent(agentId: string): Promise<TestResult[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['testResults'], 'readonly');
+      const store = transaction.objectStore('testResults');
+      const index = store.index('agentId');
+      const request = index.getAll(agentId);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  async deleteTestResultsByAgent(agentId: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const results = await this.getTestResultsByAgent(agentId);
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['testResults'], 'readwrite');
+      const store = transaction.objectStore('testResults');
+      
+      let deletedCount = 0;
+      const totalCount = results.length;
+      
+      if (totalCount === 0) {
+        resolve();
+        return;
+      }
+      
+      results.forEach((result) => {
+        const request = store.delete((result as any).id);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          deletedCount++;
+          if (deletedCount === totalCount) {
+            resolve();
+          }
+        };
+      });
+    });
+  }
+
+  async clearAllData(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['agents', 'testResults'], 'readwrite');
+      const agentsStore = transaction.objectStore('agents');
+      const resultsStore = transaction.objectStore('testResults');
+      
+      let clearedStores = 0;
+      
+      const agentsRequest = agentsStore.clear();
+      const resultsRequest = resultsStore.clear();
+      
+      agentsRequest.onerror = () => reject(agentsRequest.error);
+      resultsRequest.onerror = () => reject(resultsRequest.error);
+      
+      agentsRequest.onsuccess = () => {
+        clearedStores++;
+        if (clearedStores === 2) resolve();
+      };
+      
+      resultsRequest.onsuccess = () => {
+        clearedStores++;
+        if (clearedStores === 2) resolve();
+      };
+    });
+  }
+
+  async resetDatabase(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Close the database if open
+      if (this.db) {
+        this.db.close();
+        this.db = null;
+      }
+      // Delete the database
+      const deleteRequest = indexedDB.deleteDatabase(this.dbName);
+      deleteRequest.onerror = () => reject(deleteRequest.error);
+      deleteRequest.onsuccess = async () => {
+        // Reinitialize the database
+        try {
+          await this.init();
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+    });
+  }
+}
+
 // Import MCP types
+interface MCPTool {
+  name: string;
+  description?: string;
+  inputSchema?: {
+    type: string;
+    properties: Record<string, any>;
+    required?: string[];
+  };
+}
+
 interface MCPServer {
   id: string;
   name: string;
@@ -20,11 +232,7 @@ interface MCPServer {
   env?: Record<string, string>;
   workingDirectory?: string;
   status: 'connecting' | 'connected' | 'error' | 'disconnected';
-  tools: Array<{
-    name: string;
-    description?: string;
-    inputSchema?: any;
-  }>;
+  tools: MCPTool[];
   error?: string;
 }
 
@@ -35,11 +243,22 @@ interface AgentData {
   systemPrompt: string;
   tags: string[];
   llmProvider: string;
-  tools: string[]; // Keep for backward compatibility
-  mcpServers: string[]; // New field for MCP server IDs
+  tools: string[]; 
+  mcpServers: string[]; 
   createdAt: string;
   lastUsed?: string;
   usageCount: number;
+}
+
+interface ToolCallLog {
+  step: number;
+  toolName: string;
+  serverId?: string;
+  args: any;
+  result: any;
+  timestamp: string;
+  success: boolean;
+  error?: string;
 }
 
 interface TestResult {
@@ -47,20 +266,22 @@ interface TestResult {
   query: string;
   response: string;
   timestamp: string;
+  toolCalls?: ToolCallLog[];
+  executionTime: number;
 }
 
-interface AIAgentManagerProps {
-  mcpServers?: MCPServer[]; // Optional prop to receive MCP servers
-}
-
-const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
+const AIAgentsPage: React.FC = () => {
   const [agents, setAgents] = useState<AgentData[]>([]);
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
   const [testQuery, setTestQuery] = useState('');
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isTestingAgent, setIsTestingAgent] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [dbService] = useState(() => new IndexedDBService());
+  const [dbInitialized, setDbInitialized] = useState(false);
   
   const [formData, setFormData] = useState<Omit<AgentData, 'id' | 'createdAt' | 'usageCount'>>({
     name: '',
@@ -76,15 +297,266 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
   const [toolInput, setToolInput] = useState('');
 
   const llmProviders = [
-    { id: 'google', name: 'Google Gemini', model: 'models/gemini-1.5-flash' },
+    { id: 'google', name: 'Google Gemini', model: 'models/gemini-2.5-flash' },
     { id: 'openai', name: 'OpenAI', model: 'gpt-3.5-turbo' },
     { id: 'anthropic', name: 'Anthropic Claude', model: 'claude-3-sonnet' },
     { id: 'cohere', name: 'Cohere', model: 'command' },
     { id: 'mistral', name: 'Mistral', model: 'mistral-7b' },
   ];
 
+  // Initialize IndexedDB and load data
+  useEffect(() => {
+    const initializeDB = async () => {
+      try {
+        setSaveStatus('saving'); // Show loading state
+        await dbService.init();
+        setDbInitialized(true);
+        
+        // Load data after DB initialization
+        const [loadedAgents, loadedResults] = await Promise.all([
+          dbService.getAllAgents(),
+          dbService.getAllTestResults()
+        ]);
+        
+        setAgents(loadedAgents.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setTestResults(loadedResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+        setSaveStatus('idle');
+      } catch (error) {
+        console.error('Failed to initialize IndexedDB:', error);
+        setSaveStatus('error');
+        
+        // Try to reset and reinitialize the database
+        console.log('Attempting to reset database...');
+        try {
+          await dbService.resetDatabase();
+          setDbInitialized(true);
+          setAgents([]);
+          setTestResults([]);
+          setSaveStatus('idle');
+          console.log('Database reset successfully');
+        } catch (resetError) {
+          console.error('Failed to reset database:', resetError);
+          // Database is completely unusable
+          setTimeout(() => setSaveStatus('idle'), 3000);
+        }
+      }
+    };
+
+    initializeDB();
+    loadMCPServers();
+  }, []);
+
+  // Enhanced logging function
+  const logToolCall = (step: number, toolName: string, args: any, result: any, success: boolean, error?: string, serverId?: string): ToolCallLog => {
+    const logEntry: ToolCallLog = {
+      step,
+      toolName,
+      serverId,
+      args: args || {},
+      result: result || null,
+      timestamp: new Date().toISOString(),
+      success,
+      error
+    };
+    
+    console.group(`🔧 Tool Call #${step}: ${toolName}`);
+    console.log('📍 Server ID:', serverId || 'N/A');
+    console.log('📥 Arguments:', JSON.stringify(args, null, 2));
+    console.log('📤 Result:', JSON.stringify(result, null, 2));
+    console.log('✅ Success:', success);
+    if (error) console.log('❌ Error:', error);
+    console.log('⏰ Timestamp:', logEntry.timestamp);
+    console.groupEnd();
+    
+    return logEntry;
+  };
+
+  // Load MCP servers from API
+  const loadMCPServers = async () => {
+    try {
+      const loadedServers = await MCPApiService.loadServers();
+      setMcpServers(loadedServers);
+    } catch (error) {
+      console.error('Failed to load MCP servers:', error);
+    }
+  };
+
   // Get connected MCP servers
   const connectedMCPServers = mcpServers.filter(server => server.status === 'connected');
+
+  // Enhanced MCP Tool Call Handler with detailed logging
+  const handleMCPToolCall = async (serverId: string, toolName: string, args: any, stepNumber: number): Promise<{
+    result: any;
+    logEntry: ToolCallLog;
+  }> => {
+    console.group(`🚀 Starting MCP Tool Call #${stepNumber}`);
+    console.log('🎯 Target:', `${serverId}.${toolName}`);
+    console.log('📋 Raw Arguments:', args);
+    console.log('📋 Arguments Type:', typeof args);
+    console.log('📋 Arguments Keys:', args ? Object.keys(args) : 'No args or undefined');
+
+    try {
+      // Find the server to ensure it's connected
+      const server = mcpServers.find(s => s.id === serverId);
+      if (!server) {
+        const error = `Server ${serverId} not found`;
+        const logEntry = logToolCall(stepNumber, toolName, args, null, false, error, serverId);
+        console.groupEnd();
+        return { result: { success: false, error }, logEntry };
+      }
+
+      if (server.status !== 'connected') {
+        const error = `Server ${serverId} is not connected (status: ${server.status})`;
+        const logEntry = logToolCall(stepNumber, toolName, args, null, false, error, serverId);
+        console.groupEnd();
+        return { result: { success: false, error }, logEntry };
+      }
+
+      // Check if the tool exists on the server
+      const tool = server.tools.find(t => t.name === toolName);
+      if (!tool) {
+        const error = `Tool ${toolName} not found on server ${serverId}`;
+        const logEntry = logToolCall(stepNumber, toolName, args, null, false, error, serverId);
+        console.groupEnd();
+        return { result: { success: false, error }, logEntry };
+      }
+
+      console.log('🔍 Tool Schema:', JSON.stringify(tool.inputSchema, null, 2));
+      console.log('🔄 Calling MCP API...');
+
+      // Ensure args is an object
+      const processedArgs = args || {};
+      console.log('🔧 Processed Arguments:', JSON.stringify(processedArgs, null, 2));
+
+      // Call the MCP API service
+      const result = await MCPApiService.callTool({
+        serverId: serverId,
+        toolName: toolName,
+        arguments: processedArgs
+      });
+
+      console.log('📬 MCP API Response:', JSON.stringify(result, null, 2));
+
+      if (result.result) {
+        const logEntry = logToolCall(stepNumber, toolName, processedArgs, result.result, true, undefined, serverId);
+        console.groupEnd();
+        return { result: result.result, logEntry };
+      } else {
+        const error = result.error || 'Unknown error occurred';
+        const errorResult = {
+          success: false,
+          error: error,
+          toolName: toolName,
+          serverId: serverId,
+          args: processedArgs
+        };
+        const logEntry = logToolCall(stepNumber, toolName, processedArgs, errorResult, false, error, serverId);
+        console.groupEnd();
+        return { result: errorResult, logEntry };
+      }
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Tool execution failed';
+      console.error(`💥 Tool execution error:`, error);
+      
+      const errorResult = {
+        success: false,
+        error: errorMessage,
+        toolName: toolName,
+        serverId: serverId,
+        args: args || {}
+      };
+      
+      const logEntry = logToolCall(stepNumber, toolName, args, errorResult, false, errorMessage, serverId);
+      console.groupEnd();
+      return { result: errorResult, logEntry };
+    }
+  };
+
+  // Convert MCP tool schema to Zod schema
+  const convertMCPSchemaToZod = (schema: any): z.ZodType<any> => {
+    if (!schema || !schema.properties) {
+      return z.object({});
+    }
+
+    const zodObject: Record<string, z.ZodType<any>> = {};
+
+    Object.entries(schema.properties).forEach(([key, prop]: [string, any]) => {
+      switch (prop.type) {
+        case 'string':
+          zodObject[key] = z.string().describe(prop.description || '');
+          break;
+        case 'number':
+          zodObject[key] = z.number().describe(prop.description || '');
+          break;
+        case 'boolean':
+          zodObject[key] = z.boolean().describe(prop.description || '');
+          break;
+        case 'array':
+          zodObject[key] = z.array(z.any()).describe(prop.description || '');
+          break;
+        case 'object':
+          zodObject[key] = z.object({}).describe(prop.description || '');
+          break;
+        default:
+          zodObject[key] = z.any().describe(prop.description || '');
+      }
+
+      // Make optional if not in required array
+      if (!schema.required?.includes(key)) {
+        zodObject[key] = zodObject[key].optional();
+      }
+    });
+
+    return z.object(zodObject);
+  };
+
+  // Create AI SDK tools from MCP servers with enhanced logging
+  const createToolsFromMCPServers = (serverIds: string[]) => {
+    const tools: Record<string, any> = {};
+    let stepCounter = 0;
+
+    serverIds.forEach(serverId => {
+      const server = mcpServers.find(s => s.id === serverId);
+      if (!server || server.status !== 'connected') {
+        console.warn(`⚠️ Skipping unavailable server: ${serverId} (status: ${server?.status || 'not found'})`);
+        return;
+      }
+
+      console.log(`🔌 Registering tools from server: ${server.name} (${serverId})`);
+
+      server.tools.forEach(mcpTool => {
+        const toolKey = `${server.name}_${mcpTool.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        
+        console.log(`📝 Registering tool: ${toolKey} -> ${server.name}.${mcpTool.name}`);
+        
+        tools[toolKey] = tool({
+          description: mcpTool.description || `Tool from ${server.name}: ${mcpTool.name}`,
+          inputSchema: mcpTool.inputSchema 
+            ? convertMCPSchemaToZod(mcpTool.inputSchema)
+            : z.object({}),
+          execute: async (args: any) => {
+            stepCounter++;
+            console.log(`🎬 Executing tool: ${toolKey} (Step #${stepCounter})`);
+            console.log('📦 Raw execute args:', args);
+            
+            const { result, logEntry } = await handleMCPToolCall(serverId, mcpTool.name, args, stepCounter);
+            
+            // Store log entry in a way that can be accessed later
+            if (!window.__currentToolCalls) {
+              window.__currentToolCalls = [];
+            }
+            window.__currentToolCalls.push(logEntry);
+            
+            return result;
+          }
+        });
+      });
+    });
+
+    console.log(`🎯 Total tools registered: ${Object.keys(tools).length}`);
+    return tools;
+  };
 
   const resetForm = () => {
     setFormData({
@@ -155,87 +627,297 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
     }));
   };
 
-  const handleSubmit = () => {
-    if (!formData.name || !formData.description || !formData.systemPrompt || !formData.llmProvider) {
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.description || !formData.systemPrompt || !formData.llmProvider || !dbInitialized) {
       return;
     }
 
-    const newAgent: AgentData = {
-      ...formData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      usageCount: 0
-    };
+    setSaveStatus('saving');
 
-    setAgents(prev => [newAgent, ...prev]);
-    closeModal();
-  };
-
-  const testAgent = async () => {
-    if (!selectedAgent || !testQuery.trim()) return;
-    
-    setIsTestingAgent(true);
     try {
-      // For now, only Google Gemini is implemented
-      // You can extend this to support other providers
-      let response = '';
-      
-      if (selectedAgent.llmProvider === 'google') {
-        // Build system prompt with MCP server context
-        let systemPromptWithTools = selectedAgent.systemPrompt;
-        console.log('System Prompt:', systemPromptWithTools);
-        
-        if (selectedAgent.mcpServers.length > 0) {
-          const availableTools = selectedAgent.mcpServers
-            .map(serverId => mcpServers.find(s => s.id === serverId))
-            .filter(Boolean)
-            .flatMap(server => server!.tools.map(tool => `${server!.name}.${tool.name}: ${tool.description || 'No description'}`));
-          
-          if (availableTools.length > 0) {
-            systemPromptWithTools += `\n\nAvailable MCP Tools:\n${availableTools.join('\n')}`;
-            console.log('Available Tools:', availableTools);
-          }
-        }
-
-        const { text } = await generateText({
-          model: google("models/gemini-1.5-flash"),
-          prompt: `${systemPromptWithTools}\n\nUser query: ${testQuery}`,
-        });
-        response = text;
-      } else {
-        response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
-      }
-
-      const testResult: TestResult = {
-        agentId: selectedAgent.id,
-        query: testQuery,
-        response,
-        timestamp: new Date().toISOString()
+      const newAgent: AgentData = {
+        ...formData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        usageCount: 0
       };
 
-      setTestResults(prev => [testResult, ...prev]);
-      
-      // Update agent usage
-      setAgents(prev => prev.map(agent => 
-        agent.id === selectedAgent.id 
-          ? { ...agent, usageCount: agent.usageCount + 1, lastUsed: new Date().toISOString() }
-          : agent
-      ));
-      
-      setTestQuery('');
+      await dbService.saveAgent(newAgent);
+      setAgents(prev => [newAgent, ...prev]);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+      closeModal();
     } catch (error) {
-      console.error('Error testing agent:', error);
-      const errorResult: TestResult = {
-        agentId: selectedAgent.id,
-        query: testQuery,
-        response: `Error testing agent: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        timestamp: new Date().toISOString()
-      };
-      setTestResults(prev => [errorResult, ...prev]);
-    } finally {
-      setIsTestingAgent(false);
+      console.error('Failed to save agent:', error);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     }
   };
+
+  // Replace your testAgent function with this enhanced version
+const testAgent = async () => {
+  if (!selectedAgent || !testQuery.trim() || !dbInitialized) return;
+  
+  setIsTestingAgent(true);
+  const startTime = Date.now();
+  
+  // Clear previous tool calls
+  window.__currentToolCalls = [];
+  
+  console.group(`🤖 Testing Agent: ${selectedAgent.name}`);
+  console.log('🎯 Query:', testQuery);
+  console.log('🔧 System Prompt:', selectedAgent.systemPrompt);
+  console.log('🔌 MCP Servers:', selectedAgent.mcpServers);
+  
+  try {
+    let response = '';
+    
+    if (selectedAgent.llmProvider === 'google') {
+      // Create tools from MCP servers
+      const tools = createToolsFromMCPServers(selectedAgent.mcpServers);
+      
+      console.log('🛠️ Available tools:', Object.keys(tools));
+
+      const result = await generateText({
+        model: google("models/gemini-2.5-flash"),
+        system: selectedAgent.systemPrompt,
+        prompt: testQuery,
+        tools: tools,
+        // maxSteps: 10, // Limit tool execution steps
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: 'test-agent'
+        }
+      });
+
+      // Enhanced response extraction
+      if (result.text) {
+        response = result.text;
+      } else if (result.steps && result.steps.length > 0) {
+        // If no final text, try to extract from steps
+        const lastStep = result.steps[result.steps.length - 1];
+        if (lastStep && 'text' in lastStep && lastStep.text) {
+          response = lastStep.text;
+        } else {
+          // Fallback: create response from tool results
+          const toolResults = window.__currentToolCalls || [];
+          if (toolResults.length > 0) {
+            const successfulResults = toolResults.filter(call => call.success);
+            response = `Tool execution completed. ${successfulResults.length} successful tool calls out of ${toolResults.length} total calls.\n\n`;
+            
+            toolResults.forEach((call, index) => {
+              response += `Step ${call.step}: ${call.toolName}\n`;
+              if (call.success && call.result) {
+                // Try to extract meaningful content from result
+                if (typeof call.result === 'object' && call.result.content) {
+                  response += `Result: ${call.result.content[0].text}\n\n`;
+                } else if (typeof call.result === 'string') {
+                  response += `Result: ${call.result}\n\n`;
+                } else {
+                  response += `Result: ${JSON.stringify(call.result, null, 2)}\n\n`;
+                }
+              } else if (call.error) {
+                response += `Error: ${call.error}\n\n`;
+              }
+            });
+          } else {
+            response = "No response generated. This might indicate an issue with the AI model or tool execution.";
+          }
+        }
+      } else {
+        response = "No response generated from the AI model.";
+      }
+
+      console.log('📝 Generated Response:', response);
+      console.log('📊 Result structure:', {
+        hasText: !!result.text,
+        textLength: result.text?.length || 0,
+        stepsCount: result.steps?.length || 0,
+        toolCallsCount: window.__currentToolCalls?.length || 0
+      });
+
+    } else {
+      response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
+      console.log('⚠️ Mock response generated for unsupported provider');
+    }
+
+    const executionTime = Date.now() - startTime;
+    const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
+
+    const testResult: TestResult = {
+      agentId: selectedAgent.id,
+      query: testQuery,
+      response: response || "No response generated",
+      timestamp: new Date().toISOString(),
+      toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
+      executionTime
+    };
+
+    console.log('💾 Final Test Result:', testResult);
+    console.groupEnd();
+
+    // Save to IndexedDB
+    await dbService.saveTestResult(testResult);
+    setTestResults(prev => [testResult, ...prev]);
+    
+    // Update agent usage
+    const updatedAgent = { 
+      ...selectedAgent, 
+      usageCount: selectedAgent.usageCount + 1, 
+      lastUsed: new Date().toISOString() 
+    };
+    
+    await dbService.saveAgent(updatedAgent);
+    setAgents(prev => prev.map(agent => 
+      agent.id === selectedAgent.id ? updatedAgent : agent
+    ));
+    
+    setTestQuery('');
+  } catch (error) {
+    console.error('Error testing agent:', error);
+    console.groupEnd();
+    
+    const executionTime = Date.now() - startTime;
+    const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
+    
+    let errorMessage = `Error testing agent: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    
+    // If we have tool call logs, include them in the error response
+    if (toolCallLogs.length > 0) {
+      errorMessage += `\n\nTool calls were executed before the error:`;
+      toolCallLogs.forEach((call, index) => {
+        errorMessage += `\n${index + 1}. ${call.toolName}: ${call.success ? 'Success' : 'Failed'}`;
+        if (call.error) {
+          errorMessage += ` (${call.error})`;
+        }
+      });
+    }
+    
+    const errorResult: TestResult = {
+      agentId: selectedAgent.id,
+      query: testQuery,
+      response: errorMessage,
+      timestamp: new Date().toISOString(),
+      toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
+      executionTime
+    };
+    
+    // Save error result to IndexedDB
+    try {
+      await dbService.saveTestResult(errorResult);
+      setTestResults(prev => [errorResult, ...prev]);
+    } catch (saveError) {
+      console.error('Failed to save error result:', saveError);
+    }
+  } finally {
+    setIsTestingAgent(false);
+    // Clean up
+    window.__currentToolCalls = [];
+  }
+};
+  // const testAgent = async () => {
+  //   if (!selectedAgent || !testQuery.trim() || !dbInitialized) return;
+    
+  //   setIsTestingAgent(true);
+  //   const startTime = Date.now();
+    
+  //   // Clear previous tool calls
+  //   window.__currentToolCalls = [];
+    
+  //   console.group(`🤖 Testing Agent: ${selectedAgent.name}`);
+  //   console.log('🎯 Query:', testQuery);
+  //   console.log('🔧 System Prompt:', selectedAgent.systemPrompt);
+  //   console.log('🔌 MCP Servers:', selectedAgent.mcpServers);
+    
+  //   try {
+  //     let response = '';
+      
+  //     if (selectedAgent.llmProvider === 'google') {
+  //       // Create tools from MCP servers
+  //       const tools = createToolsFromMCPServers(selectedAgent.mcpServers);
+        
+  //       console.log('🛠️ Available tools:', Object.keys(tools));
+
+  //       const result = await generateText({
+  //         model: google("models/gemini-2.5-flash"),
+  //         system: selectedAgent.systemPrompt,
+  //         prompt: testQuery,
+  //         tools: tools,
+  //       });
+
+  //       response = result.text;
+  //       console.log('📝 Generated Response:', response);
+
+  //       // Log the complete result structure for debugging
+  //       console.group('🔍 Complete AI SDK Result Structure');
+  //       console.log('Result object:', result);
+  //       console.log('Result.steps:', result.steps);
+  //       console.log('Tool calls from window:', window.__currentToolCalls);
+  //       console.groupEnd();
+
+  //     } else {
+  //       response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
+  //       console.log('⚠️ Mock response generated for unsupported provider');
+  //     }
+
+  //     const executionTime = Date.now() - startTime;
+  //     const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
+
+  //     const testResult: TestResult = {
+  //       agentId: selectedAgent.id,
+  //       query: testQuery,
+  //       response,
+  //       timestamp: new Date().toISOString(),
+  //       toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
+  //       executionTime
+  //     };
+
+  //     console.log('💾 Final Test Result:', testResult);
+  //     console.groupEnd();
+
+  //     // Save to IndexedDB
+  //     await dbService.saveTestResult(testResult);
+  //     setTestResults(prev => [testResult, ...prev]);
+      
+  //     // Update agent usage
+  //     const updatedAgent = { 
+  //       ...selectedAgent, 
+  //       usageCount: selectedAgent.usageCount + 1, 
+  //       lastUsed: new Date().toISOString() 
+  //     };
+      
+  //     await dbService.saveAgent(updatedAgent);
+  //     setAgents(prev => prev.map(agent => 
+  //       agent.id === selectedAgent.id ? updatedAgent : agent
+  //     ));
+      
+  //     setTestQuery('');
+  //   } catch (error) {
+  //     console.error('Error testing agent:', error);
+  //     console.groupEnd();
+      
+  //     const executionTime = Date.now() - startTime;
+  //     const errorResult: TestResult = {
+  //       agentId: selectedAgent.id,
+  //       query: testQuery,
+  //       response: `Error testing agent: ${error instanceof Error ? error.message : 'Unknown error'}`,
+  //       timestamp: new Date().toISOString(),
+  //       executionTime
+  //     };
+      
+  //     // Save error result to IndexedDB
+  //     try {
+  //       await dbService.saveTestResult(errorResult);
+  //       setTestResults(prev => [errorResult, ...prev]);
+  //     } catch (saveError) {
+  //       console.error('Failed to save error result:', saveError);
+  //     }
+  //   } finally {
+  //     setIsTestingAgent(false);
+  //     // Clean up
+  //     window.__currentToolCalls = [];
+  //   }
+  // };
 
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === 'Enter') {
@@ -244,65 +926,129 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
     }
   };
 
-  const deleteAgent = (agentId: string) => {
-    setAgents(prev => prev.filter(agent => agent.id !== agentId));
-    setTestResults(prev => prev.filter(result => result.agentId !== agentId));
+  const deleteAgent = async (agentId: string) => {
+    if (!dbInitialized) return;
+
+    try {
+      await Promise.all([
+        dbService.deleteAgent(agentId),
+        dbService.deleteTestResultsByAgent(agentId)
+      ]);
+      
+      setAgents(prev => prev.filter(agent => agent.id !== agentId));
+      setTestResults(prev => prev.filter(result => result.agentId !== agentId));
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+    }
   };
 
-  // Function to execute an agent (this would be called by your chatbot)
-  const executeAgent = async (agentId: string, userQuery: string): Promise<string> => {
-    const agent = agents.find(a => a.id === agentId);
-    if (!agent) throw new Error('Agent not found');
-
-    if (agent.llmProvider === 'google') {
-      // Build system prompt with MCP server context
-      let systemPromptWithTools = agent.systemPrompt;
-      
-      if (agent.mcpServers.length > 0) {
-        const availableTools = agent.mcpServers
-          .map(serverId => mcpServers.find(s => s.id === serverId))
-          .filter(Boolean)
-          .flatMap(server => server!.tools.map(tool => `${server!.name}.${tool.name}: ${tool.description || 'No description'}`));
-        
-        if (availableTools.length > 0) {
-          systemPromptWithTools += `\n\nAvailable MCP Tools:\n${availableTools.join('\n')}`;
-        }
-      }
-
-      const { text } = await generateText({
-        model: google("models/gemini-1.5-flash"),
-        prompt: `${systemPromptWithTools}\n\nUser query: ${userQuery}`,
-      });
-      
-      // Update usage stats
-      setAgents(prev => prev.map(a => 
-        a.id === agentId 
-          ? { ...a, usageCount: a.usageCount + 1, lastUsed: new Date().toISOString() }
-          : a
-      ));
-      
-      return text;
-    }
+  const clearAllData = async () => {
+    if (!dbInitialized) return;
     
-    throw new Error(`Provider ${agent.llmProvider} not implemented`);
+    if (confirm('Are you sure you want to clear all agents and test results? This cannot be undone.')) {
+      try {
+        await dbService.clearAllData();
+        setAgents([]);
+        setTestResults([]);
+      } catch (error) {
+        console.error('Failed to clear data:', error);
+      }
+    }
   };
 
   const isFormValid = formData.name && formData.description && formData.systemPrompt && formData.llmProvider;
 
+  if (!dbInitialized) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Initializing database...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 pt-16">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Agent Management System</h1>
-          <p className="text-gray-600 mb-6">Create, test, and manage custom AI agents for your chatbot</p>
-          <button
-            onClick={openModal}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
-          >
-            <Plus className="h-5 w-5" />
-            Create Agent
-          </button>
+          <p className="text-gray-600 mb-6">Create, test, and manage custom AI agents with MCP tool integration</p>
+          
+          <div className="flex justify-center gap-3 mb-4">
+            <button
+              onClick={openModal}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <Plus className="h-5 w-5" />
+              Create Agent
+            </button>
+            
+            <button
+              onClick={clearAllData}
+              className="inline-flex items-center gap-2 bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 transition-all"
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear All
+            </button>
+          </div>
+
+          {/* Save Status Indicator */}
+          {saveStatus !== 'idle' && (
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
+              saveStatus === 'saving' ? 'bg-yellow-100 text-yellow-700' :
+              saveStatus === 'saved' ? 'bg-green-100 text-green-700' :
+              'bg-red-100 text-red-700'
+            }`}>
+              {saveStatus === 'saving' && '💾 Saving...'}
+              {saveStatus === 'saved' && '✅ Saved'}
+              {saveStatus === 'error' && '❌ Save failed'}
+            </div>
+          )}
+        </div>
+
+       
+        {/* MCP Servers Status */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Server className="w-5 h-5 text-gray-400" />
+            <h2 className="text-lg font-medium text-gray-900">Available MCP Servers</h2>
+            <button
+              onClick={loadMCPServers}
+              className="ml-auto text-sm text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
+          {connectedMCPServers.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">
+              <Server className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No MCP servers connected</p>
+              <p className="text-xs text-gray-400 mt-1">Go to MCP Servers to connect servers first</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {connectedMCPServers.map(server => (
+                <div key={server.id} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Server className="w-4 h-4 text-green-500" />
+                    <span className="font-medium text-gray-900">{server.name}</span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      {server.type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
+                  </p>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {server.tools.map(t => t.name).join(', ')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Agents Grid */}
@@ -388,7 +1134,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                               className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
                             >
                               <Server className="h-3 w-3" />
-                              {server.name}
+                              {server.name} ({server.tools.length})
                             </span>
                           ) : null;
                         })}
@@ -450,7 +1196,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="e.g., Code Assistant, Content Writer, Data Analyst"
                   />
                 </div>
@@ -464,7 +1210,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     type="text"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Brief description of what this agent does"
                   />
                 </div>
@@ -478,7 +1224,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     rows={4}
                     value={formData.systemPrompt}
                     onChange={(e) => handleInputChange('systemPrompt', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-vertical"
+                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-vertical"
                     placeholder="Define the agent's behavior, personality, and capabilities..."
                   />
                 </div>
@@ -492,7 +1238,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                     <select
                       value={formData.llmProvider}
                       onChange={(e) => handleInputChange('llmProvider', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white"
                     >
                       <option value="">Select a provider...</option>
                       {llmProviders.map(provider => (
@@ -534,6 +1280,9 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                               <p className="text-sm text-gray-500 mt-1">
                                 {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
                               </p>
+                              <div className="text-xs text-gray-400 mt-1">
+                                Tools: {server.tools.map(t => t.name).join(', ')}
+                              </div>
                             </div>
                             <div className="ml-3">
                               {formData.mcpServers.includes(server.id) ? (
@@ -561,7 +1310,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                               className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
                             >
                               <Server className="h-3 w-3" />
-                              {server.name}
+                              {server.name} ({server.tools.length} tools)
                             </span>
                           ) : null;
                         })}
@@ -582,7 +1331,7 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyPress={(e) => handleKeyPress(e, addTag)}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         placeholder="e.g., coding, writing, analysis"
                       />
                       <button
@@ -664,6 +1413,15 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                         ) : null;
                       })}
                     </div>
+                    <div className="mt-2">
+                      <span className="text-xs font-medium text-gray-500">Available Tools:</span>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {selectedAgent.mcpServers.flatMap(serverId => {
+                          const server = mcpServers.find(s => s.id === serverId);
+                          return server ? server.tools.map(tool => `${server.name}.${tool.name}${tool.description ? ` - ${tool.description}` : ''}`) : [];
+                        }).join(' • ')}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -706,11 +1464,76 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
                       <div key={`test-result-${selectedAgent.id}-${index}`} className="bg-gray-50 rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <strong className="text-sm text-gray-700">Query:</strong>
-                          <span className="text-xs text-gray-500">
-                            {new Date(result.timestamp).toLocaleString()}
-                          </span>
+                          <div className="text-right">
+                            <span className="text-xs text-gray-500 block">
+                              {new Date(result.timestamp).toLocaleString()}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {result.executionTime}ms
+                            </span>
+                          </div>
                         </div>
                         <p className="text-sm text-gray-800 mb-3">{result.query}</p>
+                        
+                        {/* Enhanced tool calls display */}
+                        {result.toolCalls && result.toolCalls.length > 0 && (
+                          <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+                            <strong className="text-sm text-blue-700 mb-2 block">
+                              Tool Calls ({result.toolCalls.length}):
+                            </strong>
+                            {result.toolCalls.map((toolCall, toolIndex) => (
+                              <div key={toolIndex} className="mt-2 p-3 bg-white rounded border-l-4 border-blue-300">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="text-sm font-medium text-blue-800">
+                                    Step #{toolCall.step}: {toolCall.toolName}
+                                    {toolCall.serverId && (
+                                      <span className="text-xs text-gray-500 ml-2">
+                                        (Server: {toolCall.serverId})
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className={`text-xs px-2 py-1 rounded ${
+                                    toolCall.success 
+                                      ? 'bg-green-100 text-green-700' 
+                                      : 'bg-red-100 text-red-700'
+                                  }`}>
+                                    {toolCall.success ? 'Success' : 'Failed'}
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-2 text-xs">
+                                  <div>
+                                    <strong className="text-gray-700">Arguments:</strong>
+                                    <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
+                                      {JSON.stringify(toolCall.args, null, 2)}
+                                    </pre>
+                                  </div>
+                                  
+                                  <div>
+                                    <strong className="text-gray-700">Result:</strong>
+                                    <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
+                                      {JSON.stringify(toolCall.result, null, 2)}
+                                    </pre>
+                                  </div>
+                                  
+                                  {toolCall.error && (
+                                    <div>
+                                      <strong className="text-red-700">Error:</strong>
+                                      <p className="mt-1 p-2 bg-red-50 rounded text-red-600">
+                                        {toolCall.error}
+                                      </p>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="text-gray-500">
+                                    <strong>Timestamp:</strong> {new Date(toolCall.timestamp).toLocaleTimeString()}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
                         <strong className="text-sm text-gray-700">Response:</strong>
                         <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{result.response}</p>
                       </div>
@@ -735,4 +1558,11 @@ const AIAgentManager: React.FC<AIAgentManagerProps> = ({ mcpServers = [] }) => {
   );
 };
 
-export default AIAgentManager;
+// Extend window interface for TypeScript
+declare global {
+  interface Window {
+    __currentToolCalls?: ToolCallLog[];
+  }
+}
+
+export default AIAgentsPage;
