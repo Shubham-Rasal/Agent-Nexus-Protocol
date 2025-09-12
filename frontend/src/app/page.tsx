@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import AgentCreationFeature from '@/components/AgentCreationFeature';
+import N8NDemo from '@/components/N8NDemo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -260,77 +261,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Sponsors Section */}
+      {/* N8N Workflow Demo Section */}
       <section className="w-full py-16 bg-white">
         <div className="container px-4 md:px-6 mx-auto">
-          <div className="flex flex-col items-center text-center">
-            <div className="space-y-2 max-w-[600px] mb-10">
-              <h2 className="text-2xl font-bold tracking-tighter md:text-3xl">Powered By</h2>
-              <p className="text-gray-500 md:text-base">
-                Our trusted partners who make Agent Nexus Protocol possible
+          <div className="flex flex-col items-center">
+            <div className="space-y-2 max-w-[700px] mb-8 text-center">
+              <h2 className="text-2xl font-bold tracking-tighter md:text-3xl">Interactive Workflow Demo</h2>
+              <p className="text-gray-600">
+                Experience how n8n workflows integrate with our Agent Nexus Protocol for seamless automation
               </p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* OpenAI */}
-              <div className="flex items-center justify-center">
-                <Image
-                  src="https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg"
-                  alt="OpenAI Logo"
-                  width={260}
-                  height={80}
-                  className="dark:invert"
-                />
-              </div>
-              <div className="text-center mt-4">
-                <Link href="https://openai.com" target="_blank" className="text-purple-600 inline-flex items-center text-sm hover:underline">
-                  Learn more about OpenAI
-                  <ArrowUpRight className="ml-1 h-4 w-4" />
-                </Link>
-              </div>
-
-              {/* Storacha */}
-              <Card className="hover:shadow-md transition-all border border-gray-100">
-                <CardHeader className="pb-2 flex flex-col items-center">
-                  <div className="h-12 mb-2 flex items-center justify-center">
-                    <img 
-                      src="https://console.storacha.network/storacha-logo.svg" 
-                      alt="Storacha Logo" 
-                      className="max-h-10 w-auto"
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-gray-600 text-sm mb-3">
-                    For chat, agent CoT storage and multi-agent collaboration
-                  </p>
-                  <Link href="https://console.storacha.network/" target="_blank" className="text-blue-600 inline-flex items-center text-sm hover:underline">
-                    Learn more <ChevronRight className="ml-1 h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
-
-              {/* Akave */}
-              <Card className="hover:shadow-md transition-all border border-gray-100">
-                <CardHeader className="pb-2 flex flex-col items-center">
-                  <div className="h-12 mb-2 flex items-center justify-center">
-                    <img 
-                      src="https://docs.akave.ai/~gitbook/image?url=https%3A%2F%2F594872226-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Forganizations%252FTBZ1Ifp7uxt1BgTdXKIM%252Fsites%252Fsite_xssfp%252Ficon%252FUaLr5SOAddNDtHFmF7no%252FIcon_Duo_BLUE_1%252B4.png%3Falt%3Dmedia%26token%3D47f03ba5-98a0-4a71-8d69-25068348e3a7&width=32&dpr=4&quality=100&sign=cbdd9f6b&sv=2" 
-                      alt="Akave Logo" 
-                      className="max-h-10 w-auto"
-                    />
-                    <span className="ml-2 text-xl font-bold text-gray-800">Akave</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-gray-600 text-sm mb-3">
-                    Storage tool for all agents to autonomously use
-                  </p>
-                  <Link href="https://docs.akave.ai/" target="_blank" className="text-green-600 inline-flex items-center text-sm hover:underline">
-                    Learn more <ChevronRight className="ml-1 h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
+            
+            {/* <div className="w-full max-w-4xl">
+              <N8NDemo 
+                workflow='{"nodes":[{"name":"Workflow-Created","type":"n8n-nodes-base.webhook","position":[512,369],"parameters":{"path":"webhook","httpMethod":"POST"},"typeVersion":1}],"connections":{}}'
+                frame={true}
+                clickToInteract={true}
+                collapseOnMobile={true}
+              />
+            </div> */}
+            
+            {/* Example with workflowUrl - uncomment to use */}
+            <div className="w-full max-w-4xl mt-8">
+              <N8NDemo 
+                workflowUrl="workflow.json"
+                frame={true}
+                clickToInteract={false}
+                collapseOnMobile={true}
+              />
             </div>
           </div>
         </div>

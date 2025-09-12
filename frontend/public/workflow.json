@@ -1,0 +1,471 @@
+{
+    "name": "Email Automation for Auto Labelling",
+    "nodes": [
+    {
+    "parameters": {
+    "content": "## Add AI labels to Gmail messages\nWith this workflow you can automatically set labels for your Gmail message according to its content. \n\n\n**Please remember to set label names both in your Gmail account and workflow.**",
+    "height": 240.57943708322733,
+    "width": 420.4803040774015,
+    "color": 4
+    },
+    "id": "a805b4ca-c370-4c6c-bfdf-6a75e9c43947",
+    "name": "Sticky Note",
+    "type": "n8n-nodes-base.stickyNote",
+    "position": [
+    40,
+    -200
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "content": "### Gmail Trigger\nReceive data from Gmail about new incoming message. \n\n⚠️ Set polling interval according to your needs.",
+    "height": 348.5873725349161,
+    "width": 238.4602598584674
+    },
+    "id": "29bfff02-0a59-4591-8227-a03098bfd264",
+    "name": "Sticky Note2",
+    "type": "n8n-nodes-base.stickyNote",
+    "position": [
+    480,
+    -200
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "content": "###\n\n\n\n\n\n\n\n\n\n\n### JSON schema\nEdit JSON schema and label names according to your needs.\n\n⚠️ **Label names in system prompt and JSON schema should be the same.**",
+    "height": 319.3323098457962,
+    "width": 241.53974014153226
+    },
+    "id": "01708ceb-f0a5-4d0c-bcc1-85ee874da093",
+    "name": "Sticky Note4",
+    "type": "n8n-nodes-base.stickyNote",
+    "position": [
+    1200,
+    180
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "content": "### Get message content\nBased on Gmail message ID retrieve body content of the email and pass it to AI chain.",
+    "height": 348.5873725349161,
+    "width": 238.4602598584674
+    },
+    "id": "c399f227-0db6-418a-8099-9ee6ffe4fbba",
+    "name": "Sticky Note7",
+    "type": "n8n-nodes-base.stickyNote",
+    "position": [
+    740,
+    -200
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "content": "### Assign labels\nLet the AI decide which labels suit the best content of the message.\n\n⚠️ **Remember to edit system prompt** - modify label names and instructions according to your needs.",
+    "height": 348.5873725349161,
+    "width": 378.57661273793565
+    },
+    "id": "77393856-ba58-4c20-a1ef-bc2e897ca188",
+    "name": "Sticky Note8",
+    "type": "n8n-nodes-base.stickyNote",
+    "position": [
+    1000,
+    -200
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "pollTimes": {
+    "item": [
+    {
+    "mode": "everyMinute"
+    }
+    ]
+    },
+    "filters": {}
+    },
+    "id": "00b7d6c1-50c7-4988-89f2-09dd781703ab",
+    "name": "Gmail trigger",
+    "type": "n8n-nodes-base.gmailTrigger",
+    "position": [
+    540,
+    -20
+    ],
+    "typeVersion": 1.2,
+    "credentials": {
+    "gmailOAuth2": {
+    "id": "fOpJFPlomFVavQGl",
+    "name": "Gmail account 2"
+    }
+    }
+    },
+    {
+    "parameters": {
+    "operation": "get",
+    "messageId": "={{ $json.id }}"
+    },
+    "id": "42ba99cc-28c1-423e-8740-b79be00cc8d9",
+    "name": "Get message content",
+    "type": "n8n-nodes-base.gmail",
+    "position": [
+    800,
+    -20
+    ],
+    "webhookId": "b773894c-18c6-454d-9271-6de10be1b7c4",
+    "typeVersion": 2.1,
+    "credentials": {
+    "gmailOAuth2": {
+    "id": "fOpJFPlomFVavQGl",
+    "name": "Gmail account 2"
+    }
+    }
+    },
+    {
+    "parameters": {
+    "promptType": "define",
+    "text": "={{ $('Gmail trigger').item.json.snippet }}",
+    "hasOutputParser": true,
+    "messages": {
+    "messageValues": [
+    {
+    "message": "Based on the email text, classify the email into the following categories - Hackathons, Oracle, Personal, Leads, Test. An email can have multiple lables. Return an array"
+    }
+    ]
+    }
+    },
+    "id": "acdeb1cd-5191-4dcb-aee6-3a662cda2a67",
+    "name": "Assign labels for message",
+    "type": "@n8n/n8n-nodes-langchain.chainLlm",
+    "position": [
+    1060,
+    -20
+    ],
+    "typeVersion": 1.5
+    },
+    {
+    "parameters": {
+    "model": {
+    "__rl": true,
+    "mode": "list",
+    "value": "gpt-4o-mini"
+    },
+    "options": {}
+    },
+    "id": "a087f789-27b6-4068-90fa-a6a25b1268cb",
+    "name": "OpenAI Chat",
+    "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+    "position": [
+    1040,
+    200
+    ],
+    "typeVersion": 1.2,
+    "credentials": {
+    "openAiApi": {
+    "id": "OSPRfJyRveS6En9C",
+    "name": "n8n free OpenAI API credits"
+    }
+    }
+    },
+    {
+    "parameters": {
+    "schemaType": "manual",
+    "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"labels\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\",\n        \"enum\": [\"Hackathons\", \"Test\", \"Oracle\", \"Personal\", \"Leads\"]\n      }\n    }\n  },\n  \"required\": [\"labels\"]\n}"
+    },
+    "id": "3fb72b49-14d5-49bd-a0e5-e70e365acfc7",
+    "name": "JSON Parser",
+    "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+    "position": [
+    1280,
+    200
+    ],
+    "typeVersion": 1.2
+    },
+    {
+    "parameters": {
+    "assignments": {
+    "assignments": [
+    {
+    "id": "72d11a72-6693-447c-b7ca-4ba1a3579075",
+    "name": "labels",
+    "type": "array",
+    "value": "={{ $json.output.labels }}"
+    }
+    ]
+    },
+    "options": {}
+    },
+    "id": "b0b21870-4659-430b-b17c-74d6a1a95b98",
+    "name": "Set label values",
+    "type": "n8n-nodes-base.set",
+    "position": [
+    1440,
+    -20
+    ],
+    "typeVersion": 3.4
+    },
+    {
+    "parameters": {
+    "resource": "label",
+    "returnAll": true
+    },
+    "id": "d97cea2c-51ff-4720-be6e-40f7a9704efc",
+    "name": "Get all labels",
+    "type": "n8n-nodes-base.gmail",
+    "position": [
+    1720,
+    -140
+    ],
+    "webhookId": "dec6f574-f47c-4b5d-86b9-2b0f6c957145",
+    "typeVersion": 2.1,
+    "credentials": {
+    "gmailOAuth2": {
+    "id": "fOpJFPlomFVavQGl",
+    "name": "Gmail account 2"
+    }
+    }
+    },
+    {
+    "parameters": {
+    "fieldToSplitOut": "labels",
+    "options": {}
+    },
+    "id": "005a2409-d32d-457c-94af-ab5fa48d02f7",
+    "name": "Split out assigned labels",
+    "type": "n8n-nodes-base.splitOut",
+    "position": [
+    1720,
+    80
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "mode": "combine",
+    "advanced": true,
+    "mergeByFields": {
+    "values": [
+    {
+    "field1": "name",
+    "field2": "labels"
+    }
+    ]
+    },
+    "options": {}
+    },
+    "id": "3edccfe9-00c0-40ad-8b77-4c137db018a5",
+    "name": "Merge corresponding labels",
+    "type": "n8n-nodes-base.merge",
+    "position": [
+    2000,
+    -20
+    ],
+    "typeVersion": 3.1,
+    "alwaysOutputData": true
+    },
+    {
+    "parameters": {
+    "fieldsToAggregate": {
+    "fieldToAggregate": [
+    {
+    "fieldToAggregate": "id"
+    }
+    ]
+    },
+    "options": {}
+    },
+    "id": "6b1c8c6b-623d-4867-8d05-22cafa67e456",
+    "name": "Aggregate label IDs",
+    "type": "n8n-nodes-base.aggregate",
+    "position": [
+    2260,
+    -20
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "operation": "addLabels",
+    "messageId": "={{ $('Gmail trigger').item.json[\"id\"] }}",
+    "labelIds": "={{ $json.id }}"
+    },
+    "id": "6457a33f-2e31-45ac-bd03-887a5434a6f4",
+    "name": "Add labels to message",
+    "type": "n8n-nodes-base.gmail",
+    "position": [
+    2480,
+    -20
+    ],
+    "webhookId": "4f345fc9-2afd-478b-be3b-d3d28f0fbc82",
+    "typeVersion": 2.1,
+    "credentials": {
+    "gmailOAuth2": {
+    "id": "fOpJFPlomFVavQGl",
+    "name": "Gmail account 2"
+    }
+    }
+    },
+    {
+    "parameters": {
+    "content": "### Aggregarte labels and add to message\nCreate array of label IDs and add to the desired email message in Gmail.",
+    "height": 347.0476323933831,
+    "width": 452.48413953150185
+    },
+    "id": "f618bcc6-afc3-43dd-8e94-760641870183",
+    "name": "Sticky Note6",
+    "type": "n8n-nodes-base.stickyNote",
+    "position": [
+    2200,
+    -180
+    ],
+    "typeVersion": 1
+    },
+    {
+    "parameters": {
+    "content": "### Merge labels\nCombine labels retrieved from Gmail account and assigned by AI together.",
+    "height": 347.0476323933831,
+    "width": 226.14233872620645
+    },
+    "id": "ebb216f6-f468-4a79-9cd4-ced18c3efbe0",
+    "name": "Sticky Note5",
+    "type": "n8n-nodes-base.stickyNote",
+    "position": [
+    1940,
+    -180
+    ],
+    "typeVersion": 1
+    }
+    ],
+    "pinData": {},
+    "connections": {
+    "JSON Parser": {
+    "ai_outputParser": [
+    [
+    {
+    "node": "Assign labels for message",
+    "type": "ai_outputParser",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "OpenAI Chat": {
+    "ai_languageModel": [
+    [
+    {
+    "node": "Assign labels for message",
+    "type": "ai_languageModel",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "Gmail trigger": {
+    "main": [
+    [
+    {
+    "node": "Get message content",
+    "type": "main",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "Get all labels": {
+    "main": [
+    [
+    {
+    "node": "Merge corresponding labels",
+    "type": "main",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "Set label values": {
+    "main": [
+    [
+    {
+    "node": "Get all labels",
+    "type": "main",
+    "index": 0
+    },
+    {
+    "node": "Split out assigned labels",
+    "type": "main",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "Aggregate label IDs": {
+    "main": [
+    [
+    {
+    "node": "Add labels to message",
+    "type": "main",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "Get message content": {
+    "main": [
+    [
+    {
+    "node": "Assign labels for message",
+    "type": "main",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "Assign labels for message": {
+    "main": [
+    [
+    {
+    "node": "Set label values",
+    "type": "main",
+    "index": 0
+    }
+    ]
+    ]
+    },
+    "Split out assigned labels": {
+    "main": [
+    [
+    {
+    "node": "Merge corresponding labels",
+    "type": "main",
+    "index": 1
+    }
+    ]
+    ]
+    },
+    "Merge corresponding labels": {
+    "main": [
+    [
+    {
+    "node": "Aggregate label IDs",
+    "type": "main",
+    "index": 0
+    }
+    ]
+    ]
+    }
+    },
+    "active": true,
+    "settings": {
+    "executionOrder": "v1"
+    },
+    "versionId": "601b03d7-dd8f-434e-b3b2-6ed5ee9b7081",
+    "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "69420ff731cbda2992c43d7997f80e1b5dfff083f37b90825be863e1d57cdf46"
+    },
+    "id": "coWIHFb47eUMjIVr",
+    "tags": []
+    }
