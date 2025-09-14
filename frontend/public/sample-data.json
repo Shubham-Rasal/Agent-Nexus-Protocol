@@ -1,0 +1,48 @@
+{
+  "name": "Sample Test Data",
+  "version": "1.0.0",
+  "description": "This is a sample JSON file for testing the Synapse SDK upload functionality",
+  "timestamp": "2025-01-27T10:00:00Z",
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "name": "Alice Johnson",
+        "email": "alice@example.com",
+        "role": "admin",
+        "permissions": ["read", "write", "delete"]
+      },
+      {
+        "id": 2,
+        "name": "Bob Smith",
+        "email": "bob@example.com",
+        "role": "user",
+        "permissions": ["read"]
+      },
+      {
+        "id": 3,
+        "name": "Carol Davis",
+        "email": "carol@example.com",
+        "role": "moderator",
+        "permissions": ["read", "write"]
+      }
+    ],
+    "settings": {
+      "theme": "dark",
+      "language": "en",
+      "notifications": true,
+      "autoSave": true
+    },
+    "metadata": {
+      "createdBy": "system",
+      "lastModified": "2025-01-27T10:00:00Z",
+      "fileSize": "1.2KB",
+      "checksum": "sha256:abc123def456..."
+    }
+  },
+  "test": {
+    "purpose": "Synapse SDK Testing",
+    "expectedBehavior": "This file should be uploaded to Filecoin and retrievable via PieceCID",
+    "notes": "Use this file to test the complete upload and download workflow"
+  }
+}

@@ -284,7 +284,7 @@ export default function Home() {
             {/* Example with workflowUrl - uncomment to use */}
             <div className="w-full max-w-4xl mt-8">
               <N8NDemo 
-                workflowUrl="workflow.json"
+                workflowUrl="https://www.maximalstudio.in/res/Email_Automation_for_Auto_Labelling.json"
                 frame={true}
                 clickToInteract={false}
                 collapseOnMobile={true}

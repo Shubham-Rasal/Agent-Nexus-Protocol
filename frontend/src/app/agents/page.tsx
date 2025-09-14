@@ -960,27 +960,25 @@ const testAgent = async () => {
 
   if (!dbInitialized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Initializing database...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground mt-4">Initializing database...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 mt-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Agent Management System</h1>
-          <p className="text-gray-600 mb-6">Create, test, and manage custom AI agents with MCP tool integration</p>
-          
-          <div className="flex justify-center gap-3 mb-4">
+         
+          <div className="flex justify-end gap-3 mb-4">
             <button
               onClick={openModal}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground py-3 px-6 rounded-lg font-medium hover:bg-primary/90 transition-all transform hover:scale-105 shadow-lg"
             >
               <Plus className="h-5 w-5" />
               Create Agent
@@ -988,7 +986,7 @@ const testAgent = async () => {
             
             <button
               onClick={clearAllData}
-              className="inline-flex items-center gap-2 bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 transition-all"
+              className="inline-flex items-center gap-2 bg-destructive text-destructive-foreground py-3 px-4 rounded-lg font-medium hover:bg-destructive/90 transition-all"
             >
               <Trash2 className="h-4 w-4" />
               Clear All
@@ -998,9 +996,9 @@ const testAgent = async () => {
           {/* Save Status Indicator */}
           {saveStatus !== 'idle' && (
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
-              saveStatus === 'saving' ? 'bg-yellow-100 text-yellow-700' :
-              saveStatus === 'saved' ? 'bg-green-100 text-green-700' :
-              'bg-red-100 text-red-700'
+              saveStatus === 'saving' ? 'bg-accent text-accent-foreground' :
+              saveStatus === 'saved' ? 'bg-accent text-accent-foreground' :
+              'bg-destructive text-destructive-foreground'
             }`}>
               {saveStatus === 'saving' && '💾 Saving...'}
               {saveStatus === 'saved' && '✅ Saved'}
@@ -1011,73 +1009,73 @@ const testAgent = async () => {
 
        
         {/* MCP Servers Status */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        {/* <div className="bg-card rounded-xl shadow-lg p-6 mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <Server className="w-5 h-5 text-gray-400" />
-            <h2 className="text-lg font-medium text-gray-900">Available MCP Servers</h2>
+            <Server className="w-5 h-5 text-muted-foreground" />
+            <h2 className="text-lg font-medium text-card-foreground">Available MCP Servers</h2>
             <button
               onClick={loadMCPServers}
-              className="ml-auto text-sm text-blue-600 hover:text-blue-700 transition-colors"
+              className="ml-auto text-sm text-primary hover:text-primary/80 transition-colors"
             >
               Refresh
             </button>
           </div>
           {connectedMCPServers.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">
+            <div className="text-center py-4 text-muted-foreground">
               <Server className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No MCP servers connected</p>
-              <p className="text-xs text-gray-400 mt-1">Go to MCP Servers to connect servers first</p>
+              <p className="text-xs text-muted-foreground mt-1">Go to MCP Servers to connect servers first</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {connectedMCPServers.map(server => (
-                <div key={server.id} className="bg-gray-50 rounded-lg p-4">
+                <div key={server.id} className="bg-muted rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Server className="w-4 h-4 text-green-500" />
-                    <span className="font-medium text-gray-900">{server.name}</span>
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                    <span className="font-medium text-foreground">{server.name}</span>
+                    <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
                       {server.type}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
                   </p>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     {server.tools.map(t => t.name).join(', ')}
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Agents Grid */}
         {agents.length === 0 ? (
           <div className="text-center py-16">
-            <Bot className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-500 mb-2">No agents created yet</h3>
-            <p className="text-gray-400">Click "Create Agent" to get started</p>
+            <Bot className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-muted-foreground mb-2">No agents created yet</h3>
+            <p className="text-muted-foreground">Click "Create Agent" to get started</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {agents.map(agent => (
-              <div key={agent.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <div key={agent.id} className="bg-card rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{agent.name}</h3>
-                    <p className="text-gray-600 text-sm mb-3">{agent.description}</p>
+                    <h3 className="text-lg font-bold text-card-foreground mb-2">{agent.name}</h3>
+                    <p className="text-muted-foreground text-sm mb-3">{agent.description}</p>
                   </div>
                   <div className="flex gap-2 ml-3">
                     <button
                       onClick={() => openTestModal(agent)}
-                      className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                       title="Test agent"
                     >
                       <Play className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => deleteAgent(agent.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Delete agent"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -1087,19 +1085,19 @@ const testAgent = async () => {
 
                 <div className="space-y-3">
                   <div>
-                    <span className="text-xs font-medium text-gray-700 uppercase tracking-wide">LLM Provider</span>
-                    <p className="text-sm text-gray-800 mt-1">{agent.llmProvider}</p>
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">LLM Provider</span>
+                    <p className="text-sm text-foreground mt-1">{agent.llmProvider}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Uses</span>
-                      <p className="text-sm text-gray-800 mt-1">{agent.usageCount}</p>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Uses</span>
+                      <p className="text-sm text-foreground mt-1">{agent.usageCount}</p>
                     </div>
                     {agent.lastUsed && (
                       <div>
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Last Used</span>
-                        <p className="text-sm text-gray-800 mt-1">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Used</span>
+                        <p className="text-sm text-foreground mt-1">
                           {new Date(agent.lastUsed).toLocaleDateString()}
                         </p>
                       </div>
@@ -1108,12 +1106,12 @@ const testAgent = async () => {
 
                   {agent.tags.length > 0 && (
                     <div>
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tags</span>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tags</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {agent.tags.map((tag, index) => (
                           <span
                             key={`${agent.id}-tag-${index}`}
-                            className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
+                            className="inline-block px-2 py-1 bg-primary/10 text-primary rounded text-xs"
                           >
                             {tag}
                           </span>
@@ -1124,14 +1122,14 @@ const testAgent = async () => {
 
                   {agent.mcpServers.length > 0 && (
                     <div>
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">MCP Servers</span>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">MCP Servers</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {agent.mcpServers.map((serverId, index) => {
                           const server = mcpServers.find(s => s.id === serverId);
                           return server ? (
                             <span
                               key={`${agent.id}-server-${index}`}
-                              className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
                             >
                               <Server className="h-3 w-3" />
                               {server.name} ({server.tools.length})
@@ -1144,12 +1142,12 @@ const testAgent = async () => {
 
                   {agent.tools.length > 0 && (
                     <div>
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Custom Tools</span>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Custom Tools</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {agent.tools.map((tool, index) => (
                           <span
                             key={`${agent.id}-tool-${index}`}
-                            className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs"
+                            className="inline-block px-2 py-1 bg-accent text-accent-foreground rounded text-xs"
                           >
                             {tool}
                           </span>
@@ -1159,16 +1157,16 @@ const testAgent = async () => {
                   )}
 
                   <div>
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">System Prompt</span>
-                    <p className="text-sm text-gray-700 mt-1 line-clamp-3">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">System Prompt</span>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
                       {agent.systemPrompt.length > 100 
                         ? `${agent.systemPrompt.substring(0, 100)}...` 
                         : agent.systemPrompt}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-gray-100">
-                    <span className="text-xs text-gray-400">
+                  <div className="pt-2 border-t border-border">
+                    <span className="text-xs text-muted-foreground">
                       Created {new Date(agent.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -1180,72 +1178,72 @@ const testAgent = async () => {
 
         {/* Create Agent Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Create New Agent</h2>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-border">
+                <h2 className="text-xl font-bold text-card-foreground">Create New Agent</h2>
               </div>
 
               <div className="p-6 space-y-6">
                 {/* Name Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Agent Name *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                     placeholder="e.g., Code Assistant, Content Writer, Data Analyst"
                   />
                 </div>
 
                 {/* Description Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Description *
                   </label>
                   <input
                     type="text"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                     placeholder="Brief description of what this agent does"
                   />
                 </div>
 
                 {/* System Prompt Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     System Prompt *
                   </label>
                   <textarea
                     rows={4}
                     value={formData.systemPrompt}
                     onChange={(e) => handleInputChange('systemPrompt', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-vertical"
+                    className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all resize-vertical"
                     placeholder="Define the agent's behavior, personality, and capabilities..."
                   />
                 </div>
 
                 {/* LLM Provider Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     LLM Provider *
                   </label>
                   <div className="relative">
                     <select
                       value={formData.llmProvider}
                       onChange={(e) => handleInputChange('llmProvider', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white"
+                      className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none bg-background"
                     >
                       <option value="">Select a provider...</option>
                       {llmProviders.map(provider => (
                         <option key={provider.id} value={provider.id}>{provider.name}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-3.5 h-5 w-5 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
 
@@ -1321,7 +1319,7 @@ const testAgent = async () => {
 
                 {/* Tags Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Tags
                   </label>
                   <div className="space-y-3">
@@ -1331,13 +1329,13 @@ const testAgent = async () => {
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyPress={(e) => handleKeyPress(e, addTag)}
-                        className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="flex-1 px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                         placeholder="e.g., coding, writing, analysis"
                       />
                       <button
                         type="button"
                         onClick={addTag}
-                        className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                        className="px-4 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
                       >
                         <Plus className="h-4 w-4" />
                         Add
@@ -1348,13 +1346,13 @@ const testAgent = async () => {
                         {formData.tags.map((tag, index) => (
                           <span
                             key={`form-tag-${index}`}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
                           >
                             {tag}
                             <button
                               type="button"
                               onClick={() => removeTag(tag)}
-                              className="hover:bg-blue-200 rounded-full p-1 transition-colors"
+                              className="hover:bg-primary/20 rounded-full p-1 transition-colors"
                             >
                               <X className="h-3 w-3" />
                             </button>
@@ -1366,10 +1364,10 @@ const testAgent = async () => {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+              <div className="p-6 border-t border-border flex justify-end gap-3">
                 <button
                   onClick={closeModal}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-6 py-3 border border-input text-foreground rounded-lg hover:bg-muted transition-colors"
                 >
                   Cancel
                 </button>
@@ -1378,8 +1376,8 @@ const testAgent = async () => {
                   disabled={!isFormValid}
                   className={`px-6 py-3 rounded-lg font-medium transition-all ${
                     isFormValid
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transform hover:scale-105'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 transform hover:scale-105'
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
                 >
                   Create Agent
@@ -1391,21 +1389,21 @@ const testAgent = async () => {
 
         {/* Test Agent Modal */}
         {isTestModalOpen && selectedAgent && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Test Agent: {selectedAgent.name}</h2>
-                <p className="text-gray-600 mt-1">{selectedAgent.description}</p>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-card rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-border">
+                <h2 className="text-xl font-bold text-card-foreground">Test Agent: {selectedAgent.name}</h2>
+                <p className="text-muted-foreground mt-1">{selectedAgent.description}</p>
                 {selectedAgent.mcpServers.length > 0 && (
                   <div className="mt-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Connected MCP Servers:</span>
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Connected MCP Servers:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {selectedAgent.mcpServers.map((serverId, index) => {
                         const server = mcpServers.find(s => s.id === serverId);
                         return server ? (
                           <span
                             key={`test-server-${index}`}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
                           >
                             <Server className="h-3 w-3" />
                             {server.name} ({server.tools.length} tools)
@@ -1414,8 +1412,8 @@ const testAgent = async () => {
                       })}
                     </div>
                     <div className="mt-2">
-                      <span className="text-xs font-medium text-gray-500">Available Tools:</span>
-                      <div className="text-xs text-gray-600 mt-1">
+                      <span className="text-xs font-medium text-muted-foreground">Available Tools:</span>
+                      <div className="text-xs text-muted-foreground mt-1">
                         {selectedAgent.mcpServers.flatMap(serverId => {
                           const server = mcpServers.find(s => s.id === serverId);
                           return server ? server.tools.map(tool => `${server.name}.${tool.name}${tool.description ? ` - ${tool.description}` : ''}`) : [];

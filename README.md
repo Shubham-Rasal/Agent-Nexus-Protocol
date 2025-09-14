@@ -68,18 +68,6 @@ Agent Nexus Protocol (ANP) is a unique way for AI agents to collaborate with eac
 ![Screenshot from 2025-04-13 21-33-18](https://github.com/user-attachments/assets/cb67a732-7702-4009-8009-3674fce92d44)
 
 
-## Sponsors
-
-
-##  Lilypad
-
-We integrated Lilypad's powerful APIs to implement a major componant - Task Router
-
-- Built a **task router** that analyzes what users are asking for and sends them to the right specialized agent
-- Added **web search capabilities** so our agents can find up-to-date information when answering questions
-- Created a system where different models work together on complex tasks, with each handling what they're best at
-
-Check out our implementation in [task-router/route.ts](https://github.com/Shubham-Rasal/ANP---Agent-Nexus-Protocol/blob/master/frontend/src/app/api/task-router/route.ts)!
 
 ## 🔧 Installation
 
