@@ -16,6 +16,74 @@
       ],
       "stake": 1000,
       "privacy_level": "low"
+    },
+    {
+      "id": "lead-qualifier",
+      "name": "Lead Qualifier",
+      "description": "Qualifies leads based on provided data and criteria, and collaborates with outreach and analytics agents.",
+      "systemPrompt": "You are an expert in lead qualification. Analyze incoming lead data, score leads, and provide recommendations for next steps. Collaborate with other agents as needed.",
+      "knowledge_sources": [
+        "recall:lead_qualification_criteria",
+        "akave:crm_data"
+      ],
+      "tools": [
+        "lead_scoring",
+        "data_enrichment",
+        "crm_lookup"
+      ],
+      "stake": 800,
+      "privacy_level": "medium"
+    },
+    {
+      "id": "email-outreach",
+      "name": "Email Outreach",
+      "description": "Handles personalized email campaigns and outreach to qualified leads, working closely with lead and meeting agents.",
+      "systemPrompt": "You are an email outreach specialist. Craft personalized, effective emails to engage leads and drive conversions. Use available data to optimize messaging.",
+      "knowledge_sources": [
+        "recall:email_templates",
+        "akave:lead_profiles"
+      ],
+      "tools": [
+        "email_sender",
+        "template_selector",
+        "open_tracker"
+      ],
+      "stake": 700,
+      "privacy_level": "medium"
+    },
+    {
+      "id": "meeting-scheduler",
+      "name": "Meeting Scheduler",
+      "description": "Schedules meetings with leads and clients, integrating with calendars and optimizing for availability.",
+      "systemPrompt": "You are a meeting scheduling assistant. Coordinate with leads and team members to find optimal meeting times, send invites, and handle rescheduling.",
+      "knowledge_sources": [
+        "recall:calendar_availability",
+        "akave:timezone_data"
+      ],
+      "tools": [
+        "calendar_integration",
+        "invite_sender",
+        "reminder_service"
+      ],
+      "stake": 600,
+      "privacy_level": "medium"
+    },
+    {
+      "id": "data-analyzer",
+      "name": "Data Analyzer",
+      "description": "Analyzes campaign, lead, and meeting data to provide insights and recommendations for optimization.",
+      "systemPrompt": "You are a data analysis expert. Review campaign, lead, and meeting data to identify trends, generate reports, and suggest improvements.",
+      "knowledge_sources": [
+        "recall:campaign_data",
+        "akave:analytics_tools"
+      ],
+      "tools": [
+        "report_generator",
+        "trend_identifier",
+        "visualization"
+      ],
+      "stake": 900,
+      "privacy_level": "high"
     }
   ]
 }

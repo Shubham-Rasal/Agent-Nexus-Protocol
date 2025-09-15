@@ -262,7 +262,7 @@ export default function Home() {
       </section>
 
       {/* N8N Workflow Demo Section */}
-      <section className="w-full py-16 bg-white">
+      {/* <section className="w-full py-16 bg-white">
         <div className="container px-4 md:px-6 mx-auto">
           <div className="flex flex-col items-center">
             <div className="space-y-2 max-w-[700px] mb-8 text-center">
@@ -271,17 +271,8 @@ export default function Home() {
                 Experience how n8n workflows integrate with our Agent Nexus Protocol for seamless automation
               </p>
             </div>
-            
-            {/* <div className="w-full max-w-4xl">
-              <N8NDemo 
-                workflow='{"nodes":[{"name":"Workflow-Created","type":"n8n-nodes-base.webhook","position":[512,369],"parameters":{"path":"webhook","httpMethod":"POST"},"typeVersion":1}],"connections":{}}'
-                frame={true}
-                clickToInteract={true}
-                collapseOnMobile={true}
-              />
-            </div> */}
-            
-            {/* Example with workflowUrl - uncomment to use */}
+
+         
             <div className="w-full max-w-4xl mt-8">
               <N8NDemo 
                 workflowUrl="https://www.maximalstudio.in/res/Email_Automation_for_Auto_Labelling.json"
@@ -292,7 +283,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
