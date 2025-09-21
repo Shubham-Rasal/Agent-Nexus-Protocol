@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X, ChevronDown, Trash2, Play, Bot, Server, Check } from 'lucide-react';
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText, tool} from "ai";
+import { generateText, tool } from "ai";
 import { z } from "zod";
 import { MCPApiService } from '../../services/mcpApiService';
+import { AgentEventDispatcher } from '@/services/agentEvents';
 
 // Initialize AI providers
 const google = createGoogleGenerativeAI({
@@ -29,7 +30,7 @@ class IndexedDBService {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        
+
         // Create agents store
         if (!db.objectStoreNames.contains('agents')) {
           const agentsStore = db.createObjectStore('agents', { keyPath: 'id' });
@@ -48,7 +49,7 @@ class IndexedDBService {
 
   async saveAgent(agent: AgentData): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['agents'], 'readwrite');
       const store = transaction.objectStore('agents');
@@ -61,7 +62,7 @@ class IndexedDBService {
 
   async getAllAgents(): Promise<AgentData[]> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['agents'], 'readonly');
       const store = transaction.objectStore('agents');
@@ -74,7 +75,7 @@ class IndexedDBService {
 
   async deleteAgent(agentId: string): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['agents'], 'readwrite');
       const store = transaction.objectStore('agents');
@@ -87,12 +88,12 @@ class IndexedDBService {
 
   async saveTestResult(result: TestResult): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     const resultWithId = {
       ...result,
       id: `${result.agentId}-${Date.now()}-${Math.random()}`
     };
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['testResults'], 'readwrite');
       const store = transaction.objectStore('testResults');
@@ -105,7 +106,7 @@ class IndexedDBService {
 
   async getAllTestResults(): Promise<TestResult[]> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['testResults'], 'readonly');
       const store = transaction.objectStore('testResults');
@@ -118,7 +119,7 @@ class IndexedDBService {
 
   async getTestResultsByAgent(agentId: string): Promise<TestResult[]> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['testResults'], 'readonly');
       const store = transaction.objectStore('testResults');
@@ -132,21 +133,21 @@ class IndexedDBService {
 
   async deleteTestResultsByAgent(agentId: string): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     const results = await this.getTestResultsByAgent(agentId);
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['testResults'], 'readwrite');
       const store = transaction.objectStore('testResults');
-      
+
       let deletedCount = 0;
       const totalCount = results.length;
-      
+
       if (totalCount === 0) {
         resolve();
         return;
       }
-      
+
       results.forEach((result) => {
         const request = store.delete((result as any).id);
         request.onerror = () => reject(request.error);
@@ -162,25 +163,25 @@ class IndexedDBService {
 
   async clearAllData(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['agents', 'testResults'], 'readwrite');
       const agentsStore = transaction.objectStore('agents');
       const resultsStore = transaction.objectStore('testResults');
-      
+
       let clearedStores = 0;
-      
+
       const agentsRequest = agentsStore.clear();
       const resultsRequest = resultsStore.clear();
-      
+
       agentsRequest.onerror = () => reject(agentsRequest.error);
       resultsRequest.onerror = () => reject(resultsRequest.error);
-      
+
       agentsRequest.onsuccess = () => {
         clearedStores++;
         if (clearedStores === 2) resolve();
       };
-      
+
       resultsRequest.onsuccess = () => {
         clearedStores++;
         if (clearedStores === 2) resolve();
@@ -243,8 +244,8 @@ interface AgentData {
   systemPrompt: string;
   tags: string[];
   llmProvider: string;
-  tools: string[]; 
-  mcpServers: string[]; 
+  tools: string[];
+  mcpServers: string[];
   createdAt: string;
   lastUsed?: string;
   usageCount: number;
@@ -282,7 +283,7 @@ const AIAgentsPage: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [dbService] = useState(() => new IndexedDBService());
   const [dbInitialized, setDbInitialized] = useState(false);
-  
+
   const [formData, setFormData] = useState<Omit<AgentData, 'id' | 'createdAt' | 'usageCount'>>({
     name: '',
     description: '',
@@ -311,20 +312,20 @@ const AIAgentsPage: React.FC = () => {
         setSaveStatus('saving'); // Show loading state
         await dbService.init();
         setDbInitialized(true);
-        
+
         // Load data after DB initialization
         const [loadedAgents, loadedResults] = await Promise.all([
           dbService.getAllAgents(),
           dbService.getAllTestResults()
         ]);
-        
+
         setAgents(loadedAgents.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
         setTestResults(loadedResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
         setSaveStatus('idle');
       } catch (error) {
         console.error('Failed to initialize IndexedDB:', error);
         setSaveStatus('error');
-        
+
         // Try to reset and reinitialize the database
         console.log('Attempting to reset database...');
         try {
@@ -358,7 +359,7 @@ const AIAgentsPage: React.FC = () => {
       success,
       error
     };
-    
+
     console.group(`🔧 Tool Call #${step}: ${toolName}`);
     console.log('📍 Server ID:', serverId || 'N/A');
     console.log('📥 Arguments:', JSON.stringify(args, null, 2));
@@ -367,7 +368,7 @@ const AIAgentsPage: React.FC = () => {
     if (error) console.log('❌ Error:', error);
     console.log('⏰ Timestamp:', logEntry.timestamp);
     console.groupEnd();
-    
+
     return logEntry;
   };
 
@@ -458,7 +459,7 @@ const AIAgentsPage: React.FC = () => {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Tool execution failed';
       console.error(`💥 Tool execution error:`, error);
-      
+
       const errorResult = {
         success: false,
         error: errorMessage,
@@ -466,7 +467,7 @@ const AIAgentsPage: React.FC = () => {
         serverId: serverId,
         args: args || {}
       };
-      
+
       const logEntry = logToolCall(stepNumber, toolName, args, errorResult, false, errorMessage, serverId);
       console.groupEnd();
       return { result: errorResult, logEntry };
@@ -527,27 +528,27 @@ const AIAgentsPage: React.FC = () => {
 
       server.tools.forEach(mcpTool => {
         const toolKey = `${server.name}_${mcpTool.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
-        
+
         console.log(`📝 Registering tool: ${toolKey} -> ${server.name}.${mcpTool.name}`);
-        
+
         tools[toolKey] = tool({
           description: mcpTool.description || `Tool from ${server.name}: ${mcpTool.name}`,
-          inputSchema: mcpTool.inputSchema 
+          inputSchema: mcpTool.inputSchema
             ? convertMCPSchemaToZod(mcpTool.inputSchema)
             : z.object({}),
           execute: async (args: any) => {
             stepCounter++;
             console.log(`🎬 Executing tool: ${toolKey} (Step #${stepCounter})`);
             console.log('📦 Raw execute args:', args);
-            
+
             const { result, logEntry } = await handleMCPToolCall(serverId, mcpTool.name, args, stepCounter);
-            
+
             // Store log entry in a way that can be accessed later
             if (!window.__currentToolCalls) {
               window.__currentToolCalls = [];
             }
             window.__currentToolCalls.push(logEntry);
-            
+
             return result;
           }
         });
@@ -645,6 +646,10 @@ const AIAgentsPage: React.FC = () => {
       await dbService.saveAgent(newAgent);
       setAgents(prev => [newAgent, ...prev]);
       setSaveStatus('saved');
+
+      // Dispatch event to update mention system
+      AgentEventDispatcher.dispatchAgentCreated(newAgent.id);
+
       setTimeout(() => setSaveStatus('idle'), 2000);
       closeModal();
     } catch (error) {
@@ -654,270 +659,166 @@ const AIAgentsPage: React.FC = () => {
     }
   };
 
-  // Replace your testAgent function with this enhanced version
-const testAgent = async () => {
-  if (!selectedAgent || !testQuery.trim() || !dbInitialized) return;
-  
-  setIsTestingAgent(true);
-  const startTime = Date.now();
-  
-  // Clear previous tool calls
-  window.__currentToolCalls = [];
-  
-  console.group(`🤖 Testing Agent: ${selectedAgent.name}`);
-  console.log('🎯 Query:', testQuery);
-  console.log('🔧 System Prompt:', selectedAgent.systemPrompt);
-  console.log('🔌 MCP Servers:', selectedAgent.mcpServers);
-  
-  try {
-    let response = '';
-    
-    if (selectedAgent.llmProvider === 'google') {
-      // Create tools from MCP servers
-      const tools = createToolsFromMCPServers(selectedAgent.mcpServers);
-      
-      console.log('🛠️ Available tools:', Object.keys(tools));
+  const testAgent = async () => {
+    if (!selectedAgent || !testQuery.trim() || !dbInitialized) return;
 
-      const result = await generateText({
-        model: google("models/gemini-2.5-flash"),
-        system: selectedAgent.systemPrompt,
-        prompt: testQuery,
-        tools: tools,
-        // maxSteps: 10, // Limit tool execution steps
-        experimental_telemetry: {
-          isEnabled: true,
-          functionId: 'test-agent'
-        }
-      });
+    setIsTestingAgent(true);
+    const startTime = Date.now();
 
-      // Enhanced response extraction
-      if (result.text) {
-        response = result.text;
-      } else if (result.steps && result.steps.length > 0) {
-        // If no final text, try to extract from steps
-        const lastStep = result.steps[result.steps.length - 1];
-        if (lastStep && 'text' in lastStep && lastStep.text) {
-          response = lastStep.text;
-        } else {
-          // Fallback: create response from tool results
-          const toolResults = window.__currentToolCalls || [];
-          if (toolResults.length > 0) {
-            const successfulResults = toolResults.filter(call => call.success);
-            response = `Tool execution completed. ${successfulResults.length} successful tool calls out of ${toolResults.length} total calls.\n\n`;
-            
-            toolResults.forEach((call, index) => {
-              response += `Step ${call.step}: ${call.toolName}\n`;
-              if (call.success && call.result) {
-                // Try to extract meaningful content from result
-                if (typeof call.result === 'object' && call.result.content) {
-                  response += `Result: ${call.result.content[0].text}\n\n`;
-                } else if (typeof call.result === 'string') {
-                  response += `Result: ${call.result}\n\n`;
-                } else {
-                  response += `Result: ${JSON.stringify(call.result, null, 2)}\n\n`;
-                }
-              } else if (call.error) {
-                response += `Error: ${call.error}\n\n`;
-              }
-            });
-          } else {
-            response = "No response generated. This might indicate an issue with the AI model or tool execution.";
+    // Clear previous tool calls
+    window.__currentToolCalls = [];
+
+    console.group(`🤖 Testing Agent: ${selectedAgent.name}`);
+    console.log('🎯 Query:', testQuery);
+    console.log('🔧 System Prompt:', selectedAgent.systemPrompt);
+    console.log('🔌 MCP Servers:', selectedAgent.mcpServers);
+
+    try {
+      let response = '';
+
+      if (selectedAgent.llmProvider === 'google') {
+        // Create tools from MCP servers
+        const tools = createToolsFromMCPServers(selectedAgent.mcpServers);
+
+        console.log('🛠️ Available tools:', Object.keys(tools));
+
+        const result = await generateText({
+          model: google("models/gemini-2.5-flash"),
+          system: selectedAgent.systemPrompt,
+          prompt: testQuery,
+          tools: tools,
+          // maxSteps: 10, // Limit tool execution steps
+          experimental_telemetry: {
+            isEnabled: true,
+            functionId: 'test-agent'
           }
+        });
+
+        // Enhanced response extraction
+        if (result.text) {
+          response = result.text;
+        } else if (result.steps && result.steps.length > 0) {
+          // If no final text, try to extract from steps
+          const lastStep = result.steps[result.steps.length - 1];
+          if (lastStep && 'text' in lastStep && lastStep.text) {
+            response = lastStep.text;
+          } else {
+            // Fallback: create response from tool results
+            const toolResults = window.__currentToolCalls || [];
+            if (toolResults.length > 0) {
+              const successfulResults = toolResults.filter(call => call.success);
+              response = `Tool execution completed. ${successfulResults.length} successful tool calls out of ${toolResults.length} total calls.\n\n`;
+
+              toolResults.forEach((call, index) => {
+                response += `Step ${call.step}: ${call.toolName}\n`;
+                if (call.success && call.result) {
+                  // Try to extract meaningful content from result
+                  if (typeof call.result === 'object' && call.result.content) {
+                    response += `Result: ${call.result.content[0].text}\n\n`;
+                  } else if (typeof call.result === 'string') {
+                    response += `Result: ${call.result}\n\n`;
+                  } else {
+                    response += `Result: ${JSON.stringify(call.result, null, 2)}\n\n`;
+                  }
+                } else if (call.error) {
+                  response += `Error: ${call.error}\n\n`;
+                }
+              });
+            } else {
+              response = "No response generated. This might indicate an issue with the AI model or tool execution.";
+            }
+          }
+        } else {
+          response = "No response generated from the AI model.";
         }
+
+        console.log('📝 Generated Response:', response);
+        console.log('📊 Result structure:', {
+          hasText: !!result.text,
+          textLength: result.text?.length || 0,
+          stepsCount: result.steps?.length || 0,
+          toolCallsCount: window.__currentToolCalls?.length || 0
+        });
+
       } else {
-        response = "No response generated from the AI model.";
+        response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
+        console.log('⚠️ Mock response generated for unsupported provider');
       }
 
-      console.log('📝 Generated Response:', response);
-      console.log('📊 Result structure:', {
-        hasText: !!result.text,
-        textLength: result.text?.length || 0,
-        stepsCount: result.steps?.length || 0,
-        toolCallsCount: window.__currentToolCalls?.length || 0
-      });
+      const executionTime = Date.now() - startTime;
+      const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
 
-    } else {
-      response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
-      console.log('⚠️ Mock response generated for unsupported provider');
+      const testResult: TestResult = {
+        agentId: selectedAgent.id,
+        query: testQuery,
+        response: response || "No response generated",
+        timestamp: new Date().toISOString(),
+        toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
+        executionTime
+      };
+
+      console.log('💾 Final Test Result:', testResult);
+      console.groupEnd();
+
+      // Save to IndexedDB
+      await dbService.saveTestResult(testResult);
+      setTestResults(prev => [testResult, ...prev]);
+
+      // Update agent usage
+      const updatedAgent = {
+        ...selectedAgent,
+        usageCount: selectedAgent.usageCount + 1,
+        lastUsed: new Date().toISOString()
+      };
+
+      await dbService.saveAgent(updatedAgent);
+      setAgents(prev => prev.map(agent =>
+        agent.id === selectedAgent.id ? updatedAgent : agent
+      ));
+
+      setTestQuery('');
+    } catch (error) {
+      console.error('Error testing agent:', error);
+      console.groupEnd();
+
+      const executionTime = Date.now() - startTime;
+      const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
+
+      let errorMessage = `Error testing agent: ${error instanceof Error ? error.message : 'Unknown error'}`;
+
+      // If we have tool call logs, include them in the error response
+      if (toolCallLogs.length > 0) {
+        errorMessage += `\n\nTool calls were executed before the error:`;
+        toolCallLogs.forEach((call, index) => {
+          errorMessage += `\n${index + 1}. ${call.toolName}: ${call.success ? 'Success' : 'Failed'}`;
+          if (call.error) {
+            errorMessage += ` (${call.error})`;
+          }
+        });
+      }
+
+      const errorResult: TestResult = {
+        agentId: selectedAgent.id,
+        query: testQuery,
+        response: errorMessage,
+        timestamp: new Date().toISOString(),
+        toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
+        executionTime
+      };
+
+      // Save error result to IndexedDB
+      try {
+        await dbService.saveTestResult(errorResult);
+        setTestResults(prev => [errorResult, ...prev]);
+      } catch (saveError) {
+        console.error('Failed to save error result:', saveError);
+      }
+    } finally {
+      setIsTestingAgent(false);
+      // Clean up
+      window.__currentToolCalls = [];
     }
-
-    const executionTime = Date.now() - startTime;
-    const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
-
-    const testResult: TestResult = {
-      agentId: selectedAgent.id,
-      query: testQuery,
-      response: response || "No response generated",
-      timestamp: new Date().toISOString(),
-      toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
-      executionTime
-    };
-
-    console.log('💾 Final Test Result:', testResult);
-    console.groupEnd();
-
-    // Save to IndexedDB
-    await dbService.saveTestResult(testResult);
-    setTestResults(prev => [testResult, ...prev]);
-    
-    // Update agent usage
-    const updatedAgent = { 
-      ...selectedAgent, 
-      usageCount: selectedAgent.usageCount + 1, 
-      lastUsed: new Date().toISOString() 
-    };
-    
-    await dbService.saveAgent(updatedAgent);
-    setAgents(prev => prev.map(agent => 
-      agent.id === selectedAgent.id ? updatedAgent : agent
-    ));
-    
-    setTestQuery('');
-  } catch (error) {
-    console.error('Error testing agent:', error);
-    console.groupEnd();
-    
-    const executionTime = Date.now() - startTime;
-    const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
-    
-    let errorMessage = `Error testing agent: ${error instanceof Error ? error.message : 'Unknown error'}`;
-    
-    // If we have tool call logs, include them in the error response
-    if (toolCallLogs.length > 0) {
-      errorMessage += `\n\nTool calls were executed before the error:`;
-      toolCallLogs.forEach((call, index) => {
-        errorMessage += `\n${index + 1}. ${call.toolName}: ${call.success ? 'Success' : 'Failed'}`;
-        if (call.error) {
-          errorMessage += ` (${call.error})`;
-        }
-      });
-    }
-    
-    const errorResult: TestResult = {
-      agentId: selectedAgent.id,
-      query: testQuery,
-      response: errorMessage,
-      timestamp: new Date().toISOString(),
-      toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
-      executionTime
-    };
-    
-    // Save error result to IndexedDB
-    try {
-      await dbService.saveTestResult(errorResult);
-      setTestResults(prev => [errorResult, ...prev]);
-    } catch (saveError) {
-      console.error('Failed to save error result:', saveError);
-    }
-  } finally {
-    setIsTestingAgent(false);
-    // Clean up
-    window.__currentToolCalls = [];
-  }
-};
-  // const testAgent = async () => {
-  //   if (!selectedAgent || !testQuery.trim() || !dbInitialized) return;
-    
-  //   setIsTestingAgent(true);
-  //   const startTime = Date.now();
-    
-  //   // Clear previous tool calls
-  //   window.__currentToolCalls = [];
-    
-  //   console.group(`🤖 Testing Agent: ${selectedAgent.name}`);
-  //   console.log('🎯 Query:', testQuery);
-  //   console.log('🔧 System Prompt:', selectedAgent.systemPrompt);
-  //   console.log('🔌 MCP Servers:', selectedAgent.mcpServers);
-    
-  //   try {
-  //     let response = '';
-      
-  //     if (selectedAgent.llmProvider === 'google') {
-  //       // Create tools from MCP servers
-  //       const tools = createToolsFromMCPServers(selectedAgent.mcpServers);
-        
-  //       console.log('🛠️ Available tools:', Object.keys(tools));
-
-  //       const result = await generateText({
-  //         model: google("models/gemini-2.5-flash"),
-  //         system: selectedAgent.systemPrompt,
-  //         prompt: testQuery,
-  //         tools: tools,
-  //       });
-
-  //       response = result.text;
-  //       console.log('📝 Generated Response:', response);
-
-  //       // Log the complete result structure for debugging
-  //       console.group('🔍 Complete AI SDK Result Structure');
-  //       console.log('Result object:', result);
-  //       console.log('Result.steps:', result.steps);
-  //       console.log('Tool calls from window:', window.__currentToolCalls);
-  //       console.groupEnd();
-
-  //     } else {
-  //       response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
-  //       console.log('⚠️ Mock response generated for unsupported provider');
-  //     }
-
-  //     const executionTime = Date.now() - startTime;
-  //     const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
-
-  //     const testResult: TestResult = {
-  //       agentId: selectedAgent.id,
-  //       query: testQuery,
-  //       response,
-  //       timestamp: new Date().toISOString(),
-  //       toolCalls: toolCallLogs.length > 0 ? toolCallLogs : undefined,
-  //       executionTime
-  //     };
-
-  //     console.log('💾 Final Test Result:', testResult);
-  //     console.groupEnd();
-
-  //     // Save to IndexedDB
-  //     await dbService.saveTestResult(testResult);
-  //     setTestResults(prev => [testResult, ...prev]);
-      
-  //     // Update agent usage
-  //     const updatedAgent = { 
-  //       ...selectedAgent, 
-  //       usageCount: selectedAgent.usageCount + 1, 
-  //       lastUsed: new Date().toISOString() 
-  //     };
-      
-  //     await dbService.saveAgent(updatedAgent);
-  //     setAgents(prev => prev.map(agent => 
-  //       agent.id === selectedAgent.id ? updatedAgent : agent
-  //     ));
-      
-  //     setTestQuery('');
-  //   } catch (error) {
-  //     console.error('Error testing agent:', error);
-  //     console.groupEnd();
-      
-  //     const executionTime = Date.now() - startTime;
-  //     const errorResult: TestResult = {
-  //       agentId: selectedAgent.id,
-  //       query: testQuery,
-  //       response: `Error testing agent: ${error instanceof Error ? error.message : 'Unknown error'}`,
-  //       timestamp: new Date().toISOString(),
-  //       executionTime
-  //     };
-      
-  //     // Save error result to IndexedDB
-  //     try {
-  //       await dbService.saveTestResult(errorResult);
-  //       setTestResults(prev => [errorResult, ...prev]);
-  //     } catch (saveError) {
-  //       console.error('Failed to save error result:', saveError);
-  //     }
-  //   } finally {
-  //     setIsTestingAgent(false);
-  //     // Clean up
-  //     window.__currentToolCalls = [];
-  //   }
-  // };
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === 'Enter') {
@@ -934,9 +835,12 @@ const testAgent = async () => {
         dbService.deleteAgent(agentId),
         dbService.deleteTestResultsByAgent(agentId)
       ]);
-      
+
       setAgents(prev => prev.filter(agent => agent.id !== agentId));
       setTestResults(prev => prev.filter(result => result.agentId !== agentId));
+
+      // Dispatch event to update mention system
+      AgentEventDispatcher.dispatchAgentDeleted(agentId);
     } catch (error) {
       console.error('Failed to delete agent:', error);
     }
@@ -944,12 +848,15 @@ const testAgent = async () => {
 
   const clearAllData = async () => {
     if (!dbInitialized) return;
-    
+
     if (confirm('Are you sure you want to clear all agents and test results? This cannot be undone.')) {
       try {
         await dbService.clearAllData();
         setAgents([]);
         setTestResults([]);
+
+        // Dispatch event to update mention system
+        AgentEventDispatcher.dispatchAllDataCleared();
       } catch (error) {
         console.error('Failed to clear data:', error);
       }
@@ -974,7 +881,7 @@ const testAgent = async () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 mt-12">
-         
+
           <div className="flex justify-end gap-3 mb-4">
             <button
               onClick={openModal}
@@ -983,7 +890,7 @@ const testAgent = async () => {
               <Plus className="h-5 w-5" />
               Create Agent
             </button>
-            
+
             <button
               onClick={clearAllData}
               className="inline-flex items-center gap-2 bg-destructive text-destructive-foreground py-3 px-4 rounded-lg font-medium hover:bg-destructive/90 transition-all"
@@ -995,59 +902,16 @@ const testAgent = async () => {
 
           {/* Save Status Indicator */}
           {saveStatus !== 'idle' && (
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
-              saveStatus === 'saving' ? 'bg-accent text-accent-foreground' :
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${saveStatus === 'saving' ? 'bg-accent text-accent-foreground' :
               saveStatus === 'saved' ? 'bg-accent text-accent-foreground' :
-              'bg-destructive text-destructive-foreground'
-            }`}>
+                'bg-destructive text-destructive-foreground'
+              }`}>
               {saveStatus === 'saving' && '💾 Saving...'}
               {saveStatus === 'saved' && '✅ Saved'}
               {saveStatus === 'error' && '❌ Save failed'}
             </div>
           )}
         </div>
-
-       
-        {/* MCP Servers Status */}
-        {/* <div className="bg-card rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Server className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-lg font-medium text-card-foreground">Available MCP Servers</h2>
-            <button
-              onClick={loadMCPServers}
-              className="ml-auto text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              Refresh
-            </button>
-          </div>
-          {connectedMCPServers.length === 0 ? (
-            <div className="text-center py-4 text-muted-foreground">
-              <Server className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No MCP servers connected</p>
-              <p className="text-xs text-muted-foreground mt-1">Go to MCP Servers to connect servers first</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {connectedMCPServers.map(server => (
-                <div key={server.id} className="bg-muted rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Server className="w-4 h-4 text-green-500" />
-                    <span className="font-medium text-foreground">{server.name}</span>
-                    <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
-                      {server.type}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
-                  </p>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {server.tools.map(t => t.name).join(', ')}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div> */}
 
         {/* Agents Grid */}
         {agents.length === 0 ? (
@@ -1159,8 +1023,8 @@ const testAgent = async () => {
                   <div>
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">System Prompt</span>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
-                      {agent.systemPrompt.length > 100 
-                        ? `${agent.systemPrompt.substring(0, 100)}...` 
+                      {agent.systemPrompt.length > 100
+                        ? `${agent.systemPrompt.substring(0, 100)}...`
                         : agent.systemPrompt}
                     </p>
                   </div>
@@ -1374,11 +1238,10 @@ const testAgent = async () => {
                 <button
                   onClick={handleSubmit}
                   disabled={!isFormValid}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                    isFormValid
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 transform hover:scale-105'
-                      : 'bg-muted text-muted-foreground cursor-not-allowed'
-                  }`}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all ${isFormValid
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90 transform hover:scale-105'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                    }`}
                 >
                   Create Agent
                 </button>
@@ -1442,11 +1305,10 @@ const testAgent = async () => {
                       <button
                         onClick={testAgent}
                         disabled={!testQuery.trim() || isTestingAgent}
-                        className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                          testQuery.trim() && !isTestingAgent
-                            ? 'bg-blue-500 text-white hover:bg-blue-600'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                        className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${testQuery.trim() && !isTestingAgent
+                          ? 'bg-blue-500 text-white hover:bg-blue-600'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
                       >
                         <Play className="h-4 w-4" />
                         {isTestingAgent ? 'Testing...' : 'Test'}
@@ -1459,83 +1321,82 @@ const testAgent = async () => {
                     {testResults
                       .filter(result => result.agentId === selectedAgent.id)
                       .map((result, index) => (
-                      <div key={`test-result-${selectedAgent.id}-${index}`} className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <strong className="text-sm text-gray-700">Query:</strong>
-                          <div className="text-right">
-                            <span className="text-xs text-gray-500 block">
-                              {new Date(result.timestamp).toLocaleString()}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {result.executionTime}ms
-                            </span>
+                        <div key={`test-result-${selectedAgent.id}-${index}`} className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <strong className="text-sm text-gray-700">Query:</strong>
+                            <div className="text-right">
+                              <span className="text-xs text-gray-500 block">
+                                {new Date(result.timestamp).toLocaleString()}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {result.executionTime}ms
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <p className="text-sm text-gray-800 mb-3">{result.query}</p>
-                        
-                        {/* Enhanced tool calls display */}
-                        {result.toolCalls && result.toolCalls.length > 0 && (
-                          <div className="mb-3 p-3 bg-blue-50 rounded-lg">
-                            <strong className="text-sm text-blue-700 mb-2 block">
-                              Tool Calls ({result.toolCalls.length}):
-                            </strong>
-                            {result.toolCalls.map((toolCall, toolIndex) => (
-                              <div key={toolIndex} className="mt-2 p-3 bg-white rounded border-l-4 border-blue-300">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="text-sm font-medium text-blue-800">
-                                    Step #{toolCall.step}: {toolCall.toolName}
-                                    {toolCall.serverId && (
-                                      <span className="text-xs text-gray-500 ml-2">
-                                        (Server: {toolCall.serverId})
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className={`text-xs px-2 py-1 rounded ${
-                                    toolCall.success 
-                                      ? 'bg-green-100 text-green-700' 
-                                      : 'bg-red-100 text-red-700'
-                                  }`}>
-                                    {toolCall.success ? 'Success' : 'Failed'}
-                                  </div>
-                                </div>
-                                
-                                <div className="space-y-2 text-xs">
-                                  <div>
-                                    <strong className="text-gray-700">Arguments:</strong>
-                                    <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
-                                      {JSON.stringify(toolCall.args, null, 2)}
-                                    </pre>
-                                  </div>
-                                  
-                                  <div>
-                                    <strong className="text-gray-700">Result:</strong>
-                                    <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
-                                      {JSON.stringify(toolCall.result, null, 2)}
-                                    </pre>
-                                  </div>
-                                  
-                                  {toolCall.error && (
-                                    <div>
-                                      <strong className="text-red-700">Error:</strong>
-                                      <p className="mt-1 p-2 bg-red-50 rounded text-red-600">
-                                        {toolCall.error}
-                                      </p>
+                          <p className="text-sm text-gray-800 mb-3">{result.query}</p>
+
+                          {/* Enhanced tool calls display */}
+                          {result.toolCalls && result.toolCalls.length > 0 && (
+                            <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+                              <strong className="text-sm text-blue-700 mb-2 block">
+                                Tool Calls ({result.toolCalls.length}):
+                              </strong>
+                              {result.toolCalls.map((toolCall, toolIndex) => (
+                                <div key={toolIndex} className="mt-2 p-3 bg-white rounded border-l-4 border-blue-300">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="text-sm font-medium text-blue-800">
+                                      Step #{toolCall.step}: {toolCall.toolName}
+                                      {toolCall.serverId && (
+                                        <span className="text-xs text-gray-500 ml-2">
+                                          (Server: {toolCall.serverId})
+                                        </span>
+                                      )}
                                     </div>
-                                  )}
-                                  
-                                  <div className="text-gray-500">
-                                    <strong>Timestamp:</strong> {new Date(toolCall.timestamp).toLocaleTimeString()}
+                                    <div className={`text-xs px-2 py-1 rounded ${toolCall.success
+                                      ? 'bg-green-100 text-green-700'
+                                      : 'bg-red-100 text-red-700'
+                                      }`}>
+                                      {toolCall.success ? 'Success' : 'Failed'}
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2 text-xs">
+                                    <div>
+                                      <strong className="text-gray-700">Arguments:</strong>
+                                      <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
+                                        {JSON.stringify(toolCall.args, null, 2)}
+                                      </pre>
+                                    </div>
+
+                                    <div>
+                                      <strong className="text-gray-700">Result:</strong>
+                                      <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
+                                        {JSON.stringify(toolCall.result, null, 2)}
+                                      </pre>
+                                    </div>
+
+                                    {toolCall.error && (
+                                      <div>
+                                        <strong className="text-red-700">Error:</strong>
+                                        <p className="mt-1 p-2 bg-red-50 rounded text-red-600">
+                                          {toolCall.error}
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    <div className="text-gray-500">
+                                      <strong>Timestamp:</strong> {new Date(toolCall.timestamp).toLocaleTimeString()}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        <strong className="text-sm text-gray-700">Response:</strong>
-                        <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{result.response}</p>
-                      </div>
-                    ))}
+                              ))}
+                            </div>
+                          )}
+
+                          <strong className="text-sm text-gray-700">Response:</strong>
+                          <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{result.response}</p>
+                        </div>
+                      ))}
                   </div>
                 </div>
               </div>
