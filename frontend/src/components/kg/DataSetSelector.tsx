@@ -7,11 +7,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { DataSet } from "@/types/proofTypes"
+import { EnhancedDataSetInfo } from "@filoz/synapse-sdk";
 
 interface DataSetSelectorProps {
   selectedDataSet: number | null;
-  dataSets: DataSet[];
+  dataSets: EnhancedDataSetInfo[];
   onSelectDataSet: (dataSetId: number | null) => void;
 }
 
@@ -22,7 +22,7 @@ export function DataSetSelector({ selectedDataSet, dataSets, onSelectDataSet }: 
         <Button variant="outline" className="flex items-center gap-2">
           <Shield className="w-4 h-4" />
           {selectedDataSet 
-            ? `Data Set #${selectedDataSet}`
+            ? `Data Set #${selectedDataSet.toString()}`
             : "All Data Sets"}
         </Button>
       </DropdownMenuTrigger>

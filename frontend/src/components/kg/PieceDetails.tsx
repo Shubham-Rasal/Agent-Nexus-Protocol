@@ -1,18 +1,19 @@
 import Link from "next/link"
 import { FolderGit2, Globe, Shield, Cloud } from "lucide-react"
-import { Root, ProofSet } from "@/types/proofTypes"
+import { Piece } from "@/types/proofTypes"
+import { EnhancedDataSetInfo } from "@filoz/synapse-sdk";
 import { Badge } from "@/components/ui/badge"
 
-interface RootDetailsProps {
-  root: Root;
-  proofSet: ProofSet;
+interface PieceDetailsProps {
+  piece: Piece;
+  dataSet: EnhancedDataSetInfo;
 }
 
-export function RootDetails({ root, proofSet }: RootDetailsProps) {
-  const isCDN = proofSet.pdpUrl?.includes('cdn') || false;
+export function PieceDetails({ piece, dataSet }: PieceDetailsProps) {
+  const isCDN = dataSet.serviceProvider?.includes('cdn') || false;
 
   return (
-    <Link href={`/kg/${root.rootCid}`} className="block">
+    <Link href={`/kg/${String(piece.pieceCid)}`} className="block">
       <div className="p-3 mt-2 rounded-md hover:bg-slate-50 transition-colors border border-slate-100">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -21,19 +22,19 @@ export function RootDetails({ root, proofSet }: RootDetailsProps) {
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-700">Root #{root.rootId}</span>
+                <span className="text-sm font-medium text-slate-700">Piece #{piece.pieceId}</span>
                 <Badge variant="outline" className="text-xs">
                   <Shield className="w-3 h-3 mr-1" />
-                  #{proofSet.pdpVerifierProofSetId}
+                  #{dataSet.pdpVerifierDataSetId}
                 </Badge>
               </div>
               <span className="text-xs text-slate-500">
-                CID: {root.rootCid.slice(0, 8)}...{root.rootCid.slice(-8)}
+                CID: {String(piece.pieceCid).slice(0, 8)}...{String(piece.pieceCid).slice(-8)}
               </span>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex items-center text-xs text-slate-500">
                   <Globe className="w-3 h-3 mr-1" />
-                  {proofSet.pdpUrl || 'No PDP URL'}
+                  {dataSet.serviceProvider || 'No Service URL'}
                 </div>
                 {isCDN && (
                   <Badge variant="secondary" className="text-xs">

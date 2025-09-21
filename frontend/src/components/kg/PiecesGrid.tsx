@@ -1,10 +1,11 @@
 import { Piece, DataSet } from "@/types/proofTypes"
-import { RootDetails } from "./RootDetails"
+import { PieceDetails } from "./PieceDetails"
+import { EnhancedDataSetInfo } from "@filoz/synapse-sdk";
 
 interface PiecesGridProps {
   pieces: Array<{
     piece: Piece;
-    dataSet: DataSet;
+    dataSet: EnhancedDataSetInfo;
   }>;
   isLoading: boolean;
   error?: Error | null;

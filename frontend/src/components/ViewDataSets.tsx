@@ -1,10 +1,11 @@
 import { useDataSets } from "@/hooks/useDataSets";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { EnhancedDataSetInfo } from "@filoz/synapse-sdk";
 
 export function ViewDataSets() {
   const { data: dataSetsData, isLoading, error } = useDataSets();
-
+  console.log(dataSetsData);
   if (isLoading) {
     return (
       <div className="text-center py-8">
@@ -21,7 +22,7 @@ export function ViewDataSets() {
     );
   }
 
-  if (!dataSetsData?.datasets.length) {
+  if (!dataSetsData?.length) {
     return (
       <div className="text-center py-8">
         <p>No data sets found.</p>
@@ -31,7 +32,7 @@ export function ViewDataSets() {
 
   return (
     <div className="space-y-4">
-      {dataSetsData.datasets.map((dataSet) => (
+      {dataSetsData.map((dataSet: EnhancedDataSetInfo) => (
         <Card key={dataSet.pdpVerifierDataSetId}>
           <CardHeader>
             <CardTitle className="text-lg">
@@ -43,12 +44,12 @@ export function ViewDataSets() {
               <div className="flex items-center gap-2">
                 <Badge variant="outline">Service Provider</Badge>
                 <span className="text-sm">
-                  {dataSet.provider?.serviceProvider || "Unknown"}
+                  {dataSet.providerId || "Unknown"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline">Service URL</Badge>
-                <span className="text-sm">{dataSet.serviceURL || "N/A"}</span>
+                <span className="text-sm">{dataSet.serviceProvider || "N/A"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline">Payee</Badge>

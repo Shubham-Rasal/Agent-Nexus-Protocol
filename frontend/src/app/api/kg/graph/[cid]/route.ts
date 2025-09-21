@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { NextResponse, NextRequest } from 'next/server'
 import { GraphData } from '@/components/data/sampleGraphData'
+import { analyzeContent, ContentInfo } from '@/lib/contentTypeDetection'
 export const dynamic = 'force-dynamic'
 
 interface IPFSNode {
@@ -40,12 +41,30 @@ export async function GET(
 ) {
   try {
     const { cid } = await params
-    // Fetch graph data from IPFS using the CID
+    // Fetch content from IPFS using the CID
     const response = await fetch(`https://0x23178ccd27cda5d5d18b211ad6648e189c1e16e1.calibration.filcdn.io/${cid}`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data: IPFSGraphData = await response.json()
+    
+    // Get the raw content as text first
+    const rawContent = await response.text()
+    
+    // Analyze the content to determine its type
+    const contentInfo = analyzeContent(rawContent)
+    
+    // If it's not graph data, return the content info for appropriate rendering
+    if (!contentInfo.isGraphData) {
+      return NextResponse.json({
+        contentType: contentInfo.type,
+        isGraphData: false,
+        content: contentInfo.rawContent,
+        parsedContent: contentInfo.parsedContent
+      })
+    }
+    
+    // If it's graph data, parse and process as before
+    const data: IPFSGraphData = contentInfo.parsedContent
 
     // Infer unique node types and relation types
     const nodeTypes = new Set<string>()
@@ -104,11 +123,15 @@ export async function GET(
       }
     }
 
-    return NextResponse.json(graphData)
+    return NextResponse.json({
+      contentType: 'json',
+      isGraphData: true,
+      ...graphData
+    })
   } catch (error) {
-    console.error('Error fetching graph data:', error)
+    console.error('Error fetching content:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch graph data' },
+      { error: 'Failed to fetch content' },
       { status: 500 }
     )
   }

@@ -1,29 +1,29 @@
 export interface Provider {
-  owner: string;
-  pdpUrl: string;
+  serviceProvider: string;
+  serviceURL: string;
   // Add other provider fields as needed
 }
 
-export interface Root {
-  rootId: string;
+export interface Piece {
+  pieceId: string;
   timestamp: string;
-  rootCid: string;
+  pieceCid: string;
 }
 
-export interface ProofSetDetails {
-  pdpUrl?: string;
-  roots?: Root[];
-  // Add other proof set detail fields as needed
+export interface DataSetDetails {
+  serviceURL?: string;
+  pieces?: Piece[];
+  // Add other data set detail fields as needed
 }
 
-export interface ProofSet {
-  pdpVerifierProofSetId: number;
+export interface DataSet {
+  pdpVerifierDataSetId: number;
   payee: string;
-  details: ProofSetDetails | null;
-  pdpUrl: string | null;
+  details: DataSetDetails | null;
+  serviceURL: string | null;
   provider: Provider | null;
 }
 
-export interface ProofSetsResponse {
-  proofsets: ProofSet[];
+export interface DataSetsResponse {
+  datasets: DataSet[];
 } 
