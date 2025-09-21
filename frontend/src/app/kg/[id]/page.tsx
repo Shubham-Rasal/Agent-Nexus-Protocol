@@ -5,11 +5,11 @@ import KnowledgeGraph from "@/components/KnowledgeGraph"
 
 export default function KnowledgeGraphPage() {
   const params = useParams()
-  const rootCID = params.id as string
+  const rootCID = "bafkzcibdv4dqpxtiqzhzhldenfpuwvzcaqfko6kfumkkrcsemkik2cxryrpo2or3"
 
   return (
     <div className="pt-12 h-fit">
       <KnowledgeGraph rootCID={rootCID} />
     </div>
-  )
+  ) 
 }

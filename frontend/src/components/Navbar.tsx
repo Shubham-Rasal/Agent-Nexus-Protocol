@@ -56,13 +56,13 @@ export function Navbar() {
               >
                 Network
               </NavLink>
-              {/* <NavLink 
+              <NavLink 
                 href="/kg" 
                 icon={<GitGraph className="h-5 w-5" />}
                 isActive={pathname === '/kg'}
               >
-                Knowledge Graph
-              </NavLink> */}
+                Knowledge Base
+              </NavLink>
               {/* <NavLink 
                 href="/synapse-test" 
                 icon={<Database className="h-5 w-5" />}
