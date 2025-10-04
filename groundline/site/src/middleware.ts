@@ -17,5 +17,7 @@ export const middleware = paymentMiddleware(
 export const config = {
   matcher: [
     '/api/query/:path*',
-  ]
+    
+  ],
+  runtime: 'nodejs',
 };
