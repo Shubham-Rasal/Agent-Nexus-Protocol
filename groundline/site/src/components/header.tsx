@@ -10,19 +10,16 @@ export function Header() {
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-6 text-xs font-mono uppercase tracking-wider">
               <a href="#" className="hover:opacity-60 transition-opacity">
-                API Docs
+                [MCP Docs]
               </a>
               <a href="#" className="hover:opacity-60 transition-opacity">
-                Get Docs
+                [Docs]
               </a>
-              <a href="#" className="hover:opacity-60 transition-opacity">
-                Get YouTube
+              <a href="https://www.youtube.com/@shubham_rasal" className="hover:opacity-60 transition-opacity">
+                [YouTube]
               </a>
-              <a href="#" className="hover:opacity-60 transition-opacity">
-                Get GitHub
-              </a>
-              <a href="#" className="hover:opacity-60 transition-opacity">
-                API Reference
+              <a href="https://github.com/Shubham-Rasal/Agent-Nexus-Protocol/tree/master/groundline" className="hover:opacity-60 transition-opacity">
+                 [GitHub]
               </a>
             </div>
           </div>
@@ -34,15 +31,14 @@ export function Header() {
             >
               Launch App
             </Link>
-            <span className="text-xs font-mono uppercase tracking-wider">Get Connect</span>
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Globe className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" className="rounded-full border border-foreground/20">
                 <Circle className="h-3 w-3 fill-current" />
               </Button>
-            </div>
+            </div> */}
           </div>
         </nav>
       </div>

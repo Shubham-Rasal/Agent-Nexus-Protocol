@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { KnowledgeGraphViz } from "./kg-vis"
 
 export function Hero() {
@@ -23,12 +24,11 @@ export function Hero() {
           <strong>MCP API</strong> or web UI.
         </p>
         <div className="flex gap-4 mt-8">
+          <Link href="/app">
           <button className="px-6 py-3 bg-foreground text-background font-mono text-sm uppercase tracking-wider hover:opacity-90 transition-opacity">
             Start Building Your Knowledge Graph →
           </button>
-          <button className="px-6 py-3 border border-foreground/20 font-mono text-sm uppercase tracking-wider hover:bg-foreground/5 transition-colors">
-            View Live Demo
-          </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown, GitGraph, Server, Database} from 'lucide-react';
+import { MessageSquare, GitBranch, FileEdit, Settings, Home, Wrench, User, Users, SplitSquareVertical, UserCheck, ChevronDown, GitGraph, Server, Database, BookOpen} from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export function Navbar() {
@@ -62,6 +62,13 @@ export function Navbar() {
                 isActive={pathname === '/kg'}
               >
                 Knowledge Base
+              </NavLink>
+              <NavLink 
+                href="/docs" 
+                icon={<BookOpen className="h-5 w-5" />}
+                isActive={pathname === '/docs'}
+              >
+                Docs
               </NavLink>
               {/* <NavLink 
                 href="/synapse-test" 

@@ -23,7 +23,8 @@ import {
   Network,
   Database,
   Plus,
-  PanelLeft
+  PanelLeft,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -53,6 +54,11 @@ const menuItems = [
     title: "Knowledge Graph",
     url: "/kg",
     icon: Database,
+  },
+  {
+    title: "Documentation",
+    url: "/docs",
+    icon: BookOpen,
   },
 ];
 
