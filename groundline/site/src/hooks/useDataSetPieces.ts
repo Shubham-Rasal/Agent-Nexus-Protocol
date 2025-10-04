@@ -58,10 +58,10 @@ export const useDataSetPieces = (dataSetId: number | null) => {
         console.log(`   Dataset pieces count: ${pieces.length}`);
         
         // Transform pieces to match the expected format for PiecesGrid
-        const piecesWithContext = pieces.map((pieceCid: string, index: number) => ({
+        const piecesWithContext = pieces.map((pieceLink: any, index: number) => ({
           piece: {
             pieceId: (index + 1).toString(), // Generate a simple piece ID
-            pieceCid: pieceCid,
+            pieceCid: pieceLink.pieceCid || pieceLink.toString(),
             timestamp: new Date().toISOString(), // Placeholder timestamp
           },
           dataSet: {

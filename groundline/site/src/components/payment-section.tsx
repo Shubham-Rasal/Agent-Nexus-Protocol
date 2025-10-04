@@ -158,10 +158,8 @@ export function PaymentSection() {
                     <div className="text-xs text-muted-foreground">Rail ID: {rail.railId.toString()}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm">{formatUnits(rail.rate ?? BigInt(0), 18)} USDFC/epoch</div>
-                    <div className={`text-xs ${Number(rail.endEpoch) > 0 ? "text-red-600" : "text-green-600"}`}>
-                      {Number(rail.endEpoch) > 0 ? `Terminated at ${rail.endEpoch.toString()}` : "Active"}
-                    </div>
+                    <div className="text-sm">Rail Status</div>
+                    <div className="text-xs text-green-600">Active</div>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -201,13 +199,11 @@ export function PaymentSection() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <div className="font-mono text-sm">Rail #{rail.railId.toString()}</div>
-                    <div className="text-xs text-muted-foreground">From: {rail.from?.slice(0, 6) ?? 'Unknown'}...{rail.from?.slice(-4) ?? ''}</div>
+                    <div className="text-xs text-muted-foreground">Rail ID: {rail.railId.toString()}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm">{formatUnits(rail.rate ?? BigInt(0), 18)} USDFC/epoch</div>
-                    <div className={`text-xs ${Number(rail.endEpoch) > 0 ? "text-red-600" : "text-green-600"}`}>
-                      {Number(rail.endEpoch) > 0 ? `Terminated at ${rail.endEpoch.toString()}` : "Active"}
-                    </div>
+                    <div className="text-sm">Rail Status</div>
+                    <div className="text-xs text-green-600">Active</div>
                   </div>
                 </div>
                 <div className="flex gap-2">
