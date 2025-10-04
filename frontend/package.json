@@ -106,7 +106,7 @@
     "vaul": "^1.1.2",
     "viem": "^2.31.7",
     "wagmi": "^2.15.6",
-    "zod": "^3.25.76"
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

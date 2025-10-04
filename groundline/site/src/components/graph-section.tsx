@@ -242,8 +242,8 @@ export function GraphSection() {
 
         const records = result.records.map((record: NeoRecord) => {
           const obj: Record<string, any> = {}
-          record.forEach((value: any, key: string) => {
-            obj[key] = value
+          record.forEach((value: any, key: PropertyKey) => {
+            obj[String(key)] = value
           })
           return obj
         })
@@ -317,16 +317,16 @@ export function GraphSection() {
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 2)
       .call(d3.drag<SVGCircleElement, GraphNode>()
-        .on("start", (event: d3.DragGesture, d: GraphNode) => {
+        .on("start", (event: any, d: GraphNode) => {
           if (!event.active) simulation.alphaTarget(0.3).restart()
           d.fx = d.x
           d.fy = d.y
         })
-        .on("drag", (event: d3.DragGesture, d: GraphNode) => {
+        .on("drag", (event: any, d: GraphNode) => {
           d.fx = event.x
           d.fy = event.y
         })
-        .on("end", (event: d3.DragGesture, d: GraphNode) => {
+        .on("end", (event: any, d: GraphNode) => {
           if (!event.active) simulation.alphaTarget(0)
           d.fx = null
           d.fy = null
@@ -349,7 +349,7 @@ export function GraphSection() {
 
     const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.5, 4])
-      .on("zoom", (event: d3.ZoomEvent) => {
+      .on("zoom", (event: any) => {
         g.attr("transform", event.transform)
       })
 

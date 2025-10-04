@@ -6,6 +6,7 @@ import { useDataSetPieces } from "@/hooks/useDataSetPieces";
 import { useState, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { WalletButton } from "@/components/wallet-button";
+import { FileUploadDialog } from "@/components/file-upload-dialog";
 import { Shield, FolderGit2, Globe, Cloud, Loader2 } from "lucide-react";
 import { EnhancedDataSetInfo } from "@filoz/synapse-sdk";
 
@@ -110,9 +111,12 @@ export function StoredDataSection() {
         <Card className="border border-foreground/10 bg-card p-12 text-center">
           <div className="text-6xl mb-4">📦</div>
           <h3 className="text-2xl font-light mb-4">No Data Sets Found</h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-6">
             You don't have any data sets stored on Filecoin yet.
           </p>
+          <div className="mb-4">
+            <FileUploadDialog />
+          </div>
           <p className="text-sm text-muted-foreground">
             Connected wallet: {address?.slice(0, 6)}...{address?.slice(-4)}
           </p>
@@ -123,9 +127,12 @@ export function StoredDataSection() {
 
   return (
     <section id="stored-data" className="scroll-mt-8">
-      <div className="mb-6">
-        <h2 className="text-4xl font-light mb-2">Stored Data</h2>
-        <p className="text-muted-foreground">View your Filecoin storage and verification status</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-4xl font-light mb-2">Stored Data</h2>
+          <p className="text-muted-foreground">View your Filecoin storage and verification status</p>
+        </div>
+        <FileUploadDialog />
       </div>
 
       {/* Storage Stats */}
