@@ -155,7 +155,7 @@ export function PaymentSection() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <div className="font-mono text-sm">Rail #{rail.railId.toString()}</div>
-                    <div className="text-xs text-muted-foreground">To: {rail.to?.slice(0, 6) ?? 'Unknown'}...{rail.to?.slice(-4) ?? ''}</div>
+                    <div className="text-xs text-muted-foreground">Rail ID: {rail.railId.toString()}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm">{formatUnits(rail.rate ?? BigInt(0), 18)} USDFC/epoch</div>
