@@ -38,8 +38,13 @@ Natural language query: ${query}
 Generate a valid Cypher query that matches the intent, using MATCH and RETURN to get nodes and relationships.`
     })
 
+    const MEMGRAPH_URI = process.env.MEMGRAPH_URI!;
+    const MEMGRAPH_USERNAME = process.env.MEMGRAPH_USERNAME!;
+    // Place your Memgraph password that was created during Project creation
+    const MEMGRAPH_PASSWORD = process.env.MEMGRAPH_PASSWORD!;
+
     // Step 2: Execute Cypher query against database
-    const driver = neo4j.driver(process.env.MEMGRAPH_URL || "bolt://localhost:7687", undefined, {
+    const driver = neo4j.driver(MEMGRAPH_URI, neo4j.auth.basic(MEMGRAPH_USERNAME, MEMGRAPH_PASSWORD), {
       disableLosslessIntegers: true
     })
     const session = driver.session()

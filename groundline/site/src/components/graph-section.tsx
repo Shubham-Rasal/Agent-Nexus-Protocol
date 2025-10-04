@@ -3,9 +3,7 @@
 import { Card } from "@/components/ui/card"
 import * as d3 from "d3"
 import { useRef, useEffect, useState } from "react"
-import neo4j from "neo4j-driver"
 import { CheckCircle, AlertCircle } from "lucide-react"
-import { Record as NeoRecord } from "neo4j-driver"
 
 const recentQueries = [
   { query: "show research notes about decentralized AI", results: 42, time: "0.3s" },
@@ -94,91 +92,39 @@ export function GraphSection() {
   })
 
   useEffect(() => {
-    const driver = neo4j.driver("bolt://localhost:7687")
-    const session = driver.session()
-
     const fetchGraphData = async () => {
       try {
-        const result = await session.run(
-          "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50"
-        )
-
-        const nodes: Map<string, GraphNode> = new Map()
-        const links: GraphLink[] = []
-
-        result.records.forEach(record => {
-          const source = record.get("n")
-          const target = record.get("m")
-          const rel = record.get("r")
-
-          if (!nodes.has(source.identity.toString())) {
-            nodes.set(source.identity.toString(), {
-              id: source.identity.toString(),
-              name: source.properties.name || source.labels[0] || "Unknown",
-              type: source.labels[0] || "Node",
-              properties: source.properties
-            })
-          }
-
-          if (!nodes.has(target.identity.toString())) {
-            nodes.set(target.identity.toString(), {
-              id: target.identity.toString(),
-              name: target.properties.name || target.labels[0] || "Unknown",
-              type: target.labels[0] || "Node",
-              properties: target.properties
-            })
-          }
-
-          links.push({
-            source: source.identity.toString(),
-            target: target.identity.toString(),
-            type: rel.type
-          })
-        })
-
-        setGraphData({
-          nodes: Array.from(nodes.values()),
-          links
-        })
+        const response = await fetch('/api/graph-data')
+        if (!response.ok) {
+          throw new Error('Failed to fetch graph data')
+        }
+        const data = await response.json()
+        setGraphData(data)
         setIsConnected(true)
         setConnectionError(null)
       } catch (error: any) {
-        console.error("Memgraph connection error:", error)
+        console.error("Graph data fetch error:", error)
         setIsConnected(false)
         setConnectionError(error.message || "Connection failed")
         setGraphData(sampleGraphData) // Fallback to sample data
-      } finally {
-        await session.close()
-        await driver.close()
       }
     }
 
     const fetchStats = async () => {
-      const driver = neo4j.driver("bolt://localhost:7687")
-      const session = driver.session()
       try {
-        const nodesResult = await session.run("MATCH (n) RETURN count(n) as count")
-        const relsResult = await session.run("MATCH ()-[r]-() RETURN count(r) as count")
-        const entitiesResult = await session.run("MATCH (n) WHERE n.type IN ['Person', 'Organization'] RETURN count(n) as count")
-        const conceptsResult = await session.run("MATCH (n) WHERE n.type IN ['Concept', 'Technology'] RETURN count(n) as count")
-
-        setStats({
-          totalNodes: nodesResult.records[0].get('count').toNumber(),
-          totalConnections: relsResult.records[0].get('count').toNumber(),
-          entities: entitiesResult.records[0].get('count').toNumber(),
-          concepts: conceptsResult.records[0].get('count').toNumber()
-        })
+        const response = await fetch('/api/graph-stats')
+        if (!response.ok) {
+          throw new Error('Failed to fetch graph stats')
+        }
+        const data = await response.json()
+        setStats(data)
       } catch (error) {
         console.error("Stats fetch error:", error)
-      } finally {
-        await session.close()
-        await driver.close()
       }
     }
 
     fetchGraphData()
     fetchStats()
-
   }, [])
 
   const handleExecuteQuery = async () => {
@@ -188,44 +134,36 @@ export function GraphSection() {
     setConnectionError(null)
 
     try {
-      // Fetch Cypher from API
-      const response = await fetch('/api/generate-cypher', {
+      // Use the comprehensive query API that handles everything
+      const response = await fetch('/api/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: nlpQuery })
       })
 
       if (!response.ok) {
-        throw new Error('Failed to generate Cypher')
+        throw new Error('Failed to execute query')
       }
 
-      const { cypher } = await response.json()
-
-      // Execute in Memgraph
-      const driver = neo4j.driver("bolt://localhost:7687")
-      const session = driver.session()
-
-      try {
-        const result = await session.run(cypher)
-
+      const result = await response.json()
+      
+      // Update graph data with new results
+      if (result.rawResults && result.rawResults.length > 0) {
         const nodes: Map<string, GraphNode> = new Map()
         const links: GraphLink[] = []
 
-        result.records.forEach(record => {
-          // Assuming the query returns n, r, m like before
-          const keys = record.keys
-          keys.forEach(key => {
-            const item = record.get(key)
+        result.rawResults.forEach((record: any) => {
+          Object.values(record).forEach((item: any) => {
             if (item && item.start && item.end) { // It's a relationship
               links.push({
                 source: item.start.toString(),
                 target: item.end.toString(),
                 type: item.type
               })
-            } else if (item && item.identity) { // It's a node
-              if (!nodes.has(item.identity.toString())) {
-                nodes.set(item.identity.toString(), {
-                  id: item.identity.toString(),
+            } else if (item && item.id && item.labels) { // It's a node
+              if (!nodes.has(item.id)) {
+                nodes.set(item.id, {
+                  id: item.id,
                   name: item.properties?.name || item.labels?.[0] || "Unknown",
                   type: item.labels?.[0] || "Node",
                   properties: item.properties || {}
@@ -239,31 +177,11 @@ export function GraphSection() {
           nodes: Array.from(nodes.values()),
           links
         })
+      }
 
-        const records = result.records.map((record: NeoRecord) => {
-          const obj: Record<string, any> = {}
-          record.forEach((value: any, key: PropertyKey) => {
-            obj[String(key)] = value
-          })
-          return obj
-        })
-
-        const formatResponse = await fetch('/api/format-results', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ results: records, originalQuery: nlpQuery })
-        })
-
-        if (formatResponse.ok) {
-          const formatted = await formatResponse.json()
-          setFormattedResponse(formatted)
-        } else {
-          console.error('Failed to format results')
-        }
-
-      } finally {
-        await session.close()
-        await driver.close()
+      // Set formatted response
+      if (result.formattedResponse) {
+        setFormattedResponse(result.formattedResponse)
       }
 
     } catch (error: any) {

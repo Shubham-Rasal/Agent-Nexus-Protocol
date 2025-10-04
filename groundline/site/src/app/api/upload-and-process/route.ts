@@ -5,6 +5,7 @@ import { z } from 'zod';
 import db from 'neo4j-driver';
 import { RPC_URLS, Synapse } from '@filoz/synapse-sdk';
 import { FileChunker } from '@/lib/file-chunker';
+import neo4j from 'neo4j-driver';
 
 // Define schema for entities and relationships
 const EntitySchema = z.object({
@@ -160,7 +161,6 @@ async function generateCypherQueries(
 IMPORTANT: 
 - Include the source CID "${cid}" as a property on ALL entities
 - Use MERGE instead of CREATE to avoid duplicates
-- Create indexes if beneficial
 - First create all nodes, then create all relationships
 - Use proper Cypher syntax
 
@@ -168,9 +168,8 @@ Entities: ${JSON.stringify(entities, null, 2)}
 Relationships: ${JSON.stringify(relationships, null, 2)}
 
 Generate queries that:
-1. Create indexes (if needed)
-2. Create/merge all entity nodes with the source_cid property
-3. Create/merge all relationships`,
+1. Create/merge all entity nodes with the source_cid property
+2. Create/merge all relationships`,
   });
   
   return result.object.queries;
@@ -180,7 +179,10 @@ Generate queries that:
  * Execute Cypher queries in Memgraph
  */
 async function executeInMemgraph(queries: Array<{ cypher: string; description: string }>) {
-  const driver = db.driver(process.env.MEMGRAPH_URL || "bolt://localhost:7687", undefined, {
+  const MEMGRAPH_URI = process.env.MEMGRAPH_URI!;
+  const MEMGRAPH_USERNAME = process.env.MEMGRAPH_USERNAME!;
+  const MEMGRAPH_PASSWORD = process.env.MEMGRAPH_PASSWORD!;
+  const driver = db.driver(MEMGRAPH_URI, neo4j.auth.basic(MEMGRAPH_USERNAME, MEMGRAPH_PASSWORD), {
     disableLosslessIntegers: true
   });
   const session = driver.session();
