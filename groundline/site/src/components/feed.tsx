@@ -1,38 +1,40 @@
 import { Card } from "@/components/ui/card"
 
+import { Plug, BrainCircuit, HardDrive, ShieldCheck, Terminal, LayoutDashboard, Wallet } from "lucide-react"
+
 const features = [
   {
-    icon: "🔗",
+    icon: <Plug className="h-8 w-8" />,
     title: "Multi-source ingestion",
     description: "Notion, Obsidian, Git, Drive, RSS",
   },
   {
-    icon: "🧬",
+    icon: <BrainCircuit className="h-8 w-8" />,
     title: "Embedded knowledge graph",
     description: "Auto-link entities and concepts",
   },
   {
-    icon: "🪶",
+    icon: <HardDrive className="h-8 w-8" />,
     title: "Filecoin storage",
     description: "Verifiable, censorship-resistant, auditable",
   },
   {
-    icon: "🧾",
+    icon: <ShieldCheck className="h-8 w-8" />,
     title: "Cryptographic proofs",
     description: "Each retrieved passage is verifiable",
   },
   {
-    icon: "📡",
+    icon: <Terminal className="h-8 w-8" />,
     title: "MCP-compatible API",
     description: "For AI agents and retrieval pipelines",
   },
   {
-    icon: "🎛️",
+    icon: <LayoutDashboard className="h-8 w-8" />,
     title: "Visual explorer",
     description: "Browse your graph, documents, and provenance",
   },
   {
-    icon: "💰",
+    icon: <Wallet className="h-8 w-8" />,
     title: "Built-in payments",
     description: "Optional micropayments for premium retrievals",
   },

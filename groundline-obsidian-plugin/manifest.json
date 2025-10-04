@@ -1,0 +1,11 @@
+{
+	"id": "groundline",
+	"name": "Groundline Filecoin Backup",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Backup your Obsidian vault to the Filecoin decentralized storage network with customizable retention settings.",
+	"author": "Groundline",
+	"authorUrl": "https://groundline.ai",
+	"fundingUrl": "https://groundline.ai/pricing",
+	"isDesktopOnly": false
+}

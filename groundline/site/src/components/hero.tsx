@@ -1,7 +1,15 @@
+import { KnowledgeGraphViz } from "./kg-vis"
+
 export function Hero() {
   return (
-    <section className="container mx-auto px-6 py-20">
-      <div className="max-w-4xl">
+    <section className="relative container mx-auto px-6 py-20 overflow-hidden">
+      <div className="absolute inset-0 flex items-center justify-end opacity-30">
+        <div className="w-[70%] h-full">
+          <KnowledgeGraphViz />
+        </div>
+      </div>
+
+      <div className="relative z-10 max-w-4xl">
         <h1 className="text-7xl md:text-8xl font-light leading-[0.95] mb-8 text-balance">
           Turn your scattered
           <br />

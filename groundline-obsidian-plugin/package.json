@@ -1,0 +1,39 @@
+{
+	"name": "obsidian-groundline-backup",
+	"version": "1.0.0",
+	"description": "Groundline Backup Plugin - Create and manage vault backups on Filecoin network",
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [
+		"obsidian",
+		"backup",
+		"filecoin",
+		"decentralized",
+		"storage"
+	],
+	"author": "Groundline",
+	"license": "MIT",
+	"dependencies": {
+		"@filoz/synapse-sdk": "0.28.0",
+		"buffer": "^6.0.3",
+		"crypto-browserify": "^3.12.1",
+		"ethers": "^6.15.0",
+		"process": "^0.11.10",
+		"stream-browserify": "^3.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^16.11.6",
+		"@typescript-eslint/eslint-plugin": "5.29.0",
+		"@typescript-eslint/parser": "5.29.0",
+		"builtin-modules": "3.3.0",
+		"esbuild": "0.17.3",
+		"obsidian": "latest",
+		"tslib": "2.4.0",
+		"typescript": "4.7.4"
+	}
+}
