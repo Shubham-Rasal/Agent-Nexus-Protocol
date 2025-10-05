@@ -138,7 +138,7 @@ export function FileUploadDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button className="px-6 py-3 bg-foreground text-background font-mono text-sm uppercase tracking-wider hover:opacity-90 transition-opacity">
           <Upload className="w-4 h-4 mr-2" />
           Upload File
         </Button>
@@ -173,7 +173,7 @@ export function FileUploadDialog() {
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 variant="outline"
-                className="mt-4"
+                className="mt-4 font-mono uppercase tracking-wider"
               >
                 Choose File
               </Button>
@@ -281,13 +281,13 @@ export function FileUploadDialog() {
                     setIsUploading(false);
                   }}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 font-mono uppercase tracking-wider"
                 >
                   Upload Another File
                 </Button>
                 <Button
                   onClick={() => setOpen(false)}
-                  className="flex-1"
+                  className="flex-1 font-mono uppercase tracking-wider"
                 >
                   Close
                 </Button>
