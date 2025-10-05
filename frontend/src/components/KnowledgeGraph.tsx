@@ -66,12 +66,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { createGraphDB } from "@shubhamrasal/groundline"
 import { sampleGraphData, sampleProvenanceData, ADAPTERS, GraphNode, GraphLink, GraphData, ProvenanceItem } from "./data/sampleGraphData"
 import React from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { ImportGraphDrawer } from "./kg/ImportGraphDrawer"
+import { ContentRenderer } from "./ContentRenderer"
+import { ContentType } from "@/lib/contentTypeDetection"
 
 interface ExternalEntity {
   id?: string
@@ -146,6 +147,16 @@ interface GraphMetadata {
   provenance?: ProvenanceItem[];
 }
 
+interface ContentResponse {
+  contentType: ContentType;
+  isGraphData: boolean;
+  content?: string;
+  parsedContent?: any;
+  nodes?: GraphNode[];
+  links?: GraphLink[];
+  metadata?: GraphMetadata;
+}
+
 interface GraphDataWithMetadata extends GraphData {
   metadata: GraphMetadata;
 }
@@ -185,6 +196,7 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
   const [error, setError] = useState<string | null>(null)
   const [isPinned, setIsPinned] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
+  const [contentResponse, setContentResponse] = useState<ContentResponse | null>(null)
 
   const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null)
 
@@ -602,7 +614,7 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
   }
 
   useEffect(() => {
-    const loadGraphData = async () => {
+    const loadContent = async () => {
       if (!rootCID) {
         setGraphData(sampleGraphData)
         return
@@ -612,41 +624,51 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
         setIsLoading(true)
         setError(null)
         
-        // Fetch the graph data directly using the CID
-        const graphResponse = await fetch(`/api/kg/graph/${rootCID}`)
-        if (!graphResponse.ok) {
-          throw new Error('Failed to fetch graph data')
+        // Fetch the content using the CID
+        const response = await fetch(`/api/kg/graph/${rootCID}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch content')
         }
-        const fetchedData: GraphDataWithMetadata = await graphResponse.json()
+        const fetchedData: ContentResponse = await response.json()
 
-        // Update graph data and metadata
-        setGraphData({ nodes: fetchedData.nodes, links: fetchedData.links })
-        setMetadata(fetchedData.metadata)
+        // Store the content response
+        setContentResponse(fetchedData)
 
-        // Update node and relationship type filters with inferred types
-        setNodeLabels(
-          fetchedData.metadata.nodeTypes.reduce((acc, type) => {
-            acc[type] = fetchedData.nodes.filter(node => node.type === type).length
-            return acc
-          }, {} as Record<string, number>)
-        )
+        // If it's graph data, process as before
+        if (fetchedData.isGraphData && fetchedData.nodes && fetchedData.links) {
+          setGraphData({ nodes: fetchedData.nodes, links: fetchedData.links })
+          setMetadata(fetchedData.metadata || null)
 
-        setRelationshipTypes(
-          fetchedData.metadata.relationTypes.reduce((acc, type) => {
-            acc[type] = fetchedData.links.filter(link => link.type === type).length
-            return acc
-          }, {} as Record<string, number>)
-        )
+          // Update node and relationship type filters with inferred types
+          if (fetchedData.metadata) {
+            setNodeLabels(
+              fetchedData.metadata.nodeTypes.reduce((acc, type) => {
+                acc[type] = fetchedData.nodes!.filter(node => node.type === type).length
+                return acc
+              }, {} as Record<string, number>)
+            )
 
-        // Initialize filters to show all types
-        setFilteredNodeTypes(new Set(fetchedData.metadata.nodeTypes))
-        setFilteredRelationshipTypes(new Set(fetchedData.metadata.relationTypes))
+            setRelationshipTypes(
+              fetchedData.metadata.relationTypes.reduce((acc, type) => {
+                acc[type] = fetchedData.links!.filter(link => link.type === type).length
+                return acc
+              }, {} as Record<string, number>)
+            )
+
+            // Initialize filters to show all types
+            setFilteredNodeTypes(new Set(fetchedData.metadata.nodeTypes))
+            setFilteredRelationshipTypes(new Set(fetchedData.metadata.relationTypes))
+          }
+        } else {
+          // For non-graph content, use sample data for the graph visualization
+          setGraphData(sampleGraphData)
+        }
 
       } catch (err) {
-        console.error('Error loading graph data:', err)
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load graph data'
+        console.error('Error loading content:', err)
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load content'
         setError(errorMessage)
-        toast.error('Error loading graph', {
+        toast.error('Error loading content', {
           description: errorMessage,
           duration: 5000,
         })
@@ -656,7 +678,7 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
       }
     }
 
-    loadGraphData()
+    loadContent()
   }, [rootCID])
 
   const getNodeNeighbors = useCallback((nodeId: string): NodeNeighbor[] => {
@@ -762,6 +784,20 @@ export default function KnowledgeGraph({ rootCID }: KnowledgeGraphProps) {
       </div>
     );
   };
+
+  // If content is not graph data, show the content renderer
+  if (contentResponse && !contentResponse.isGraphData) {
+    return (
+      <div className="min-h-screen bg-white">
+        <ContentRenderer
+          contentType={contentResponse.contentType}
+          content={contentResponse.content || ''}
+          parsedContent={contentResponse.parsedContent}
+          isGraphData={false}
+        />
+      </div>
+    )
+  }
 
   return (
     <TooltipProvider>

@@ -7,36 +7,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ProofSet } from "@/types/proofTypes"
+import { DataSet } from "@/types/proofTypes"
 
-interface ProofSetSelectorProps {
-  selectedProofSet: number | null;
-  proofSets: ProofSet[];
-  onSelectProofSet: (proofSetId: number | null) => void;
+interface DataSetSelectorProps {
+  selectedDataSet: number | null;
+  dataSets: DataSet[];
+  onSelectDataSet: (dataSetId: number | null) => void;
 }
 
-export function ProofSetSelector({ selectedProofSet, proofSets, onSelectProofSet }: ProofSetSelectorProps) {
+export function DataSetSelector({ selectedDataSet, dataSets, onSelectDataSet }: DataSetSelectorProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <Shield className="w-4 h-4" />
-          {selectedProofSet 
-            ? `Proof Set #${selectedProofSet}`
-            : "All Proof Sets"}
+          {selectedDataSet 
+            ? `Data Set #${selectedDataSet}`
+            : "All Data Sets"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[200px]">
-        <DropdownMenuItem onClick={() => onSelectProofSet(null)}>
-          All Proof Sets
+        <DropdownMenuItem onClick={() => onSelectDataSet(null)}>
+          All Data Sets
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {proofSets.map((ps) => (
+        {dataSets.map((ds) => (
           <DropdownMenuItem 
-            key={ps.pdpVerifierProofSetId}
-            onClick={() => onSelectProofSet(ps.pdpVerifierProofSetId)}
+            key={ds.pdpVerifierDataSetId}
+            onClick={() => onSelectDataSet(ds.pdpVerifierDataSetId)}
           >
-            Proof Set #{ps.pdpVerifierProofSetId}
+            Data Set #{ds.pdpVerifierDataSetId}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

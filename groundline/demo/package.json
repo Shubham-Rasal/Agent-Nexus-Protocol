@@ -4,11 +4,17 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "tsx demo.ts"
+    "start": "tsx demo.ts",
+    "md-to-kg": "tsx md-to-kg.ts",
+    "verify": "tsx verify-upload.ts"
   },
   "dependencies": {
-    "@shubhamrasal/groundline": "^0.5.2",
-    "dotenv": "^17.0.1"
+    "@ai-sdk/openai": "^2.0.42",
+    "@filoz/synapse-sdk": "^0.29.3",
+    "ai": "^5.0.60",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "neo4j-driver": "^6.0.0"
   },
   "devDependencies": {
     "tsx": "^4.7.0",

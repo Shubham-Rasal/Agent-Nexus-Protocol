@@ -176,7 +176,7 @@ export default function SynapseUploader() {
       setSuccess('Deposit successful! Approving service...');
 
       // 2. Approve the Warm Storage service
-      const warmStorageAddress = synapse.getPandoraAddress();
+      const warmStorageAddress = synapse.getWarmStorageAddress();
       const rateAllowanceWei = ethers.parseUnits(rateAllowance, 18);
       const lockupAllowanceWei = ethers.parseUnits(lockupAllowance, 18);
       const maxLockupPeriodBigInt = BigInt(maxLockupPeriod);
@@ -185,7 +185,7 @@ export default function SynapseUploader() {
         warmStorageAddress,
         rateAllowanceWei,
         lockupAllowanceWei,
-        maxLockupPeriodBigInt.toString()
+        maxLockupPeriodBigInt
       );
       
       console.log(`Service approval transaction: ${approveTx.hash}`);
@@ -232,7 +232,7 @@ export default function SynapseUploader() {
       // Create storage context and run preflight checks
       const storageContext = await synapse.createStorage({
         withCDN: true,
-        providerAddress:"https://calib.ezpdpz.net",
+        providerId:2,
         callbacks: {
           onProviderSelected: (provider: any) => {
             console.log(`✓ Selected service provider: ${JSON.stringify(provider)}`);
@@ -259,7 +259,7 @@ export default function SynapseUploader() {
 
       // Convert result to our interface
       const uploadResult: UploadResult = {
-        pieceCid: result.commp?.toString() || 'unknown',
+        pieceCid: result.pieceId?.toString() || 'unknown',
         size: result.size || fileData.length,
         pieceId: undefined
       };
@@ -317,7 +317,7 @@ export default function SynapseUploader() {
       
       const storageContext = await synapse.createStorage({
         withCDN: true,
-        providerAddress:"0xa3971A7234a3379A1813d9867B531e7EeB20ae07",
+        providerAddress:"0x682467D59F5679cB0BF13115d4C94550b8218CF2",
         callbacks: {
           onProviderSelected: (provider: any) => {
             console.log(`✓ Selected service provider: ${JSON.stringify(provider)}`);
@@ -326,7 +326,7 @@ export default function SynapseUploader() {
         }
       });
       
-      console.log(`Storage context created successfully: ${storageContext.getProofSetRoots()}`);
+      console.log(`Storage context created successfully: ${storageContext.getProviderInfo()}`);
     } catch (err: any) {
       setError(`Failed to create storage context: ${err.message}`);
     }
