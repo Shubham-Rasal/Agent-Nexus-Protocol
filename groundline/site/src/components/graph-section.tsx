@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card"
 import * as d3 from "d3"
 import { useRef, useEffect, useState } from "react"
-import { CheckCircle, AlertCircle } from "lucide-react"
+import { CheckCircle, AlertCircle, Maximize2, Minimize2, X, ZoomIn, ZoomOut, RotateCcw, Target, Eye, EyeOff, Settings } from "lucide-react"
 
 const recentQueries = [
   { query: "show research notes about decentralized AI", results: 42, time: "0.3s" },
@@ -82,6 +82,9 @@ export function GraphSection() {
   const [nlpQuery, setNlpQuery] = useState("")
   const [isQuerying, setIsQuerying] = useState(false)
   const [formattedResponse, setFormattedResponse] = useState<any | null>(null)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const [showLabels, setShowLabels] = useState(true)
+  const [currentZoom, setCurrentZoom] = useState(1)
 
   // Add state
   const [stats, setStats] = useState({
@@ -192,12 +195,87 @@ export function GraphSection() {
     }
   }
 
+  // Graph control functions
+  const centerGraph = () => {
+    if (svgRef.current) {
+      const svg = d3.select(svgRef.current)
+      const g = svg.select("g")
+      
+      // Reset zoom and pan
+      svg.transition().duration(750).call(
+        d3.zoom<SVGSVGElement, unknown>().transform,
+        d3.zoomIdentity
+      )
+    }
+  }
+
+  const zoomIn = () => {
+    if (svgRef.current) {
+      const svg = d3.select(svgRef.current)
+      svg.transition().duration(300).call(
+        d3.zoom<SVGSVGElement, unknown>().scaleBy,
+        1.5
+      )
+      setCurrentZoom(prev => prev * 1.5)
+    }
+  }
+
+  const zoomOut = () => {
+    if (svgRef.current) {
+      const svg = d3.select(svgRef.current)
+      svg.transition().duration(300).call(
+        d3.zoom<SVGSVGElement, unknown>().scaleBy,
+        1 / 1.5
+      )
+      setCurrentZoom(prev => prev / 1.5)
+    }
+  }
+
+  const fitToScreen = () => {
+    if (svgRef.current && graphData.nodes.length > 0) {
+      const svg = d3.select(svgRef.current)
+      const g = svg.select("g")
+      
+      // Get bounds of all nodes
+      const gNode = g.node() as SVGGraphicsElement
+      const bounds = gNode?.getBBox()
+      if (bounds) {
+        const fullWidth = svg.node()?.clientWidth || 500
+        const fullHeight = svg.node()?.clientHeight || 400
+        const width = bounds.width
+        const height = bounds.height
+        const midX = bounds.x + width / 2
+        const midY = bounds.y + height / 2
+        
+        const scale = Math.min(fullWidth / width, fullHeight / height) * 0.8
+        const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY]
+        
+        svg.transition().duration(750).call(
+          d3.zoom<SVGSVGElement, unknown>().transform,
+          d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+        )
+        setCurrentZoom(scale)
+      }
+    }
+  }
+
+  const resetView = () => {
+    if (svgRef.current) {
+      const svg = d3.select(svgRef.current)
+      svg.transition().duration(750).call(
+        d3.zoom<SVGSVGElement, unknown>().transform,
+        d3.zoomIdentity
+      )
+      setCurrentZoom(1)
+    }
+  }
+
   useEffect(() => {
     if (!svgRef.current) return
 
     const svg: d3.Selection<SVGSVGElement, unknown, null, undefined> = d3.select(svgRef.current)
-    const width = svg.node()?.clientWidth || 500
-    const height = 400
+    const width = isFullScreen ? (window.innerWidth - 40) : (svg.node()?.clientWidth || 500)
+    const height = isFullScreen ? (window.innerHeight - 120) : 400
 
     svg.selectAll("*").remove()
 
@@ -263,12 +341,14 @@ export function GraphSection() {
       .attr("fill", "#333333")
       .attr("text-anchor", "middle")
       .attr("dy", "0.35em")
+      .attr("opacity", showLabels ? 1 : 0)
       .text(d => d.name.length > 12 ? d.name.substring(0, 12) + "..." : d.name)
 
     const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.5, 4])
       .on("zoom", (event: any) => {
         g.attr("transform", event.transform)
+        setCurrentZoom(event.transform.k)
       })
 
     svg.call(zoomBehavior)
@@ -289,7 +369,7 @@ export function GraphSection() {
       nodeLabel.attr("x", (d: GraphNode) => d.x || 0).attr("y", (d: GraphNode) => d.y || 0)
     })
 
-  }, [graphData]) // Depend on graphData
+  }, [graphData, isFullScreen, showLabels]) // Depend on graphData, isFullScreen, and showLabels
 
   return (
     <section id="graph" className="scroll-mt-8">
@@ -327,10 +407,62 @@ export function GraphSection() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <Card className="border border-foreground/10 bg-card p-6">
-          <h3 className="text-xl font-light mb-4">Graph Visualization</h3>
+        <Card className="border border-foreground/10 bg-card p-6 relative">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-light">Graph Visualization</h3>
+            <div className="flex items-center gap-2">
+              {/* Control buttons */}
+              <div className="flex items-center gap-1 bg-background/50 rounded-lg p-1">
+                <button
+                  onClick={zoomIn}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Zoom in"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={zoomOut}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Zoom out"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={fitToScreen}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Fit to screen"
+                >
+                  <Target className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={resetView}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Reset view"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowLabels(!showLabels)}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title={showLabels ? "Hide labels" : "Show labels"}
+                >
+                  {showLabels ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </button>
+              </div>
+              <button
+                onClick={() => setIsFullScreen(true)}
+                className="p-2 hover:bg-foreground/10 rounded transition-colors"
+                title="View full screen"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="mb-2 text-xs text-muted-foreground">
+            Zoom: {(currentZoom * 100).toFixed(0)}% | {graphData.nodes.length} nodes, {graphData.links.length} connections
+          </div>
           {selectedNode && (
-            <div className="absolute top-4 right-4 bg-white p-4 border rounded shadow">
+            <div className="absolute top-4 right-4 bg-white p-4 border rounded shadow z-10">
               <h4>{selectedNode.name}</h4>
               <p>Type: {selectedNode.type}</p>
               <button onClick={() => setSelectedNode(null)}>Close</button>
@@ -408,6 +540,86 @@ export function GraphSection() {
           ))}
         </div>
       </Card>
+
+      {/* Full-screen modal */}
+      {isFullScreen && (
+        <div className="fixed inset-0 bg-background z-50 flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-foreground/10">
+            <h3 className="text-xl font-light">Graph Visualization - Full Screen</h3>
+            <div className="flex items-center gap-2">
+              {selectedNode && (
+                <div className="bg-card p-4 border border-foreground/10 rounded shadow mr-4">
+                  <h4 className="font-semibold">{selectedNode.name}</h4>
+                  <p className="text-sm text-muted-foreground">Type: {selectedNode.type}</p>
+                  <button 
+                    onClick={() => setSelectedNode(null)}
+                    className="mt-2 px-3 py-1 text-xs bg-foreground/10 hover:bg-foreground/20 rounded transition-colors"
+                  >
+                    Close Details
+                  </button>
+                </div>
+              )}
+              {/* Full-screen controls */}
+              <div className="flex items-center gap-1 bg-background/50 rounded-lg p-1 mr-4">
+                <button
+                  onClick={zoomIn}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Zoom in"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={zoomOut}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Zoom out"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={fitToScreen}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Fit to screen"
+                >
+                  <Target className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={resetView}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title="Reset view"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowLabels(!showLabels)}
+                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
+                  title={showLabels ? "Hide labels" : "Show labels"}
+                >
+                  {showLabels ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </button>
+              </div>
+              <button
+                onClick={() => setIsFullScreen(false)}
+                className="p-2 hover:bg-foreground/10 rounded transition-colors"
+                title="Exit full screen"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          <div className="px-4 py-2 text-xs text-muted-foreground border-b border-foreground/10">
+            Zoom: {(currentZoom * 100).toFixed(0)}% | {graphData.nodes.length} nodes, {graphData.links.length} connections
+          </div>
+          <div className="flex-1 p-4">
+            <svg 
+              ref={svgRef} 
+              width="100%" 
+              height="100%" 
+              className="border border-foreground/10 rounded" 
+              viewBox="0 0 500 400"
+            ></svg>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
