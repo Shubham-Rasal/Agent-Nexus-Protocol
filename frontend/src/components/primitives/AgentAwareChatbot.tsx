@@ -13,13 +13,10 @@ import {
 } from "@/components/prompt-kit/message"
 import {
   PromptInput,
-  PromptInputActions,
 } from "@/components/prompt-kit/prompt-input"
 import { Button } from "@/components/ui/button"
 import AgentMentionInput from "@/components/AgentMentionInput"
 import { cn } from "@/lib/utils"
-import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
 import type { UIMessage } from "ai"
 import {
   AlertTriangle,
@@ -29,10 +26,120 @@ import {
   ThumbsUp,
   Bot,
 } from "lucide-react"
-import { memo, useState } from "react"
+import { memo, useState, useEffect } from "react"
 import { useAgents } from "@/hooks/useAgents"
 import { AgentMention } from "@/types/agentMentionTypes"
 import { SidebarTrigger } from "@/components/SidebarTrigger"
+import { createGoogleGenerativeAI } from "@ai-sdk/google"
+import { generateText, tool } from "ai"
+import { z } from "zod"
+import { MCPApiService } from '@/services/mcpApiService'
+
+// Initialize Google AI
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY || '',
+})
+
+// IndexedDB Service (simplified version for reading)
+class IndexedDBService {
+  private dbName = 'AIAgentsDB'
+  private version = 1
+  private db: IDBDatabase | null = null
+
+  async init(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version)
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => {
+        this.db = request.result
+        resolve()
+      }
+    })
+  }
+
+  async getAgent(agentId: string): Promise<any> {
+    if (!this.db) throw new Error('Database not initialized')
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['agents'], 'readonly')
+      const store = transaction.objectStore('agents')
+      const request = store.get(agentId)
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => resolve(request.result)
+    })
+  }
+}
+
+// MCP Tool utilities
+const convertMCPSchemaToZod = (schema: any): z.ZodType<any> => {
+  if (!schema || !schema.properties) return z.object({})
+  
+  const zodObject: Record<string, z.ZodType<any>> = {}
+  
+  Object.entries(schema.properties).forEach(([key, prop]: [string, any]) => {
+    switch (prop.type) {
+      case 'string':
+        zodObject[key] = z.string().describe(prop.description || '')
+        break
+      case 'number':
+        zodObject[key] = z.number().describe(prop.description || '')
+        break
+      case 'boolean':
+        zodObject[key] = z.boolean().describe(prop.description || '')
+        break
+      case 'array':
+        zodObject[key] = z.array(z.any()).describe(prop.description || '')
+        break
+      case 'object':
+        zodObject[key] = z.object({}).describe(prop.description || '')
+        break
+      default:
+        zodObject[key] = z.any().describe(prop.description || '')
+    }
+    
+    if (!schema.required?.includes(key)) {
+      zodObject[key] = zodObject[key].optional()
+    }
+  })
+  
+  return z.object(zodObject)
+}
+
+const createToolsFromMCPServers = async (serverIds: string[], mcpServers: any[]) => {
+  const tools: Record<string, any> = {}
+  
+  for (const serverId of serverIds) {
+    const server = mcpServers.find(s => s.id === serverId)
+    if (!server || server.status !== 'connected') continue
+    
+    server.tools.forEach((mcpTool: any) => {
+      const toolKey = `${server.name}_${mcpTool.name}`.replace(/[^a-zA-Z0-9_]/g, '_')
+      
+      tools[toolKey] = tool({
+        description: mcpTool.description || `Tool from ${server.name}: ${mcpTool.name}`,
+        inputSchema: mcpTool.inputSchema
+          ? convertMCPSchemaToZod(mcpTool.inputSchema)
+          : z.object({}),
+        execute: async (args: any) => {
+          try {
+            const result = await MCPApiService.callTool({
+              serverId: serverId,
+              toolName: mcpTool.name,
+              arguments: args || {}
+            })
+            return result.result || { success: false, error: result.error }
+          } catch (error) {
+            return {
+              success: false,
+              error: error instanceof Error ? error.message : 'Tool execution failed'
+            }
+          }
+        }
+      })
+    })
+  }
+  
+  return tools
+}
 
 type MessageComponentProps = {
   message: UIMessage
@@ -133,12 +240,12 @@ const LoadingMessage = memo(() => (
 
 LoadingMessage.displayName = "LoadingMessage"
 
-const ErrorMessage = memo(({ error }: { error: Error }) => (
+const ErrorMessage = memo(({ error }: { error: string }) => (
   <Message className="not-prose mx-auto flex w-full max-w-3xl flex-col items-start gap-2 px-0 md:px-10">
     <div className="group flex w-full flex-col items-start gap-0">
       <div className="text-destructive-foreground flex min-w-0 flex-1 flex-row items-center gap-2 rounded-lg border-2 border-destructive/20 bg-destructive/10 px-2 py-1">
         <AlertTriangle size={16} className="text-destructive" />
-        <p className="text-destructive">{error.message}</p>
+        <p className="text-destructive">{error}</p>
       </div>
     </div>
   </Message>
@@ -150,19 +257,42 @@ export function AgentAwareChatbot() {
   const [input, setInput] = useState("")
   const [mentionedAgents, setMentionedAgents] = useState<AgentMention[]>([])
   const [messageAgentMap, setMessageAgentMap] = useState<Record<string, AgentMention[]>>({})
+  const [messages, setMessages] = useState<UIMessage[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [mcpServers, setMcpServers] = useState<any[]>([])
+  const [dbService] = useState(() => new IndexedDBService())
+  const [dbInitialized, setDbInitialized] = useState(false)
+  
   const { agents, loading: agentsLoading } = useAgents()
 
-  const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/primitives/chatbot",
-    }),
-  })
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await dbService.init()
+        setDbInitialized(true)
+        const servers = await MCPApiService.loadServers()
+        setMcpServers(servers)
+      } catch (err) {
+        console.error('Initialization error:', err)
+      }
+    }
+    init()
+  }, [])
 
-  const handleSubmit = () => {
-    if (!input.trim()) return
+  const handleSubmit = async () => {
+    if (!input.trim() || !dbInitialized || isLoading) return
 
-    // Store mentioned agents for this message
-    const messageId = `message-${Date.now()}`
+    setIsLoading(true)
+    setError(null)
+
+    const userMessage: UIMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      parts: [{ type: "text", text: input }]
+    }
+
+    const messageId = userMessage.id
     if (mentionedAgents.length > 0) {
       setMessageAgentMap(prev => ({
         ...prev,
@@ -170,24 +300,119 @@ export function AgentAwareChatbot() {
       }))
     }
 
-    // Modify the input to include agent context
-    let enhancedInput = input
-    if (mentionedAgents.length > 0) {
-      const systemPrompts = mentionedAgents
-        .filter(agent => agent.systemPrompt)
-        .map(agent => `${agent.name}: ${agent.systemPrompt}`)
-        .join('\n\n')
-      
-      const agentContext = mentionedAgents
-        .map(agent => `@${agent.name} (${agent.description || ''})`)
-        .join(', ')
-      
-      enhancedInput = `[System Instructions for mentioned agents:]\n${systemPrompts}\n\n[Agents mentioned: ${agentContext}]\n\n[User Query:]\n${input}`
-    }
-
-    sendMessage({ text: enhancedInput })
+    setMessages(prev => [...prev, userMessage])
+    const currentInput = input
+    const currentMentions = [...mentionedAgents]
     setInput("")
     setMentionedAgents([])
+
+    try {
+      // If agents are mentioned, use their configuration
+      if (currentMentions.length > 0) {
+        // Get full agent data from IndexedDB
+        const fullAgents = await Promise.all(
+          currentMentions.map(mention => dbService.getAgent(mention.id))
+        )
+
+        // Use the first mentioned agent's configuration
+        const primaryAgent = fullAgents[0]
+        
+        if (!primaryAgent) {
+          throw new Error('Agent not found in database')
+        }
+
+        // Only support Google for now
+        if (primaryAgent.llmProvider !== 'google') {
+          throw new Error(`LLM provider "${primaryAgent.llmProvider}" is not yet supported. Only Google Gemini is currently available.`)
+        }
+
+        // Create tools from agent's MCP servers
+        const tools = await createToolsFromMCPServers(
+          primaryAgent.mcpServers || [],
+          mcpServers
+        )
+
+        // Enhance system prompt to ensure response after tool use
+        const enhancedSystemPrompt = `${primaryAgent.systemPrompt}
+
+IMPORTANT: After using any tools, you MUST provide a clear, natural language response that:
+1. Explains what you did
+2. Presents the results in a user-friendly way
+3. Answers the user's original question
+
+Never just execute a tool silently - always follow up with an explanation.`
+
+        // Generate response using agent's configuration
+        const result = await generateText({
+          model: google("models/gemini-2.5-flash"),
+          system: enhancedSystemPrompt,
+          prompt: currentInput,
+          tools: Object.keys(tools).length > 0 ? tools : undefined,
+        })
+
+        console.log('Generation result:', result)
+
+        // Extract response text - simplified approach
+        let responseText = result.text
+
+        // If no text but we have tool results, extract directly from tool output
+        if (!responseText && result.toolResults && result.toolResults.length > 0) {
+          console.log('Extracting from tool results...')
+          console.log('Tool results structure:', JSON.stringify(result.toolResults, null, 2))
+          
+          const lastToolResult = result.toolResults[result.toolResults.length - 1]
+          
+          // The toolResult has 'output' not 'result' property
+          const output = (lastToolResult as any).output || lastToolResult
+          
+          // Try to extract the actual content text from MCP format
+          if (output?.content?.[0]?.text) {
+            responseText = output.content[0].text
+          } else if (typeof output === 'string') {
+            responseText = output
+          } else if (output) {
+            responseText = JSON.stringify(output, null, 2)
+          }
+        }
+
+        // Final fallback
+        if (!responseText) {
+          responseText = "No response generated."
+        }
+
+        const assistantMessage: UIMessage = {
+          id: `assistant-${Date.now()}`,
+          role: "assistant",
+          parts: [{ type: "text", text: responseText }]
+        }
+
+        setMessageAgentMap(prev => ({
+          ...prev,
+          [assistantMessage.id]: currentMentions
+        }))
+
+        setMessages(prev => [...prev, assistantMessage])
+      } else {
+        // No agents mentioned - use default behavior
+        const result = await generateText({
+          model: google("models/gemini-2.5-flash"),
+          prompt: currentInput,
+        })
+
+        const assistantMessage: UIMessage = {
+          id: `assistant-${Date.now()}`,
+          role: "assistant",
+          parts: [{ type: "text", text: result.text }]
+        }
+
+        setMessages(prev => [...prev, assistantMessage])
+      }
+    } catch (err) {
+      console.error('Error generating response:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleMentionChange = (mentions: AgentMention[]) => {
@@ -196,10 +421,20 @@ export function AgentAwareChatbot() {
 
   const hasMessages = messages.length > 0
 
+  if (!dbInitialized) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Initializing...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       {!hasMessages ? (
-        // Welcome screen
         <div className="flex-1 flex flex-col items-center justify-center px-4">
           <div className="text-center max-w-2xl mx-auto mb-8">
             <h1 className="text-4xl font-semibold text-foreground mb-4">
@@ -246,16 +481,6 @@ export function AgentAwareChatbot() {
                     >
                       <Bot className="h-4 w-4 mr-2" />
                       Auto
-                      <span className="ml-2 text-xs bg-muted px-1.5 py-0.5 rounded">⌘P</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full"
-                      disabled={agentsLoading}
-                    >
-                      <span className="mr-2">🔧</span>
-                      Tools
                     </Button>
                   </div>
                   <div className="flex items-center gap-2">
@@ -264,11 +489,11 @@ export function AgentAwareChatbot() {
                     </span>
                     <Button
                       size="icon"
-                      disabled={!input.trim() || status !== "ready"}
+                      disabled={!input.trim() || isLoading}
                       onClick={handleSubmit}
                       className="size-9 rounded-full"
                     >
-                      {status === "ready" ? (
+                      {!isLoading ? (
                         <ArrowUp size={18} />
                       ) : (
                         <span className="size-3 rounded-xs bg-current opacity-50" />
@@ -281,9 +506,7 @@ export function AgentAwareChatbot() {
           </div>
         </div>
       ) : (
-        // Chat mode
         <>
-          {/* Chat Header */}
           <div className="flex items-center justify-between p-4 border-b border-border bg-background">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
@@ -307,14 +530,14 @@ export function AgentAwareChatbot() {
                 )
               })}
 
-              {status === "submitted" && <LoadingMessage />}
-              {status === "error" && error && <ErrorMessage error={error} />}
+              {isLoading && <LoadingMessage />}
+              {error && <ErrorMessage error={error} />}
             </ChatContainerContent>
           </ChatContainerRoot>
           
           <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5">
             <PromptInput
-              isLoading={status !== "ready"}
+              isLoading={isLoading}
               className="border-input bg-card relative z-10 w-full rounded-2xl border shadow-sm"
             >
               <div className="flex flex-col">
@@ -350,13 +573,11 @@ export function AgentAwareChatbot() {
                   </div>
                   <Button
                     size="icon"
-                    disabled={
-                      !input.trim() || (status !== "ready" && status !== "error")
-                    }
+                    disabled={!input.trim() || isLoading}
                     onClick={handleSubmit}
                     className="size-9 rounded-full"
                   >
-                    {status === "ready" || status === "error" ? (
+                    {!isLoading ? (
                       <ArrowUp size={18} />
                     ) : (
                       <span className="size-3 rounded-xs bg-white" />
