@@ -188,7 +188,7 @@ async function executeInMemgraph(queries: Array<{ cypher: string; description: s
   const session = driver.session();
   
   try {
-    const results = [];
+    const results: any[] = [];
     
     for (const query of queries) {
       const result = await session.run(query.cypher);
@@ -328,11 +328,10 @@ export async function POST(request: NextRequest) {
 
     // Step: Generate Cypher queries
     steps[generateStepIndex].status = 'in_progress';
-    let cypherQueries;
+    let cypherQueries: any[] = [];
     
     if (isEncrypted || (knowledgeGraph.entities.length === 0 && knowledgeGraph.relationships.length === 0)) {
       // Skip query generation for encrypted content
-      cypherQueries = [];
       steps[generateStepIndex].status = 'completed';
       steps[generateStepIndex].message = isEncrypted 
         ? 'Encrypted - Cypher generation skipped' 
@@ -349,10 +348,9 @@ export async function POST(request: NextRequest) {
 
     // Step: Execute queries
     steps[executeStepIndex].status = 'in_progress';
-    let queryResults;
+    let queryResults: any[] = [];
     
     if (cypherQueries.length === 0) {
-      queryResults = [];
       steps[executeStepIndex].status = 'completed';
       steps[executeStepIndex].message = isEncrypted 
         ? 'Encrypted - Query execution skipped' 
