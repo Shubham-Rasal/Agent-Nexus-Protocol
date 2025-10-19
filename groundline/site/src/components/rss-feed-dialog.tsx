@@ -358,9 +358,9 @@ export function RSSFeedDialog() {
           {/* Info Card */}
           <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>How it works:</strong> RSS feeds are stored locally in your browser. 
-              Click "Fetch Now" to retrieve the latest content and process it into the knowledge graph. 
-              Feeds are automatically stored using browser localStorage for persistence.
+              <strong>How it works:</strong> RSS feed URLs are stored locally in your browser using localStorage. 
+              Click "Fetch Now" to retrieve the latest content and extract entities and relationships directly into the Memgraph knowledge graph. 
+              No external storage required - everything goes straight to the graph database.
             </p>
           </Card>
         </div>

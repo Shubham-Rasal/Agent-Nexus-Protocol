@@ -155,41 +155,58 @@ Extract meaningful entities and their relationships to build a comprehensive kno
 }
 
 /**
- * Store knowledge graph in Neo4j
+ * Store knowledge graph in Memgraph
  */
-async function storeInNeo4j(knowledgeGraph: z.infer<typeof KnowledgeGraphSchema>) {
+async function storeInMemgraph(knowledgeGraph: z.infer<typeof KnowledgeGraphSchema>) {
+  const MEMGRAPH_URI = process.env.MEMGRAPH_URI || 'bolt://localhost:7687';
+  const MEMGRAPH_USERNAME = process.env.MEMGRAPH_USERNAME || '';
+  const MEMGRAPH_PASSWORD = process.env.MEMGRAPH_PASSWORD || '';
+
   const driver = neo4j.driver(
-    process.env.NEO4J_URI || 'bolt://localhost:7687',
-    neo4j.auth.basic(
-      process.env.NEO4J_USERNAME || 'memgraph',
-      process.env.NEO4J_PASSWORD || 'memgraph'
-    )
+    MEMGRAPH_URI,
+    neo4j.auth.basic(MEMGRAPH_USERNAME, MEMGRAPH_PASSWORD),
+    {
+      maxConnectionLifetime: 3 * 60 * 60 * 1000, // 3 hours
+      maxConnectionPoolSize: 50,
+      connectionAcquisitionTimeout: 2 * 60 * 1000, // 120 seconds
+      disableLosslessIntegers: true
+    }
   );
 
   const session = driver.session();
   let queriesExecuted = 0;
 
   try {
-    // Create entities
+    // Create entities in Memgraph
     for (const entity of knowledgeGraph.entities) {
+      // Sanitize entity type to ensure it's a valid label
+      const entityType = entity.type.replace(/[^a-zA-Z0-9_]/g, '_');
+      
       const query = `
-        MERGE (e:${entity.type} {id: $id})
+        MERGE (e:${entityType} {id: $id})
         SET e += $properties
+        SET e.type = $type
+        SET e.updated_at = datetime()
       `;
       await session.run(query, {
         id: entity.id,
+        type: entity.type,
         properties: entity.properties,
       });
       queriesExecuted++;
     }
 
-    // Create relationships
+    // Create relationships in Memgraph
     for (const rel of knowledgeGraph.relationships) {
+      // Sanitize relationship type
+      const relType = rel.type.replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
+      
       const query = `
         MATCH (a {id: $from})
         MATCH (b {id: $to})
-        MERGE (a)-[r:${rel.type}]->(b)
+        MERGE (a)-[r:${relType}]->(b)
         ${rel.properties ? 'SET r += $properties' : ''}
+        SET r.created_at = datetime()
       `;
       await session.run(query, {
         from: rel.from,
@@ -200,6 +217,9 @@ async function storeInNeo4j(knowledgeGraph: z.infer<typeof KnowledgeGraphSchema>
     }
 
     return queriesExecuted;
+  } catch (error) {
+    console.error('Memgraph storage error:', error);
+    throw new Error(`Failed to store in Memgraph: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     await session.close();
     await driver.close();
@@ -253,11 +273,11 @@ export async function POST(request: NextRequest) {
 
     // Step 3: Store in Memgraph
     steps.push({ step: 'store_graph', status: 'in_progress' });
-    const queriesExecuted = await storeInNeo4j(knowledgeGraph);
+    const queriesExecuted = await storeInMemgraph(knowledgeGraph);
     steps[steps.length - 1] = {
       step: 'store_graph',
       status: 'completed',
-      message: `Stored knowledge graph in Memgraph`,
+      message: `Successfully stored ${queriesExecuted} queries in Memgraph knowledge graph`,
       data: { queriesExecuted }
     };
 
