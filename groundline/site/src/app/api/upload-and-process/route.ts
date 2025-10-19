@@ -235,10 +235,14 @@ export async function POST(request: NextRequest) {
       fileSize = encryptedData.fileSize;
       encryptionMetadata = encryptedData.encryptionMetadata;
       
-      // Store the encrypted content as JSON string for upload to Filecoin
-      // In a production system, you might want to decrypt here if needed,
-      // but for this demo we'll store it encrypted and only decrypt on retrieval
-      content = JSON.stringify(encryptedData.encryptedContent);
+      // For demo/mock: if originalContent is provided, use it for KG extraction
+      // In production, you'd decrypt with Lit Protocol first
+      if (body.originalContent) {
+        content = body.originalContent; // Use original for processing
+      } else {
+        // Store the encrypted content as JSON string
+        content = JSON.stringify(encryptedData.encryptedContent);
+      }
       
     } else {
       // Legacy FormData handling (non-encrypted)
@@ -292,43 +296,76 @@ export async function POST(request: NextRequest) {
     const uploadStepIndex = isEncrypted ? 1 : 0;
     const parseStepIndex = isEncrypted ? 2 : 1;
 
-    // Step: Upload to Synapse
+    // Step: Upload to Synapse (MOCKED)
     steps[uploadStepIndex].status = 'in_progress';
-    const fileBuffer = Buffer.from(content, 'utf-8');
-    const uploadResult = await uploadToSynapse(fileBuffer, fileName);
+    
+    // Simulate upload delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Mock upload result
+    const uploadResult = {
+      pieceCid: "bafk" + Array.from({length: 52}, () => 
+        "abcdefghijklmnopqrstuvwxyz234567"[Math.floor(Math.random() * 32)]).join(''),
+      fileSize: fileSize,
+      fileName: fileName
+    };
+    
     steps[uploadStepIndex].status = 'completed';
     steps[uploadStepIndex].data = uploadResult;
+    steps[uploadStepIndex].message = 'Mock upload to Filecoin (development mode)';
 
-    // Step: Parse content (only if not encrypted, or decrypt first)
+    // Step: Parse content (MOCKED)
     steps[parseStepIndex].status = 'in_progress';
     
-    // For encrypted content, we need to note that parsing happens on decrypted content
-    // In this demo, we'll parse the original content before encryption was applied
-    // In production, you'd decrypt here using Lit Protocol with appropriate auth
     let knowledgeGraph;
     
-    if (isEncrypted) {
-      // For demo purposes, skip KG extraction on encrypted content
-      // In production, decrypt with Lit Protocol then parse
+    // Simulate parsing delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // For mock mode: if content looks like JSON (encrypted), skip KG extraction
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed.ciphertext) {
+        // This is encrypted JSON, skip KG extraction
+        knowledgeGraph = { entities: [], relationships: [] };
+        steps[parseStepIndex].message = 'Content encrypted - KG extraction skipped';
+      } else {
+        throw new Error("Not encrypted JSON");
+      }
+    } catch {
+      // Mock knowledge graph extraction
+      const lines = content.split('\n').filter(l => l.trim());
+      const mockEntityCount = Math.min(Math.floor(lines.length / 3), 10);
+      
       knowledgeGraph = {
-        entities: [],
-        relationships: []
+        entities: Array.from({length: mockEntityCount}, (_, i) => ({
+          id: `entity_${i}`,
+          type: ['Concept', 'Person', 'Technology', 'Organization'][i % 4],
+          properties: { name: `Mock Entity ${i}`, description: 'Generated for demo' }
+        })),
+        relationships: Array.from({length: Math.floor(mockEntityCount / 2)}, (_, i) => ({
+          from: `entity_${i}`,
+          to: `entity_${(i + 1) % mockEntityCount}`,
+          type: 'RELATES_TO',
+          properties: {}
+        }))
       };
-      steps[parseStepIndex].status = 'completed';
-      steps[parseStepIndex].message = 'Content encrypted - KG extraction skipped (decrypt to process)';
-    } else {
-      knowledgeGraph = await parseMarkdownToKG(content);
-      steps[parseStepIndex].status = 'completed';
+      steps[parseStepIndex].message = 'Mock KG extraction (development mode)';
     }
+    
+    steps[parseStepIndex].status = 'completed';
     steps[parseStepIndex].data = knowledgeGraph;
 
     const generateStepIndex = isEncrypted ? 3 : 2;
     const executeStepIndex = isEncrypted ? 4 : 3;
     const completeStepIndex = isEncrypted ? 5 : 4;
 
-    // Step: Generate Cypher queries
+    // Step: Generate Cypher queries (MOCKED)
     steps[generateStepIndex].status = 'in_progress';
     let cypherQueries: any[] = [];
+    
+    // Simulate query generation delay
+    await new Promise(resolve => setTimeout(resolve, 600));
     
     if (isEncrypted || (knowledgeGraph.entities.length === 0 && knowledgeGraph.relationships.length === 0)) {
       // Skip query generation for encrypted content
@@ -337,18 +374,22 @@ export async function POST(request: NextRequest) {
         ? 'Encrypted - Cypher generation skipped' 
         : 'No entities found';
     } else {
-      cypherQueries = await generateCypherQueries(
-        knowledgeGraph.entities,
-        knowledgeGraph.relationships,
-        uploadResult.pieceCid
-      );
+      // Mock Cypher queries
+      cypherQueries = knowledgeGraph.entities.map((entity: any) => ({
+        cypher: `MERGE (n:${entity.type} {id: "${entity.id}", source_cid: "${uploadResult.pieceCid}"}) SET n += ${JSON.stringify(entity.properties)}`,
+        description: `Create ${entity.type} node: ${entity.id}`
+      }));
       steps[generateStepIndex].status = 'completed';
+      steps[generateStepIndex].message = 'Mock Cypher generation (development mode)';
     }
     steps[generateStepIndex].data = cypherQueries;
 
-    // Step: Execute queries
+    // Step: Execute queries (MOCKED)
     steps[executeStepIndex].status = 'in_progress';
     let queryResults: any[] = [];
+    
+    // Simulate query execution delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     if (cypherQueries.length === 0) {
       steps[executeStepIndex].status = 'completed';
@@ -356,8 +397,19 @@ export async function POST(request: NextRequest) {
         ? 'Encrypted - Query execution skipped' 
         : 'No queries to execute';
     } else {
-      queryResults = await executeInMemgraph(cypherQueries);
+      // Mock execution results
+      queryResults = cypherQueries.map((q: any) => ({
+        description: q.description,
+        cypher: q.cypher,
+        recordsAffected: 1,
+        summary: {
+          nodesCreated: 1,
+          relationshipsCreated: 0,
+          propertiesSet: 3
+        }
+      }));
       steps[executeStepIndex].status = 'completed';
+      steps[executeStepIndex].message = 'Mock Memgraph execution (development mode)';
     }
     steps[executeStepIndex].data = queryResults;
 

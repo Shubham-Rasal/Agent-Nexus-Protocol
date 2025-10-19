@@ -3,7 +3,6 @@ import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import neo4j from 'neo4j-driver';
-import { RPC_URLS, Synapse } from '@filoz/synapse-sdk';
 
 // Define schema for entities and relationships
 const EntitySchema = z.object({
@@ -121,36 +120,6 @@ function stripHTML(text: string): string {
     .trim();
 }
 
-/**
- * Upload content to Filecoin Synapse
- */
-async function uploadToSynapse(content: string, fileName: string): Promise<string> {
-  const synapse = await Synapse.create({
-    privateKey: process.env.SYNAPSE_PRIVATE_KEY || "0x8f3092541ef889aa7c0c6c3f81f0c607a63dc75204003b57c1ce2c51570b490c",
-    rpcURL: RPC_URLS.calibration.http,
-    withCDN: true
-  });
-  
-  const context = await synapse.storage.createContext({
-    dataSetId: parseInt(process.env.SYNAPSE_DATASET_ID || "24"),
-    withCDN: true,
-  });
-  
-  const fileBuffer = Buffer.from(content, 'utf-8');
-  
-  const metadata = {
-    "title": fileName,
-    "description": "RSS Feed Content",
-    "type": "rss",
-    "source": "rss_feed"
-  };
-  
-  const uploadResult = await context.upload(fileBuffer, {
-    metadata,
-  });
-  
-  return uploadResult.pieceCid.toString();
-}
 
 /**
  * Extract knowledge graph from RSS items
@@ -269,19 +238,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Step 2: Upload to Filecoin
-    steps.push({ step: 'upload', status: 'in_progress' });
-    const feedContent = JSON.stringify(items, null, 2);
-    const fileName = `rss-feed-${Date.now()}.json`;
-    const pieceCid = await uploadToSynapse(feedContent, fileName);
-    steps[steps.length - 1] = {
-      step: 'upload',
-      status: 'completed',
-      message: `Uploaded to Filecoin with CID: ${pieceCid}`,
-      data: { cid: pieceCid }
-    };
-
-    // Step 3: Extract knowledge graph
+    // Step 2: Extract knowledge graph
     steps.push({ step: 'extract_kg', status: 'in_progress' });
     const knowledgeGraph = await extractKnowledgeGraph(items);
     steps[steps.length - 1] = {
@@ -294,7 +251,7 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Step 4: Store in Neo4j
+    // Step 3: Store in Memgraph
     steps.push({ step: 'store_graph', status: 'in_progress' });
     const queriesExecuted = await storeInNeo4j(knowledgeGraph);
     steps[steps.length - 1] = {
@@ -313,9 +270,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       itemsCount: items.length,
-      cid: pieceCid,
       entitiesCount: knowledgeGraph.entities.length,
       relationshipsCount: knowledgeGraph.relationships.length,
+      queriesExecuted,
       steps,
     });
 
