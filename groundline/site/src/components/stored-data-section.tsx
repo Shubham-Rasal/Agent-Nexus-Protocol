@@ -7,6 +7,7 @@ import { useState, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { WalletButton } from "@/components/wallet-button";
 import { FileUploadDialog } from "@/components/file-upload-dialog";
+import { PiecesGrid } from "@/components/PiecesGrid";
 import { Shield, FolderGit2, Globe, Cloud, Loader2 } from "lucide-react";
 import { EnhancedDataSetInfo } from "@filoz/synapse-sdk";
 
@@ -198,41 +199,12 @@ export function StoredDataSection() {
             Pieces from Data Set #{selectedDataSetId}
           </h3>
           
-          {piecesLoading ? (
-            <div className="text-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading pieces...</p>
-            </div>
-          ) : piecesData && piecesData.pieces.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {piecesData.pieces.map(({ piece, dataSet }) => (
-                <div
-                  key={piece.pieceId}
-                  className="p-3 rounded-md border border-foreground/10 hover:bg-foreground/5 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-50 p-2 rounded-md">
-                      <FolderGit2 className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium mb-1">Piece #{piece.pieceId}</div>
-                      <div className="text-xs text-muted-foreground break-all mb-2">
-                        CID: {String(piece.pieceCid).slice(0, 8)}...{String(piece.pieceCid).slice(-8)}
-                      </div>
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Globe className="w-3 h-3 mr-1" />
-                        {dataSet.payee ? `${dataSet.payee.slice(0, 6)}...${dataSet.payee.slice(-4)}` : 'No provider'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-muted-foreground py-8">
-              No pieces found in this data set
-            </div>
-          )}
+          <PiecesGrid
+            pieces={piecesData?.pieces || []}
+            isLoading={piecesLoading}
+            error={piecesData ? null : new Error("Failed to load pieces")}
+            dataSetId={selectedDataSetId}
+          />
         </Card>
       )}
     </section>

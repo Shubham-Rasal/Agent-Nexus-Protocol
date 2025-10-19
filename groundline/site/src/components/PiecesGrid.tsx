@@ -1,7 +1,7 @@
-import { Piece, DataSet } from "@/types/proofTypes"
-import { PieceDetails } from "./PieceDetails"
-import { EnhancedDataSetInfo } from "@filoz/synapse-sdk";
+"use client";
+
 import { useState, useMemo } from "react";
+import { FolderGit2, Globe, Loader2, ExternalLink, Copy } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -11,21 +11,37 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import {useAccount} from "wagmi";
+interface Piece {
+  pieceId: string;
+  pieceCid: string;
+  timestamp: string;
+}
+
+interface DataSet {
+  pdpVerifierDataSetId: number;
+  payee: string;
+  details: any;
+  serviceURL: string | null;
+  provider: any;
+}
 
 interface PiecesGridProps {
   pieces: Array<{
     piece: Piece;
-    dataSet: EnhancedDataSetInfo;
+    dataSet: DataSet;
   }>;
   isLoading: boolean;
   error?: Error | null;
-  searchTerm: string;
+  searchTerm?: string;
+  dataSetId?: number;
 }
 
-export function PiecesGrid({ pieces, isLoading, error, searchTerm }: PiecesGridProps) {
+export function PiecesGrid({ pieces, isLoading, error, searchTerm = "", dataSetId }: PiecesGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12; // 4 rows × 3 columns on large screens
 
+  const account = useAccount();
   // Reset to first page when search term changes
   const filteredPieces = useMemo(() => {
     if (!searchTerm) return pieces;
@@ -51,19 +67,28 @@ export function PiecesGrid({ pieces, isLoading, error, searchTerm }: PiecesGridP
   };
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading pieces...</div>
+    return (
+      <div className="text-center py-8">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+        <p className="text-muted-foreground">Loading pieces...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center text-red-600 py-8">Error loading pieces: {error.message}</div>
+    return (
+      <div className="text-center text-red-600 py-8">
+        Error loading pieces: {error.message}
+      </div>
+    );
   }
 
   if (filteredPieces.length === 0) {
     return (
-      <div className="text-center text-slate-500 py-8">
+      <div className="text-center text-muted-foreground py-8">
         {searchTerm ? "No pieces found matching your search" : "No pieces available"}
       </div>
-    )
+    );
   }
 
   return (
@@ -81,13 +106,56 @@ export function PiecesGrid({ pieces, isLoading, error, searchTerm }: PiecesGridP
       </div>
 
       {/* Pieces grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {currentPieces.map(({ piece, dataSet }) => (
-          <PieceDetails 
-            key={piece.pieceId} 
-            piece={piece} 
-            dataSet={dataSet}
-          />
+          <div
+            key={piece.pieceId}
+            className="p-3 rounded-md border border-foreground/10 hover:bg-foreground/5 transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <div className="bg-blue-50 p-2 rounded-md">
+                <FolderGit2 className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="text-sm font-medium">
+                    Piece #{piece.pieceId}
+                  </div>
+                  {/* Link to explorer */}
+                  {dataSet.payee && piece.pieceId && account.address && (
+                    <a
+                      href={`https://${account.address.toLowerCase()}.calibration.filbeam.io/${piece.pieceCid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                      title="Open in Filbeam Explorer"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+                <div className="flex items-center text-xs text-muted-foreground break-all mb-2">
+                  CID:&nbsp;
+                  <span>
+                    {String(piece.pieceCid).slice(0, 8)}...{String(piece.pieceCid).slice(-8)}
+                  </span>
+                  <button
+                    className="ml-2 p-1 rounded bg-muted hover:bg-muted/70 text-blue-600 hover:text-blue-800 transition-colors"
+                    title="Copy CID"
+                    onClick={() => {
+                      navigator.clipboard.writeText(String(piece.pieceCid));
+                    }}
+                  >
+                    <Copy className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <Globe className="w-3 h-3 mr-1" />
+                  {dataSet.payee ? `${dataSet.payee.slice(0, 6)}...${dataSet.payee.slice(-4)}` : 'No provider'}
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -168,5 +236,5 @@ export function PiecesGrid({ pieces, isLoading, error, searchTerm }: PiecesGridP
         </Pagination>
       )}
     </div>
-  )
-} 
+  );
+}

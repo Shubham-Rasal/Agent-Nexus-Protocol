@@ -18,9 +18,9 @@ const roadmapItems = [
     title: "Enhanced Data Processing",
     status: "in-progress",
     items: [
-      "Multi-source connectors (Notion, Obsidian, Git)",
+      "Multi-source connectors (Notion, Obsidian, etc)",
       "Advanced entity extraction",
-      "Cryptographic proof generation",
+      "Payment gateway integration (x402 protocol)",
       "Visual graph explorer",
     ]
   },
@@ -29,10 +29,11 @@ const roadmapItems = [
     title: "Advanced Features & Scaling",
     status: "planned",
     items: [
-      "Payment gateway integration (x402 protocol)",
+      
       "Real-time collaboration features",
       "Advanced query capabilities",
-      "Enterprise team management",
+      "Payments rails for storage"
+
     ]
   },
   {
@@ -41,9 +42,8 @@ const roadmapItems = [
     status: "planned", 
     items: [
       "Third-party integrations",
-      "AI agent marketplace",
+      "AI agent marketplace integration",
       "Custom graph templates",
-      "Mobile applications",
     ]
   }
 ]

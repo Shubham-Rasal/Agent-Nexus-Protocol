@@ -138,7 +138,7 @@ export function GraphSection() {
 
     try {
       // Use the comprehensive query API that handles everything
-      const response = await fetch('/api/query', {
+      const response = await fetch('/api/user-query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: nlpQuery })
