@@ -5,8 +5,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2, X } from "lucide-react";
+import { Upload, FileText, CheckCircle, AlertCircle, Loader2, X, Lock, LockOpen, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLitProtocol } from "@/hooks/useLitProtocol";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ProcessingStep {
   step: string;
@@ -25,6 +28,8 @@ interface UploadResult {
     entitiesCount: number;
     relationshipsCount: number;
     queriesExecuted: number;
+    isEncrypted?: boolean;
+    encryptionType?: "public" | "private";
   };
   error?: string;
 }
@@ -34,7 +39,19 @@ export function FileUploadDialog() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [encryptionType, setEncryptionType] = useState<"public" | "private">("public");
+  const [isEncrypting, setIsEncrypting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Lit Protocol hook for encryption
+  const { 
+    isInitialized: isLitInitialized, 
+    isInitializing: isLitInitializing,
+    error: litError,
+    isWalletConnected,
+    connectedWallet,
+    encryptFileData 
+  } = useLitProtocol();
 
   const handleFileSelect = async (file: File) => {
     if (!file) return;
@@ -55,16 +72,45 @@ export function FileUploadDialog() {
       return;
     }
 
+    // Check Lit Protocol initialization
+    if (!isLitInitialized) {
+      alert('Encryption system is still initializing. Please wait...');
+      return;
+    }
+
+    // For private encryption, wallet must be connected
+    if (encryptionType === "private" && !isWalletConnected) {
+      alert('Please connect your wallet for private encryption.');
+      return;
+    }
+
     setIsUploading(true);
     setUploadResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Step 1: Read file content
+      const fileContent = await file.text();
 
+      // Step 2: Encrypt the file using Lit Protocol
+      setIsEncrypting(true);
+      const encryptedFileData = await encryptFileData(
+        fileContent,
+        file.name,
+        file.size,
+        encryptionType
+      );
+      setIsEncrypting(false);
+
+      // Step 3: Send encrypted data to API
       const response = await fetch('/api/upload-and-process', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          encryptedData: encryptedFileData,
+          isEncrypted: true,
+        }),
       });
 
       const result = await response.json();
@@ -78,6 +124,7 @@ export function FileUploadDialog() {
       });
     } finally {
       setIsUploading(false);
+      setIsEncrypting(false);
     }
   };
 
@@ -122,6 +169,7 @@ export function FileUploadDialog() {
 
   const getStepName = (step: string) => {
     const stepNames: Record<string, string> = {
+      'encrypt': 'Encrypt with Lit Protocol',
       'upload': 'Upload to Filecoin',
       'parse': 'Extract Knowledge Graph',
       'generate_queries': 'Generate Cypher Queries',
@@ -150,48 +198,142 @@ export function FileUploadDialog() {
 
         <div className="space-y-6">
           {!isUploading && !uploadResult && (
-            <div
-              className={cn(
-                "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-                dragActive 
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20" 
-                  : "border-muted-foreground/30 hover:border-muted-foreground/50"
-              )}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-medium mb-2">Upload Markdown or Text File</h3>
-              <p className="text-muted-foreground mb-4">
-                Drag and drop your file here, or click to browse
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Supported formats: .md, .txt, .mdx (max 10MB)
-              </p>
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                variant="outline"
-                className="mt-4 font-mono uppercase tracking-wider"
+            <>
+              {/* Encryption Options */}
+              <Card className="p-4 bg-muted/50">
+                <div className="flex items-start gap-3 mb-4">
+                  <Shield className="w-5 h-5 mt-0.5 text-primary" />
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-1">Lit Protocol Encryption</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Your file will be encrypted using Lit Protocol before upload to Filecoin.
+                    </p>
+                    
+                    {/* Lit Status */}
+                    {isLitInitializing && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Initializing encryption system...
+                      </div>
+                    )}
+                    
+                    {litError && (
+                      <div className="flex items-center gap-2 text-sm text-red-500 mb-3">
+                        <AlertCircle className="w-4 h-4" />
+                        {litError}
+                      </div>
+                    )}
+                    
+                    {isLitInitialized && (
+                      <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 mb-3">
+                        <CheckCircle className="w-4 h-4" />
+                        Encryption ready
+                      </div>
+                    )}
+
+                    <RadioGroup 
+                      value={encryptionType} 
+                      onValueChange={(value) => setEncryptionType(value as "public" | "private")}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-3 rounded-lg border bg-background hover:bg-muted/50 transition-colors">
+                        <RadioGroupItem value="public" id="public" />
+                        <Label htmlFor="public" className="flex-1 cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <LockOpen className="w-4 h-4" />
+                            <span className="font-medium">Public Access</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Anyone can decrypt and view the knowledge graph
+                          </p>
+                        </Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 p-3 rounded-lg border bg-background hover:bg-muted/50 transition-colors">
+                        <RadioGroupItem value="private" id="private" />
+                        <Label htmlFor="private" className="flex-1 cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <Lock className="w-4 h-4" />
+                            <span className="font-medium">Private Access</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Only you (connected wallet) can decrypt
+                          </p>
+                          {encryptionType === "private" && !isWalletConnected && (
+                            <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />
+                              Connect wallet required
+                            </p>
+                          )}
+                          {encryptionType === "private" && isWalletConnected && (
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-mono">
+                              {connectedWallet?.slice(0, 6)}...{connectedWallet?.slice(-4)}
+                            </p>
+                          )}
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </Card>
+
+              {/* File Upload Area */}
+              <div
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
+                  dragActive 
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20" 
+                    : "border-muted-foreground/30 hover:border-muted-foreground/50"
+                )}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
               >
-                Choose File
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".md,.txt,.mdx,text/markdown,text/plain"
-                onChange={handleFileInputChange}
-                className="hidden"
-              />
-            </div>
+                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Upload Markdown or Text File</h3>
+                <p className="text-muted-foreground mb-4">
+                  Drag and drop your file here, or click to browse
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Supported formats: .md, .txt, .mdx (max 10MB)
+                </p>
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="outline"
+                  className="mt-4 font-mono uppercase tracking-wider"
+                  disabled={!isLitInitialized || (encryptionType === "private" && !isWalletConnected)}
+                >
+                  Choose File
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".md,.txt,.mdx,text/markdown,text/plain"
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                />
+              </div>
+            </>
           )}
 
           {isUploading && (
             <div className="space-y-4">
               <div className="text-center">
                 <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                <p className="text-muted-foreground">Processing your file...</p>
+                {isEncrypting ? (
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground flex items-center justify-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      Encrypting file with Lit Protocol...
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {encryptionType === "private" ? "Private encryption" : "Public encryption"}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">Processing your file...</p>
+                )}
               </div>
               <Progress value={progress} className="w-full" />
               <p className="text-sm text-center text-muted-foreground">
@@ -231,19 +373,56 @@ export function FileUploadDialog() {
                             {uploadResult.summary.cid.slice(0, 8)}...{uploadResult.summary.cid.slice(-8)}
                           </div>
                         </div>
+                        {uploadResult.summary.isEncrypted && (
+                          <div>
+                            <span className="text-muted-foreground">Encryption:</span>
+                            <div className="font-medium flex items-center gap-1">
+                              {uploadResult.summary.encryptionType === "private" ? (
+                                <>
+                                  <Lock className="w-3 h-3" />
+                                  Private
+                                </>
+                              ) : (
+                                <>
+                                  <LockOpen className="w-3 h-3" />
+                                  Public
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         <div>
                           <span className="text-muted-foreground">Entities:</span>
-                          <div className="font-medium">{uploadResult.summary.entitiesCount}</div>
+                          <div className="font-medium">
+                            {uploadResult.summary.isEncrypted ? "Encrypted" : uploadResult.summary.entitiesCount}
+                          </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Relationships:</span>
-                          <div className="font-medium">{uploadResult.summary.relationshipsCount}</div>
+                          <div className="font-medium">
+                            {uploadResult.summary.isEncrypted ? "Encrypted" : uploadResult.summary.relationshipsCount}
+                          </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Queries:</span>
-                          <div className="font-medium">{uploadResult.summary.queriesExecuted}</div>
+                          <div className="font-medium">
+                            {uploadResult.summary.isEncrypted ? "Skipped" : uploadResult.summary.queriesExecuted}
+                          </div>
                         </div>
                       </div>
+                      {uploadResult.summary.isEncrypted && (
+                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                          <p className="text-sm text-blue-800 dark:text-blue-200 flex items-start gap-2">
+                            <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>
+                              File encrypted with Lit Protocol. Knowledge graph extraction will occur when the file is decrypted.
+                              {uploadResult.summary.encryptionType === "private" && (
+                                <> Only the authorized wallet can decrypt this file.</>
+                              )}
+                            </span>
+                          </p>
+                        </div>
+                      )}
                     </Card>
                   )}
 
