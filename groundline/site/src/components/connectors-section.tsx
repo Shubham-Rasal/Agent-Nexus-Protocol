@@ -9,6 +9,7 @@ import {
   Database
 } from "lucide-react"
 import Link from "next/link"
+import { RSSFeedDialog } from "@/components/rss-feed-dialog"
 
 const connectors = [
   { 
@@ -34,10 +35,11 @@ const connectors = [
   },
   { 
     name: "RSS Feed", 
-    status: "Coming Soon", 
+    status: "Available", 
     icon: Rss, 
-    description: "Ingest content from RSS feeds",
-    link: "#"
+    description: "Ingest content from RSS feeds with local storage",
+    link: "#",
+    component: true
   }
 ]
 
@@ -75,7 +77,9 @@ export function ConnectorsSection() {
               </div>
               <h3 className="text-xl font-light mb-2">{connector.name}</h3>
               <p className="text-sm text-muted-foreground mb-4">{connector.description}</p>
-              {connector.status === "Available" && connector.link !== "#" ? (
+              {connector.status === "Available" && (connector as any).component ? (
+                <RSSFeedDialog />
+              ) : connector.status === "Available" && connector.link !== "#" ? (
                 <Link 
                   href={connector.link}
                   target="_blank"
