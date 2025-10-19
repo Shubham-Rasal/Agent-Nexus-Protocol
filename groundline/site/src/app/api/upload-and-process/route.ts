@@ -213,71 +213,158 @@ async function executeInMemgraph(queries: Array<{ cypher: string; description: s
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const contentType = request.headers.get('content-type');
+    let fileName: string;
+    let fileSize: number;
+    let content: string;
+    let isEncrypted = false;
+    let encryptionMetadata: any = null;
+
+    // Handle both encrypted (JSON) and non-encrypted (FormData) requests
+    if (contentType?.includes('application/json')) {
+      const body = await request.json();
+      
+      if (!body.encryptedData) {
+        return NextResponse.json({ error: 'No encrypted data provided' }, { status: 400 });
+      }
+
+      isEncrypted = true;
+      const encryptedData = body.encryptedData;
+      
+      fileName = encryptedData.fileName;
+      fileSize = encryptedData.fileSize;
+      encryptionMetadata = encryptedData.encryptionMetadata;
+      
+      // Store the encrypted content as JSON string for upload to Filecoin
+      // In a production system, you might want to decrypt here if needed,
+      // but for this demo we'll store it encrypted and only decrypt on retrieval
+      content = JSON.stringify(encryptedData.encryptedContent);
+      
+    } else {
+      // Legacy FormData handling (non-encrypted)
+      const formData = await request.formData();
+      const file = formData.get('file') as File;
+      
+      if (!file) {
+        return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      }
+
+      // Validate file type
+      const allowedTypes = ['text/markdown', 'text/plain', 'text/mdx'];
+      const allowedExtensions = ['.md', '.txt', '.mdx'];
+      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+      
+      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+        return NextResponse.json({ 
+          error: 'Invalid file type. Only markdown (.md) and text (.txt) files are allowed.' 
+        }, { status: 400 });
+      }
+
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json({ 
+          error: 'File too large. Maximum size is 10MB.' 
+        }, { status: 400 });
+      }
+
+      fileName = file.name;
+      fileSize = file.size;
+      content = await file.text();
+    }
+
+    const steps: ProcessingStep[] = isEncrypted
+      ? [
+          { step: 'encrypt', status: 'completed', message: `File encrypted with Lit Protocol (${encryptionMetadata?.accessType})` },
+          { step: 'upload', status: 'pending', message: 'Uploading encrypted file to Filecoin storage...' },
+          { step: 'parse', status: 'pending', message: 'Extracting entities and relationships...' },
+          { step: 'generate_queries', status: 'pending', message: 'Generating Cypher queries...' },
+          { step: 'execute_queries', status: 'pending', message: 'Executing queries in Memgraph...' },
+          { step: 'complete', status: 'pending', message: 'Processing complete!' }
+        ]
+      : [
+          { step: 'upload', status: 'pending', message: 'Uploading file to Filecoin storage...' },
+          { step: 'parse', status: 'pending', message: 'Extracting entities and relationships...' },
+          { step: 'generate_queries', status: 'pending', message: 'Generating Cypher queries...' },
+          { step: 'execute_queries', status: 'pending', message: 'Executing queries in Memgraph...' },
+          { step: 'complete', status: 'pending', message: 'Processing complete!' }
+        ];
+
+    const uploadStepIndex = isEncrypted ? 1 : 0;
+    const parseStepIndex = isEncrypted ? 2 : 1;
+
+    // Step: Upload to Synapse
+    steps[uploadStepIndex].status = 'in_progress';
+    const fileBuffer = Buffer.from(content, 'utf-8');
+    const uploadResult = await uploadToSynapse(fileBuffer, fileName);
+    steps[uploadStepIndex].status = 'completed';
+    steps[uploadStepIndex].data = uploadResult;
+
+    // Step: Parse content (only if not encrypted, or decrypt first)
+    steps[parseStepIndex].status = 'in_progress';
     
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-    }
-
-    // Validate file type
-    const allowedTypes = ['text/markdown', 'text/plain', 'text/mdx'];
-    const allowedExtensions = ['.md', '.txt', '.mdx'];
-    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    // For encrypted content, we need to note that parsing happens on decrypted content
+    // In this demo, we'll parse the original content before encryption was applied
+    // In production, you'd decrypt here using Lit Protocol with appropriate auth
+    let knowledgeGraph;
     
-    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
-      return NextResponse.json({ 
-        error: 'Invalid file type. Only markdown (.md) and text (.txt) files are allowed.' 
-      }, { status: 400 });
+    if (isEncrypted) {
+      // For demo purposes, skip KG extraction on encrypted content
+      // In production, decrypt with Lit Protocol then parse
+      knowledgeGraph = {
+        entities: [],
+        relationships: []
+      };
+      steps[parseStepIndex].status = 'completed';
+      steps[parseStepIndex].message = 'Content encrypted - KG extraction skipped (decrypt to process)';
+    } else {
+      knowledgeGraph = await parseMarkdownToKG(content);
+      steps[parseStepIndex].status = 'completed';
     }
+    steps[parseStepIndex].data = knowledgeGraph;
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ 
-        error: 'File too large. Maximum size is 10MB.' 
-      }, { status: 400 });
+    const generateStepIndex = isEncrypted ? 3 : 2;
+    const executeStepIndex = isEncrypted ? 4 : 3;
+    const completeStepIndex = isEncrypted ? 5 : 4;
+
+    // Step: Generate Cypher queries
+    steps[generateStepIndex].status = 'in_progress';
+    let cypherQueries;
+    
+    if (isEncrypted || (knowledgeGraph.entities.length === 0 && knowledgeGraph.relationships.length === 0)) {
+      // Skip query generation for encrypted content
+      cypherQueries = [];
+      steps[generateStepIndex].status = 'completed';
+      steps[generateStepIndex].message = isEncrypted 
+        ? 'Encrypted - Cypher generation skipped' 
+        : 'No entities found';
+    } else {
+      cypherQueries = await generateCypherQueries(
+        knowledgeGraph.entities,
+        knowledgeGraph.relationships,
+        uploadResult.pieceCid
+      );
+      steps[generateStepIndex].status = 'completed';
     }
+    steps[generateStepIndex].data = cypherQueries;
 
-    const steps: ProcessingStep[] = [
-      { step: 'upload', status: 'pending', message: 'Uploading file to Filecoin storage...' },
-      { step: 'parse', status: 'pending', message: 'Extracting entities and relationships...' },
-      { step: 'generate_queries', status: 'pending', message: 'Generating Cypher queries...' },
-      { step: 'execute_queries', status: 'pending', message: 'Executing queries in Memgraph...' },
-      { step: 'complete', status: 'pending', message: 'Processing complete!' }
-    ];
+    // Step: Execute queries
+    steps[executeStepIndex].status = 'in_progress';
+    let queryResults;
+    
+    if (cypherQueries.length === 0) {
+      queryResults = [];
+      steps[executeStepIndex].status = 'completed';
+      steps[executeStepIndex].message = isEncrypted 
+        ? 'Encrypted - Query execution skipped' 
+        : 'No queries to execute';
+    } else {
+      queryResults = await executeInMemgraph(cypherQueries);
+      steps[executeStepIndex].status = 'completed';
+    }
+    steps[executeStepIndex].data = queryResults;
 
-    // Step 1: Upload to Synapse
-    steps[0].status = 'in_progress';
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const uploadResult = await uploadToSynapse(fileBuffer, file.name);
-    steps[0].status = 'completed';
-    steps[0].data = uploadResult;
-
-    // Step 2: Parse content
-    steps[1].status = 'in_progress';
-    const content = fileBuffer.toString('utf-8');
-    const knowledgeGraph = await parseMarkdownToKG(content);
-    steps[1].status = 'completed';
-    steps[1].data = knowledgeGraph;
-
-    // Step 3: Generate Cypher queries
-    steps[2].status = 'in_progress';
-    const cypherQueries = await generateCypherQueries(
-      knowledgeGraph.entities,
-      knowledgeGraph.relationships,
-      uploadResult.pieceCid
-    );
-    steps[2].status = 'completed';
-    steps[2].data = cypherQueries;
-
-    // Step 4: Execute queries
-    steps[3].status = 'in_progress';
-    const queryResults = await executeInMemgraph(cypherQueries);
-    steps[3].status = 'completed';
-    steps[3].data = queryResults;
-
-    // Step 5: Complete
-    steps[4].status = 'completed';
+    // Step: Complete
+    steps[completeStepIndex].status = 'completed';
 
     return NextResponse.json({
       success: true,
@@ -288,7 +375,9 @@ export async function POST(request: NextRequest) {
         cid: uploadResult.pieceCid,
         entitiesCount: knowledgeGraph.entities.length,
         relationshipsCount: knowledgeGraph.relationships.length,
-        queriesExecuted: cypherQueries.length
+        queriesExecuted: cypherQueries.length,
+        isEncrypted,
+        encryptionType: encryptionMetadata?.accessType
       }
     });
 
