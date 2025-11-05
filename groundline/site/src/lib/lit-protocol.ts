@@ -1,4 +1,4 @@
-import { createLitClient } from "@lit-protocol/lit-client";
+import { createLitClient } from "`@lit-protocol/lit-client`";
 import { createAccBuilder } from "@lit-protocol/access-control-conditions";
 import { nagaDev } from "@lit-protocol/networks";
 

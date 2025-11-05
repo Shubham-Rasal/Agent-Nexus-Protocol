@@ -387,24 +387,7 @@ export function GraphSection() {
         )}
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="border border-foreground/10 bg-card p-6">
-          <div className="text-sm text-muted-foreground mb-2">Total Nodes</div>
-          <div className="text-3xl font-light">{stats.totalNodes}</div>
-        </Card>
-        <Card className="border border-foreground/10 bg-card p-6">
-          <div className="text-sm text-muted-foreground mb-2">Connections</div>
-          <div className="text-3xl font-light">{stats.totalConnections}</div>
-        </Card>
-        <Card className="border border-foreground/10 bg-card p-6">
-          <div className="text-sm text-muted-foreground mb-2">Entities</div>
-          <div className="text-3xl font-light">{stats.entities}</div>
-        </Card>
-        <Card className="border border-foreground/10 bg-card p-6">
-          <div className="text-sm text-muted-foreground mb-2">Concepts</div>
-          <div className="text-3xl font-light">{stats.concepts}</div>
-        </Card>
-      </div>
+     
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <Card className="border border-foreground/10 bg-card p-6 relative">

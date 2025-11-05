@@ -30,6 +30,29 @@ A powerful decentralized graph database with IPFS persistence, CRDT-based collab
 
 ![image](https://github.com/user-attachments/assets/64a006c0-2278-4791-9312-2a8858278125)
 
+## 🐳 Docker Self-Hosting
+
+Self-host the entire Groundline platform (including Memgraph database and web interface) with Docker:
+
+```bash
+# Quick start
+./scripts/start-docker.sh
+
+# Or manually
+cp env.example .env
+# Edit .env and add your OPENAI_API_KEY
+docker compose up -d
+```
+
+**Access your services:**
+- 🌐 Main Application: http://localhost:3000
+- 📊 Memgraph Lab: http://localhost:3001
+- 🔗 Database: bolt://localhost:7687
+
+**Documentation:**
+- 📖 [Quick Start Guide](QUICKSTART.md) - Get running in 5 minutes
+- 📚 [Full Docker Documentation](DOCKER_SETUP.md) - Production setup, backups, troubleshooting
+
 ## Installation
 
 ```bash
