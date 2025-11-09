@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useNetwork } from "@/hooks/useNetwork";
 import { useAccount } from "wagmi";
 
-
 /**
  * Hook to fetch and manage data sets
  * @returns Query result containing data sets and their details
@@ -43,7 +42,7 @@ export const useDataSets = () => {
       console.log(dataSets);
       return dataSets;
     },
-    retry: true,
+    retry: false,
     gcTime: 2 * 60 * 1000,
     refetchInterval: 2 * 60 * 1000,
     refetchOnWindowFocus: false,

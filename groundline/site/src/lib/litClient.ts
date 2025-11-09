@@ -1,7 +1,6 @@
 import { disconnectWeb3, LitNodeClient } from "@lit-protocol/lit-node-client";
 import { encryptFile, decryptToFile } from "@lit-protocol/encryption";
 import { ethers } from "ethers";
-import { CONTRACT_ADDRESS } from "@/utils/contracts";
 
 let litNodeClient: LitNodeClient | null = null;
 

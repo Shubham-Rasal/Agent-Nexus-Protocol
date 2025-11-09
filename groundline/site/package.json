@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.42",
-    "@filoz/synapse-sdk": "^0.29.3",
+    "@filoz/synapse-sdk": "^0.35.3",
     "@hookform/resolvers": "^3.10.0",
     "@lit-protocol/access-control-conditions": "^8.0.2",
     "@lit-protocol/auth": "^8.0.2",

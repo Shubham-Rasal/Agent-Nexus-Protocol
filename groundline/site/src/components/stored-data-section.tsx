@@ -21,23 +21,14 @@ export function StoredDataSection() {
   const storageStats = useMemo(() => {
     if (!dataSets || dataSets.length === 0) {
       return [
-        { label: "Total Storage Used", value: "0 GB", percentage: 0 },
         { label: "Documents Stored", value: "0", change: null },
-        { label: "Filecoin Deals", value: "0", change: null },
-        { label: "Verification Rate", value: "—", change: null },
       ];
     }
 
-    const totalPieces = piecesData?.totalCount || 0;
-    const totalDataSets = dataSets.length;
-
     return [
-      { label: "Total Storage Used", value: "—", percentage: 0 },
-      { label: "Pieces Stored", value: totalPieces.toString(), change: null },
-      { label: "Data Sets", value: totalDataSets.toString(), change: null },
-      { label: "Verification Rate", value: "99.8%", change: "+0.2%" },
+      { label: "Data Sets", value: dataSets.length.toString(), change: null },
     ];
-  }, [dataSets, piecesData]);
+  }, [dataSets]);
 
   // Not connected state
   if (!isConnected) {
@@ -142,20 +133,7 @@ export function StoredDataSection() {
           <Card key={index} className="border border-foreground/10 bg-card p-6">
             <div className="text-sm text-muted-foreground mb-2">{stat.label}</div>
             <div className="text-3xl font-light mb-1">{stat.value}</div>
-            {stat.percentage !== undefined && stat.percentage > 0 && (
-              <div className="mt-2">
-                <div className="w-full bg-muted rounded-full h-1.5">
-                  <div className="bg-foreground h-1.5 rounded-full" style={{ width: `${stat.percentage}%` }}></div>
-                </div>
-              </div>
-            )}
-            {stat.change && (
-              <div
-                className={`text-xs font-mono mt-1 ${stat.change.startsWith("+") ? "text-green-600" : "text-red-600"}`}
-              >
-                {stat.change}
-              </div>
-            )}
+            
           </Card>
         ))}
       </div>

@@ -39,17 +39,7 @@ export function AppSidebar() {
         ))}
       </nav>
 
-      <div className="mt-12 pt-6 border-t border-foreground/10">
-        <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-4">Quick Actions</div>
-        <div className="space-y-2">
-          <button className="w-full px-4 py-2 border border-foreground/20 rounded text-sm hover:bg-foreground/5 transition-colors">
-            Add Connector
-          </button>
-          <button className="w-full px-4 py-2 border border-foreground/20 rounded text-sm hover:bg-foreground/5 transition-colors">
-            View API Docs
-          </button>
-        </div>
-      </div>
+     
 
       <div className="mt-auto pt-6 border-t border-foreground/10">
         <WalletButton />

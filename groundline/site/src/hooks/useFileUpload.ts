@@ -120,23 +120,6 @@ export const useFileUpload = () => {
             setStatus("Existing dataset found and resolved");
             setProgress(encrypt ? 35 : 30);
           },
-          onDataSetCreationStarted: (transactionResponse, statusUrl) => {
-            console.log("Dataset creation started:", transactionResponse);
-            console.log("Dataset creation status URL:", statusUrl);
-            setStatus("Creating new dataset on blockchain...");
-            setProgress(encrypt ? 40 : 35);
-          },
-          onDataSetCreationProgress: (status) => {
-            console.log("Dataset creation progress:", status);
-            if (status.transactionSuccess) {
-              setStatus(`Dataset transaction confirmed on chain`);
-              setProgress(encrypt ? 50 : 45);
-            }
-            if (status.serverConfirmed) {
-              setStatus(`Dataset ready! (${Math.round(status.elapsedMs / 1000)}s)`);
-              setProgress(encrypt ? 55 : 50);
-            }
-          },
           onProviderSelected: (provider) => {
             console.log("Storage provider selected:", provider);
             setStatus(`Storage provider selected (${provider.name})`);
@@ -167,7 +150,7 @@ export const useFileUpload = () => {
           setStatus(
             `Waiting for transaction to be confirmed on chain ${
               transactionResponse
-                ? `(txHash: ${transactionResponse.hash.slice(0, 6)}...${transactionResponse.hash.slice(-4)})`
+                ? `(txHash: ${transactionResponse.slice(0, 6)}...${transactionResponse.slice(-4)})`
                 : ""
             }`
           );
@@ -175,7 +158,7 @@ export const useFileUpload = () => {
             console.log("Transaction response:", transactionResponse);
             setUploadedInfo((prev) => ({
               ...prev,
-              txHash: transactionResponse?.hash,
+              txHash: transactionResponse,
             }));
           }
         },

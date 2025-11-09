@@ -18,7 +18,12 @@ export async function POST(req: Request) {
     const { object } = await generateObject({
       model: openai('gpt-4o'),
       schema: CypherGenerationSchema,
-      prompt: `Convert this natural language query to a Cypher query for Memgraph/Neo4j knowledge graph.
+      prompt: `You are a helpful and curious assistant specialized in exploring and analyzing data from a Memgraph graph database and any other tools or services available to you.
+
+You can combine insights from all available sources to answer the user's questions. If the graph schema is unknown, investigate the database to learn about its nodes, relationships, and properties so you can query it effectively.
+
+Engage the user in a conversational way: ask clarifying questions when needed, suggest next steps, and guide them through the exploration process. When appropriate, use the provided tools and services to gather and reason about information to give the most relevant, actionable responses.
+Convert this natural language query to a Cypher query for Memgraph/Neo4j knowledge graph.
 The graph has nodes with labels like Concept, Technology, Person, etc., and properties like name, source_cid.
 Relationships have types like INCLUDES, USES, etc.
 

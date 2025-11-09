@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { initLitClient, getLitClient, encryptFile, type EncryptedFileData } from "@/lib/lit-protocol";
-import { LitClient } from "@lit-protocol/lit-client";
+// import { createLitClient } from "@lit-protocol/lit-client";
 import { useAccount } from "wagmi";
 
 /**
@@ -12,7 +12,7 @@ export function useLitProtocol() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [litClient, setLitClient] = useState<LitClient | null>(null);
+  const [litClient, setLitClient] = useState<any | null>(null);
   
   // Get wallet connection status from wagmi
   const { address: connectedWallet, isConnected } = useAccount();
@@ -37,13 +37,6 @@ export function useLitProtocol() {
       setIsInitializing(false);
     }
   }, [isInitialized, isInitializing]);
-
-  /**
-   * Initialize on mount
-   */
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   /**
    * Encrypt a file with specified access control

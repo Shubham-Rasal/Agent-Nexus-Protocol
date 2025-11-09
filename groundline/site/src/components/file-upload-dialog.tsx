@@ -7,9 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Upload, FileText, CheckCircle, AlertCircle, Loader2, X, Lock, LockOpen, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { initLitClient } from "@/lib/litClient";
-import { useAccount } from "wagmi";
-import { useFileUpload } from "@/hooks/useFileUpload";
+import { useLitProtocol } from "@/hooks/useLitProtocol";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -38,88 +36,31 @@ interface UploadResult {
 
 export function FileUploadDialog() {
   const [open, setOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [encryptionType, setEncryptionType] = useState<"public" | "private">("private");
-  const [isLitInitialized, setIsLitInitialized] = useState(false);
-  const [isLitInitializing, setIsLitInitializing] = useState(false);
-  const [litError, setLitError] = useState<string | null>(null);
+  const [encryptionType, setEncryptionType] = useState<"public" | "private">("public");
+  const [isEncrypting, setIsEncrypting] = useState(false);
+  const [isProcessingKG, setIsProcessingKG] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Get wallet connection status from wagmi
-  const { address: connectedWallet, isConnected: isWalletConnected } = useAccount();
+  // Lit Protocol hook for encryption
+  const { 
+    isInitialized: isLitInitialized, 
+    isInitializing: isLitInitializing,
+    error: litError,
+    isWalletConnected,
+    connectedWallet,
+    encryptFileData,
+    initialize: initializeLit 
+  } = useLitProtocol();
 
-  // Use file upload hook
-  const {
-    uploadFileMutation,
-    progress: uploadProgress,
-    uploadedInfo,
-    status: uploadStatus,
-    handleReset: resetUpload,
-  } = useFileUpload();
-
-  // Initialize Lit Protocol client
+  // Initialize Lit Protocol only when private encryption is selected
   useEffect(() => {
-    const initializeLit = async () => {
-      if (isLitInitialized || isLitInitializing) return;
-      
-      setIsLitInitializing(true);
-      setLitError(null);
-      
-      try {
-        await initLitClient();
-        setIsLitInitialized(true);
-      } catch (err) {
-        console.error("Failed to initialize Lit Protocol:", err);
-        setLitError(err instanceof Error ? err.message : "Failed to initialize Lit Protocol");
-      } finally {
-        setIsLitInitializing(false);
-      }
-    };
-
-    initializeLit();
-  }, [isLitInitialized, isLitInitializing]);
-
-  // Update result when upload completes
-  useEffect(() => {
-    if (uploadFileMutation.isSuccess && uploadedInfo) {
-      setUploadResult({
-        success: true,
-        steps: [
-          {
-            step: 'encrypt',
-            status: uploadedInfo.encrypted ? 'completed' : 'completed',
-            message: uploadedInfo.encrypted 
-              ? 'File encrypted with Lit Protocol (Balance > 0 required)'
-              : 'File ready for upload',
-          },
-          {
-            step: 'upload',
-            status: uploadedInfo.pieceCid ? 'completed' : 'in_progress',
-            message: uploadedInfo.pieceCid ? 'Uploaded to Filecoin' : 'Uploading to Filecoin...',
-          },
-        ],
-        summary: {
-          fileName: uploadedInfo.fileName || 'Unknown',
-          fileSize: uploadedInfo.fileSize || 0,
-          cid: uploadedInfo.pieceCid || '',
-          entitiesCount: 0,
-          relationshipsCount: 0,
-          queriesExecuted: 0,
-          isEncrypted: uploadedInfo.encrypted,
-          encryptionType: uploadedInfo.encrypted ? 'private' : 'public',
-        },
-      });
-    } else if (uploadFileMutation.isError) {
-      setUploadResult({
-        success: false,
-        steps: [],
-        error: uploadFileMutation.error instanceof Error 
-          ? uploadFileMutation.error.message 
-          : 'Upload failed',
-      });
+    if (encryptionType === "private" && !isLitInitialized && !isLitInitializing) {
+      initializeLit();
     }
-  }, [uploadFileMutation.isSuccess, uploadFileMutation.isError, uploadedInfo, uploadFileMutation.error]);
+  }, [encryptionType, isLitInitialized, isLitInitializing, initializeLit]);
 
   const handleFileSelect = async (file: File) => {
     if (!file) return;
@@ -128,7 +69,7 @@ export function FileUploadDialog() {
     const allowedTypes = ['text/markdown', 'text/plain', 'text/mdx'];
     const allowedExtensions = ['.md', '.txt', '.mdx'];
     const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-
+    
     if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
       alert('Invalid file type. Only markdown (.md) and text (.txt) files are allowed.');
       return;
@@ -140,32 +81,172 @@ export function FileUploadDialog() {
       return;
     }
 
-    // Check Lit Protocol initialization for private encryption
-    if (encryptionType === "private" && !isLitInitialized) {
-      alert('Encryption system is still initializing. Please wait...');
-      return;
+    // For private encryption, check Lit Protocol initialization and wallet connection
+    if (encryptionType === "private") {
+      if (!isWalletConnected) {
+        alert('Please connect your wallet for private encryption.');
+        return;
+      }
+      
+      if (!isLitInitialized) {
+        if (isLitInitializing) {
+          alert('Encryption system is still initializing. Please wait...');
+        } else {
+          // Try to initialize if not already initializing
+          initializeLit();
+          alert('Initializing encryption system. Please try again in a moment.');
+        }
+        return;
+      }
     }
 
-    // For private encryption, wallet must be connected
-    if (encryptionType === "private" && !isWalletConnected) {
-      alert('Please connect your wallet for private encryption.');
-      return;
-    }
-
-    if (encryptionType === "private" && !connectedWallet) {
-      alert('Wallet address not available. Please reconnect your wallet.');
-      return;
-    }
-
-    // Reset previous results
+    setIsUploading(true);
     setUploadResult(null);
-    resetUpload();
 
-    // Trigger upload with encryption if private
-    uploadFileMutation.mutate({
-      file,
-      encrypt: encryptionType === "private",
-    });
+    try {
+      // Step 1: Process knowledge graph BEFORE encryption
+      setIsProcessingKG(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const kgResponse = await fetch('http://localhost:3000/api/upload-and-process', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!kgResponse.ok) {
+        throw new Error(`Knowledge graph processing failed: ${kgResponse.statusText}`);
+      }
+
+      const kgResult = await kgResponse.json();
+      
+      // Filter out upload step from API response (we handle upload separately)
+      // Keep only KG processing steps: parse, generate_queries, execute_queries
+      const kgSteps = (kgResult.steps || []).filter(
+        (step: ProcessingStep) => 
+          step.step === 'parse' || 
+          step.step === 'generate_queries' || 
+          step.step === 'execute_queries' ||
+          step.step === 'complete'
+      );
+
+      // Store KG result temporarily
+      setUploadResult({
+        success: true,
+        steps: kgSteps,
+        summary: {
+          fileName: file.name,
+          fileSize: file.size,
+          cid: '',
+          entitiesCount: kgResult.summary?.entitiesCount || 0,
+          relationshipsCount: kgResult.summary?.relationshipsCount || 0,
+          queriesExecuted: kgResult.summary?.queriesExecuted || 0,
+          isEncrypted: encryptionType === "private",
+          encryptionType: encryptionType,
+        },
+      });
+      
+      setIsProcessingKG(false);
+
+      // Step 2: Read file content
+      const fileContent = await file.text();
+
+      // Step 3: Encrypt the file using Lit Protocol (only for private encryption)
+      let encryptedFileData = null;
+      if (encryptionType === "private") {
+        setIsEncrypting(true);
+        encryptedFileData = await encryptFileData(
+          fileContent,
+          file.name,
+          file.size,
+          encryptionType
+        );
+        setIsEncrypting(false);
+      }
+
+      // Step 4: Send data to API for upload
+      const response = await fetch('http://localhost:3000/api/upload-and-process', {
+        method: 'POST',
+        headers: encryptionType === "private" 
+          ? { 'Content-Type': 'application/json' }
+          : undefined,
+        body: encryptionType === "private"
+          ? JSON.stringify({
+              encryptedData: encryptedFileData,
+              isEncrypted: true,
+              originalContent: fileContent, // Include original content for processing
+            })
+          : (() => {
+              const formData = new FormData();
+              formData.append('file', file);
+              return formData;
+            })(),
+      });
+
+      const uploadResult = await response.json();
+      
+      // Merge upload steps with existing KG steps
+      const uploadSteps = encryptionType === "private" ? [
+        {
+          step: 'encrypt',
+          status: 'completed' as const,
+          message: 'File encrypted with Lit Protocol',
+        },
+        {
+          step: 'upload',
+          status: 'completed' as const,
+          message: 'Uploaded to Filecoin',
+        },
+      ] : [
+        {
+          step: 'upload',
+          status: 'completed' as const,
+          message: 'Uploaded to Filecoin',
+        },
+      ];
+
+      // Update result with upload info
+      setUploadResult((prev) => {
+        if (!prev) {
+          return {
+            success: true,
+            steps: uploadSteps,
+            summary: uploadResult.summary || {
+              fileName: file.name,
+              fileSize: file.size,
+              cid: '',
+              entitiesCount: 0,
+              relationshipsCount: 0,
+              queriesExecuted: 0,
+              isEncrypted: encryptionType === "private",
+              encryptionType: encryptionType,
+            },
+          };
+        }
+
+        return {
+          ...prev,
+          steps: [...prev.steps, ...uploadSteps],
+          summary: {
+            ...prev.summary!,
+            cid: uploadResult.summary?.cid || prev.summary?.cid || '',
+            isEncrypted: encryptionType === "private",
+            encryptionType: encryptionType,
+          },
+        };
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadResult({
+        success: false,
+        steps: [],
+        error: error instanceof Error ? error.message : 'Upload failed'
+      });
+    } finally {
+      setIsUploading(false);
+      setIsEncrypting(false);
+      setIsProcessingKG(false);
+    }
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -219,6 +300,10 @@ export function FileUploadDialog() {
     return stepNames[step] || step;
   };
 
+  const progress = uploadResult?.steps 
+    ? (uploadResult.steps.filter(s => s.status === 'completed').length / uploadResult.steps.length) * 100
+    : 0;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -233,7 +318,7 @@ export function FileUploadDialog() {
         </DialogHeader>
 
         <div className="space-y-6">
-          {!uploadFileMutation.isPending && !uploadResult && (
+          {!isUploading && !uploadResult && (
             <>
               {/* Encryption Options */}
               <Card className="p-4 bg-muted/50">
@@ -245,26 +330,30 @@ export function FileUploadDialog() {
                       Your file will be encrypted using Lit Protocol before upload to Filecoin.
                     </p>
                     
-                    {/* Lit Status */}
-                    {isLitInitializing && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Initializing encryption system...
-                      </div>
-                    )}
-                    
-                    {litError && (
-                      <div className="flex items-center gap-2 text-sm text-red-500 mb-3">
-                        <AlertCircle className="w-4 h-4" />
-                        {litError}
-                      </div>
-                    )}
-                    
-                    {isLitInitialized && (
-                      <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 mb-3">
-                        <CheckCircle className="w-4 h-4" />
-                        Encryption ready
-                      </div>
+                    {/* Lit Status - only show for private encryption */}
+                    {encryptionType === "private" && (
+                      <>
+                        {isLitInitializing && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Initializing encryption system...
+                          </div>
+                        )}
+                        
+                        {litError && (
+                          <div className="flex items-center gap-2 text-sm text-red-500 mb-3">
+                            <AlertCircle className="w-4 h-4" />
+                            {litError}
+                          </div>
+                        )}
+                        
+                        {isLitInitialized && (
+                          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 mb-3">
+                            <CheckCircle className="w-4 h-4" />
+                            Encryption ready
+                          </div>
+                        )}
+                      </>
                     )}
 
                     <RadioGroup 
@@ -293,7 +382,7 @@ export function FileUploadDialog() {
                             <span className="font-medium">Private Access</span>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Only you (connected wallet with balance &gt; 0) can decrypt
+                            Only you (connected wallet) can decrypt
                           </p>
                           {encryptionType === "private" && !isWalletConnected && (
                             <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
@@ -338,7 +427,7 @@ export function FileUploadDialog() {
                   onClick={() => fileInputRef.current?.click()}
                   variant="outline"
                   className="mt-4 font-mono uppercase tracking-wider"
-                  disabled={!isLitInitialized || (encryptionType === "private" && !isWalletConnected)}
+                  disabled={encryptionType === "private" && (!isLitInitialized || !isWalletConnected)}
                 >
                   Choose File
                 </Button>
@@ -353,25 +442,36 @@ export function FileUploadDialog() {
             </>
           )}
 
-          {uploadFileMutation.isPending && (
+          {isUploading && (
             <div className="space-y-4">
               <div className="text-center">
                 <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                <div className="space-y-2">
-                  <p className="text-muted-foreground flex items-center justify-center gap-2">
-                    {uploadStatus.includes("Encrypt") && <Lock className="w-4 h-4" />}
-                    {uploadStatus || "Processing your file..."}
-                  </p>
-                  {encryptionType === "private" && uploadStatus.includes("Encrypt") && (
-                    <p className="text-xs text-muted-foreground">
-                      Private encryption with balance check
+                {isProcessingKG ? (
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground flex items-center justify-center gap-2">
+                      Processing knowledge graph...
                     </p>
-                  )}
-                </div>
+                    <p className="text-xs text-muted-foreground">
+                      Extracting entities and relationships...
+                    </p>
+                  </div>
+                ) : isEncrypting ? (
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground flex items-center justify-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      Encrypting file with Lit Protocol...
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {encryptionType === "private" ? "Private encryption" : "Public encryption"}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">Processing your file...</p>
+                )}
               </div>
-              <Progress value={uploadProgress} className="w-full" />
+              <Progress value={progress} className="w-full" />
               <p className="text-sm text-center text-muted-foreground">
-                {Math.round(uploadProgress)}% complete
+                {Math.round(progress)}% complete
               </p>
             </div>
           )}
@@ -402,23 +502,11 @@ export function FileUploadDialog() {
                           </div>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Piece CID:</span>
+                          <span className="text-muted-foreground">CID:</span>
                           <div className="font-medium font-mono text-xs">
-                            {uploadResult.summary.cid ? (
-                              `${uploadResult.summary.cid.slice(0, 8)}...${uploadResult.summary.cid.slice(-8)}`
-                            ) : (
-                              "Processing..."
-                            )}
+                            {uploadResult.summary.cid.slice(0, 8)}...{uploadResult.summary.cid.slice(-8)}
                           </div>
                         </div>
-                        {uploadedInfo?.txHash && (
-                          <div>
-                            <span className="text-muted-foreground">Transaction:</span>
-                            <div className="font-medium font-mono text-xs">
-                              {uploadedInfo.txHash.slice(0, 6)}...{uploadedInfo.txHash.slice(-4)}
-                            </div>
-                          </div>
-                        )}
                         {uploadResult.summary.isEncrypted && (
                           <div>
                             <span className="text-muted-foreground">Encryption:</span>
@@ -463,7 +551,7 @@ export function FileUploadDialog() {
                             <span>
                               File encrypted with Lit Protocol. Knowledge graph extraction will occur when the file is decrypted.
                               {uploadResult.summary.encryptionType === "private" && (
-                                <> Only the authorized wallet with balance &gt; 0 can decrypt this file.</>
+                                <> Only the authorized wallet can decrypt this file.</>
                               )}
                             </span>
                           </p>
@@ -503,7 +591,7 @@ export function FileUploadDialog() {
                 <Button
                   onClick={() => {
                     setUploadResult(null);
-                    resetUpload();
+                    setIsUploading(false);
                   }}
                   variant="outline"
                   className="flex-1 font-mono uppercase tracking-wider"
@@ -511,11 +599,7 @@ export function FileUploadDialog() {
                   Upload Another File
                 </Button>
                 <Button
-                  onClick={() => {
-                    setOpen(false);
-                    setUploadResult(null);
-                    resetUpload();
-                  }}
+                  onClick={() => setOpen(false)}
                   className="flex-1 font-mono uppercase tracking-wider"
                 >
                   Close

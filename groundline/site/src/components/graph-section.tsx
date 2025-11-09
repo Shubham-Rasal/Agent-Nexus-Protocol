@@ -5,11 +5,19 @@ import * as d3 from "d3"
 import { useRef, useEffect, useState } from "react"
 import { CheckCircle, AlertCircle, Maximize2, Minimize2, X, ZoomIn, ZoomOut, RotateCcw, Target, Eye, EyeOff, Settings } from "lucide-react"
 
-const recentQueries = [
-  { query: "show research notes about decentralized AI", results: 42, time: "0.3s" },
-  { query: "find all documents mentioning Filecoin", results: 156, time: "0.5s" },
-  { query: "knowledge graph architecture patterns", results: 28, time: "0.4s" },
-  { query: "MCP API integration examples", results: 67, time: "0.2s" },
+const faqQueries = [
+  "what agents are available in the Agent Nexus Protocol?",
+  "what storage systems are used in the project?",
+  "what features are proposed for Agent Nexus Protocol?",
+  "what tools are mentioned in the knowledge graph?",
+  "what are the use cases for Agent Nexus Protocol?",
+  "what components does the Decentralized AI Development SDK have?",
+  "what articles has Shubham Rasal authored?",
+  "what models are mentioned in the knowledge graph?",
+  "what goals are set for the project?",
+  "what requirements does the SDK have?",
+  "what artifacts can be stored in Storacha?",
+  "what skills do the agents have?",
 ]
 
 interface GraphNode {
@@ -113,21 +121,9 @@ export function GraphSection() {
       }
     }
 
-    const fetchStats = async () => {
-      try {
-        const response = await fetch('/api/graph-stats')
-        if (!response.ok) {
-          throw new Error('Failed to fetch graph stats')
-        }
-        const data = await response.json()
-        setStats(data)
-      } catch (error) {
-        console.error("Stats fetch error:", error)
-      }
-    }
+
 
     fetchGraphData()
-    fetchStats()
   }, [])
 
   const handleExecuteQuery = async () => {
@@ -289,7 +285,7 @@ export function GraphSection() {
     })
 
     const simulation: d3.Simulation<GraphNode & d3.SimulationNodeDatum, undefined> = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(100))
+      .force("link", d3.forceLink(links).id((d: any) => d.id).distance(10))
       .force("charge", d3.forceManyBody().strength(-300))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("collision", d3.forceCollide().radius(30))
@@ -389,41 +385,13 @@ export function GraphSection() {
 
      
 
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <Card className="border border-foreground/10 bg-card p-6 relative">
+      <div className="grid md:grid-cols-1 gap-6 mb-8">
+        {/* <Card className="border border-foreground/10 bg-card p-6 relative">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-light">Graph Visualization</h3>
             <div className="flex items-center gap-2">
-              {/* Control buttons */}
               <div className="flex items-center gap-1 bg-background/50 rounded-lg p-1">
-                <button
-                  onClick={zoomIn}
-                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
-                  title="Zoom in"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={zoomOut}
-                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
-                  title="Zoom out"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={fitToScreen}
-                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
-                  title="Fit to screen"
-                >
-                  <Target className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={resetView}
-                  className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
-                  title="Reset view"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
+              
                 <button
                   onClick={() => setShowLabels(!showLabels)}
                   className="p-1.5 hover:bg-foreground/10 rounded transition-colors"
@@ -452,12 +420,24 @@ export function GraphSection() {
             </div>
           )}
           <svg ref={svgRef} width="100%" height="400" className="border border-foreground/10 rounded" viewBox="0 0 500 400"></svg>
-        </Card>
+        </Card> */}
 
         <Card className="border border-foreground/10 bg-card p-6">
           <h3 className="text-xl font-light mb-4">Query Interface</h3>
           <div className="space-y-4">
             <div>
+              <label className="text-sm text-muted-foreground mb-2 block">Frequently Asked Questions</label>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {faqQueries.map((faq, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setNlpQuery(faq)}
+                    className="px-3 py-1.5 text-xs border border-foreground/20 rounded bg-background hover:bg-foreground/5 hover:border-foreground/40 transition-colors text-left"
+                  >
+                    {faq}
+                  </button>
+                ))}
+              </div>
               <label className="text-sm text-muted-foreground mb-2 block">Enter your query</label>
               <input
                 type="text"
@@ -503,26 +483,6 @@ export function GraphSection() {
         </Card>
       </div>
 
-      <Card className="border border-foreground/10 bg-card p-6">
-        <h3 className="text-xl font-light mb-4">Recent Queries</h3>
-        <div className="space-y-3">
-          {recentQueries.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between py-3 border-b border-foreground/5 last:border-0"
-            >
-              <div className="flex-1">
-                <div className="text-sm font-mono">{item.query}</div>
-              </div>
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <span>{item.results} results</span>
-                <span>{item.time}</span>
-                <button className="text-foreground hover:opacity-60 transition-opacity">→</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
 
       {/* Full-screen modal */}
       {isFullScreen && (
