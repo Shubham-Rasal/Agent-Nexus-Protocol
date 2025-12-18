@@ -199,8 +199,14 @@ export class AgentRegistryService implements AgentRegistry {
     }
 
     if (update.responseTime !== undefined) {
-      const total = agent.metrics.averageResponseTime * (agent.metrics.totalTasks - 1);
-      agent.metrics.averageResponseTime = (total + update.responseTime) / agent.metrics.totalTasks;
+      if (agent.metrics.totalTasks === 1) {
+        // First task - set initial average
+        agent.metrics.averageResponseTime = update.responseTime;
+      } else {
+        // Calculate running average
+        const total = agent.metrics.averageResponseTime * (agent.metrics.totalTasks - 1);
+        agent.metrics.averageResponseTime = (total + update.responseTime) / agent.metrics.totalTasks;
+      }
     }
 
     if (update.qualityScore !== undefined) {

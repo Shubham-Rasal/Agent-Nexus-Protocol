@@ -274,9 +274,14 @@ export function getMessageSize(message: AgentMessage): number {
 
 /**
  * Check protocol version compatibility
+ * @param version - Protocol version string in format "ACP/X.Y.Z"
  */
 export function isCompatibleVersion(version: string): boolean {
-  const [major] = version.split('/')[1]?.split('.') || ['0'];
+  // Extract version number after the protocol identifier (e.g., "ACP/1.0.0" -> "1.0.0")
+  const versionPart = version.split('/')[1];
+  if (!versionPart) return false;
+  
+  const [major] = versionPart.split('.') || ['0'];
   const [currentMajor] = PROTOCOL_VERSION.split('.') || ['0'];
   
   return major === currentMajor;

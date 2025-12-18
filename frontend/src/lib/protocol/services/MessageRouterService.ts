@@ -53,8 +53,8 @@ export class MessageRouterService implements MessageRouter {
    * Find best agent for a task
    */
   async findBestAgent(task: TaskRequestPayload): Promise<string | null> {
-    // Get all agents
-    const allAgents = await agentRegistry.listAgents({ status: undefined });
+    // Get all agents (no status filter to get all agents)
+    const allAgents = await agentRegistry.listAgents();
 
     // Filter agents that have required capabilities
     const capableAgents = allAgents.filter(agent => {
