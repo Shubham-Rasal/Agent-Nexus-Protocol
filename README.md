@@ -41,17 +41,147 @@ Check out the implementation in our [groundline package](https://github.com/Shub
 
 ## 🌟 Overview
 
-Agent Nexus Protocol (ANP) is a unique way for AI agents to collaborate with each other and develop relationships with each other. This enables them to effectively solve complex problems and tasks.
+Agent Nexus Protocol (ANP) is a comprehensive AI agent communication protocol that enables seamless collaboration between agents built with different frameworks. It provides a standardized way for AI agents to discover each other, exchange messages, delegate tasks, and work together to solve complex problems.
 
 ![image](https://github.com/user-attachments/assets/17ca4ac7-4f6a-4de6-8e56-192ef9656391)
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **Standardized Collaboration Protocol**: We've created an interface for AI agents to collaborate with each other, making it possible for different types of agents to work together seamlessly. This shared interface allows agents to exchange information, requests, and results in a structured way that any agent in the network can understand.
+### 🔌 Universal Agent Communication Protocol (ACP)
+- **Framework Agnostic**: Support for LangChain, CrewAI, AutoGPT, OpenAI Assistants, and more
+- **Protocol Adapters**: Seamlessly integrate agents from different frameworks
+- **Standardized Messaging**: Consistent message format with version negotiation
+- **Type Safety**: Full TypeScript support with comprehensive type definitions
 
-- **Intelligent Routing**: Our system acts like a smart traffic controller, figuring out which agent is best suited for each part of a complex task. When you ask a question, the router analyzes what you need and sends your request to the agent with the right expertise - whether that's researching information, drafting emails, or analyzing data.
+### 🤝 Advanced Collaboration
+- **Standardized Collaboration Protocol**: Interface for AI agents to collaborate seamlessly, allowing agents to exchange information, requests, and results in a structured way
+- **Task Delegation & Handoff**: Intelligent task distribution and agent-to-agent handoffs
+- **Multiple Collaboration Patterns**: Sequential, parallel, hierarchical, and peer-to-peer execution
+- **Context Preservation**: Maintains conversation context during agent transitions
 
-- **Chain of Thought Sharing**: Instead of just sharing final answers, our agents share their thinking process along the way. This transparency means other agents can see not just what conclusion was reached, but how and why - making collaboration much more effective and allowing agents to build on each other's reasoning.
+### 🔍 Intelligent Agent Discovery
+- **Capability-Based Discovery**: Find agents by their specific capabilities
+- **Performance Metrics**: Select agents based on success rates and response times
+- **Tag-Based Search**: Organize and discover agents using flexible tagging
+
+### 🧠 Smart Routing & Transparency
+- **Intelligent Routing**: Smart traffic controller that analyzes tasks and routes them to agents with the right expertise - whether that's researching information, drafting emails, or analyzing data
+- **Chain of Thought Sharing**: Agents share their thinking process along the way, enabling other agents to see not just conclusions but the reasoning behind them
+- **Progress Tracking**: Real-time task progress updates and intermediate results
+
+### 🛠️ Model Context Protocol (MCP) Integration
+- **Tool Support**: Access to wide variety of tools through MCP servers
+- **Standardized Tool Interface**: Consistent tool integration across all agents
+- **Custom MCP Servers**: Easy to add domain-specific tools
+
+## 📚 Documentation
+
+- **[Protocol Specification](./docs/PROTOCOL.md)**: Complete ACP protocol documentation
+- **[Integration Guide](./docs/PROTOCOL.md#usage-examples)**: How to integrate different agent frameworks
+- **[API Reference](./docs/PROTOCOL.md#protocol-specification)**: Detailed API documentation
+
+## 🎯 Supported Agent Frameworks
+
+ANP provides native support for major AI agent frameworks:
+
+| Framework | Version | Status | Capabilities |
+|-----------|---------|--------|--------------|
+| **LangChain** | 0.2.0+ | ✅ Supported | Tool usage, conversation, memory management |
+| **CrewAI** | 0.1.0+ | ✅ Supported | Role-based execution, task delegation, crews |
+| **OpenAI Assistants** | 2.0.0+ | ✅ Supported | Code interpreter, file search, function calling |
+| **AutoGPT** | 0.5.0+ | ✅ Supported | Autonomous execution, goal pursuit, self-critique |
+| **Custom** | - | ✅ Supported | Extend with custom adapters |
+
+### Adding New Frameworks
+
+Create a custom adapter by extending the `BaseAdapter` class:
+
+```typescript
+import { BaseAdapter } from '@/lib/protocol/adapters/BaseAdapter';
+
+export class MyFrameworkAdapter extends BaseAdapter {
+  // Implement required methods for your framework
+}
+```
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Agent Applications                     │
+│  (LangChain, CrewAI, AutoGPT, OpenAI Assistants, etc.)  │
+└────────────────────┬────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│              Protocol Adapters Layer                     │
+│   (Translate framework-specific to ACP messages)        │
+└────────────────────┬────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│        Agent Communication Protocol (ACP)                │
+│  • Message Router    • Agent Registry                    │
+│  • Task Management   • Capability Discovery              │
+└────────────────────┬────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│              Transport Layer (MCP/HTTP/WS)               │
+└─────────────────────────────────────────────────────────┘
+```
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+git clone https://github.com/Shubham-Rasal/Agent-Nexus-Protocol
+cd Agent-Nexus-Protocol/frontend
+npm install
+npm run dev
+```
+
+### Register an Agent
+
+```typescript
+import { agentRegistry } from '@/lib/protocol/services/AgentRegistryService';
+import { AgentFramework, AgentStatus, CapabilityCategory } from '@/types/agentCommunicationProtocol';
+
+const myAgent = {
+  id: 'research-agent-001',
+  name: 'Research Assistant',
+  description: 'Specialized in research and information gathering',
+  version: '1.0.0',
+  framework: AgentFramework.LANGCHAIN,
+  capabilities: [
+    {
+      id: 'web_search',
+      name: 'Web Search',
+      category: CapabilityCategory.RESEARCH,
+      description: 'Can search the web for information',
+    }
+  ],
+  tags: ['research', 'analysis'],
+  status: AgentStatus.IDLE,
+};
+
+await agentRegistry.register(myAgent);
+```
+
+### Send a Task Request
+
+```typescript
+import { createTaskRequest } from '@/lib/protocol/utils';
+import { messageRouter } from '@/lib/protocol/services/MessageRouterService';
+
+const task = createTaskRequest('user', 'router', {
+  title: 'Research AI Safety',
+  description: 'Find and summarize recent papers on AI safety',
+  requiredCapabilities: ['web_search', 'document_analysis'],
+});
+
+await messageRouter.route(task);
+```
+
+## Screenshots
 
 ![Screenshot from 2025-04-13 21-24-49](https://github.com/user-attachments/assets/7951944b-d180-4242-9847-4d8a14ccbc00)
 ![Screenshot from 2025-04-13 21-24-53](https://github.com/user-attachments/assets/ae0aa763-7bdf-41f5-8dec-29cb7be9f76e)
@@ -69,7 +199,7 @@ Agent Nexus Protocol (ANP) is a unique way for AI agents to collaborate with eac
 
 
 
-## 🔧 Installation
+## 🔧 Installation (Legacy)
 
 1. Clone the repository:
 ```bash
