@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import { memo, useState } from "react"
 import { useAgents } from "@/hooks/useAgents"
+import { useReputationFeedback } from "@/hooks/useReputationFeedback"
 import { AgentMention } from "@/types/agentMentionTypes"
 import { SidebarTrigger } from "@/components/SidebarTrigger"
 
@@ -38,10 +39,11 @@ type MessageComponentProps = {
   message: UIMessage
   isLastMessage: boolean
   mentionedAgents?: AgentMention[]
+  onFeedback?: (agentId: string, rating: 1 | 5) => void
 }
 
 export const MessageComponent = memo(
-  ({ message, isLastMessage, mentionedAgents }: MessageComponentProps) => {
+  ({ message, isLastMessage, mentionedAgents, onFeedback }: MessageComponentProps) => {
     const isAssistant = message.role === "assistant"
 
     return (
@@ -87,13 +89,7 @@ export const MessageComponent = memo(
                   <button
                     onClick={() => {
                       const agentId = mentionedAgents?.[0]?.id;
-                      if (agentId) {
-                        fetch("/api/reputation", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ agentId, rating: 5 }),
-                        }).catch(console.error);
-                      }
+                      if (agentId) onFeedback?.(agentId, 5);
                     }}
                   >
                     <ThumbsUp className="size-4" />
@@ -103,13 +99,7 @@ export const MessageComponent = memo(
                   <button
                     onClick={() => {
                       const agentId = mentionedAgents?.[0]?.id;
-                      if (agentId) {
-                        fetch("/api/reputation", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ agentId, rating: 1 }),
-                        }).catch(console.error);
-                      }
+                      if (agentId) onFeedback?.(agentId, 1);
                     }}
                   >
                     <ThumbsDown className="size-4" />
@@ -177,6 +167,7 @@ export function AgentAwareChatbot() {
   const [mentionedAgents, setMentionedAgents] = useState<AgentMention[]>([])
   const [messageAgentMap, setMessageAgentMap] = useState<Record<string, AgentMention[]>>({})
   const { agents, loading: agentsLoading } = useAgents()
+  const { submitFeedback } = useReputationFeedback()
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
@@ -329,6 +320,7 @@ export function AgentAwareChatbot() {
                     message={message}
                     isLastMessage={isLastMessage}
                     mentionedAgents={messageMentions}
+                    onFeedback={submitFeedback}
                   />
                 )
               })}
