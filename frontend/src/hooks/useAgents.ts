@@ -1,68 +1,78 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { AgentMention } from '@/types/agentMentionTypes';
-import agentsData from '@/app/agents.json';
+import { useState, useEffect } from "react";
+import { AgentMention } from "@/types/agentMentionTypes";
 
 export function useAgents() {
   const [agents, setAgents] = useState<AgentMention[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadAgents = () => {
+    const loadAgents = async () => {
       try {
-        // Load predefined agents from JSON
-        const predefinedAgents = (agentsData.agents as any[]).map((agent) => ({
-          type: 'agent' as const,
+        // Primary: fetch from sync engine (subgraph-backed)
+        const res = await fetch("/api/network/agents");
+        if (res.ok) {
+          const data = await res.json();
+          const networkAgents: AgentMention[] = (data.agents || data.agents || []).map(
+            (agent: any) => ({
+              type: "agent" as const,
+              id: agent.id || agent.agentId,
+              name: agent.name,
+              description: agent.description,
+              systemPrompt: agent.systemPrompt || "",
+              reputationScore: agent.reputationScore,
+            })
+          );
+
+          // Merge with custom agents from localStorage
+          let customAgents: AgentMention[] = [];
+          if (typeof window !== "undefined") {
+            try {
+              const stored = localStorage.getItem("customAgents");
+              if (stored) {
+                customAgents = JSON.parse(stored).map((a: any) => ({
+                  type: "agent" as const,
+                  id: a.id,
+                  name: a.name,
+                  description: a.description,
+                  systemPrompt: a.systemPrompt || "",
+                }));
+              }
+            } catch {
+              // ignore parse errors
+            }
+          }
+
+          setAgents([...networkAgents, ...customAgents]);
+          return;
+        }
+      } catch {
+        // fall through to static fallback
+      }
+
+      // Fallback: static JSON (used if API/subgraph is unavailable)
+      try {
+        const { default: agentsData } = await import("@/app/agents.json");
+        const staticAgents: AgentMention[] = (agentsData.agents as any[]).map((agent) => ({
+          type: "agent" as const,
           id: agent.id,
           name: agent.name,
           description: agent.description,
-          systemPrompt: agent.systemPrompt || '',
+          systemPrompt: agent.systemPrompt || "",
         }));
-
-        // Get custom agents from localStorage (if available)
-        let customAgents: AgentMention[] = [];
-        
-        if (typeof window !== 'undefined') {
-          try {
-            const customAgentsJson = localStorage.getItem('customAgents');
-            if (customAgentsJson) {
-              const parsedCustomAgents = JSON.parse(customAgentsJson);
-              customAgents = parsedCustomAgents.map((agent: any) => ({
-                type: 'agent' as const,
-                id: agent.id,
-                name: agent.name,
-                description: agent.description,
-                systemPrompt: agent.systemPrompt || '',
-              }));
-            }
-          } catch (error) {
-            console.error('Error loading custom agents from localStorage:', error);
-          }
-        }
-
-        // Combine both agent sources
-        setAgents([...predefinedAgents, ...customAgents]);
-      } catch (error) {
-        console.error('Error loading agents:', error);
-      } finally {
-        setLoading(false);
+        setAgents(staticAgents);
+      } catch {
+        console.error("Failed to load agents from any source");
       }
     };
 
-    loadAgents();
+    loadAgents().finally(() => setLoading(false));
 
-    // Set up event listener for storage changes (if another tab updates)
-    const handleStorageChange = () => {
-      loadAgents();
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('storage', handleStorageChange);
-      
-      return () => {
-        window.removeEventListener('storage', handleStorageChange);
-      };
+    const handleStorageChange = () => loadAgents().finally(() => setLoading(false));
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorageChange);
+      return () => window.removeEventListener("storage", handleStorageChange);
     }
   }, []);
 

@@ -84,10 +84,36 @@ export const MessageComponent = memo(
                   <Copy className="size-4" />
                 </MessageAction>
                 <MessageAction tooltip="Like">
-                  <ThumbsUp className="size-4" />
+                  <button
+                    onClick={() => {
+                      const agentId = mentionedAgents?.[0]?.id;
+                      if (agentId) {
+                        fetch("/api/reputation", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ agentId, rating: 5 }),
+                        }).catch(console.error);
+                      }
+                    }}
+                  >
+                    <ThumbsUp className="size-4" />
+                  </button>
                 </MessageAction>
                 <MessageAction tooltip="Dislike">
-                  <ThumbsDown className="size-4" />
+                  <button
+                    onClick={() => {
+                      const agentId = mentionedAgents?.[0]?.id;
+                      if (agentId) {
+                        fetch("/api/reputation", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ agentId, rating: 1 }),
+                        }).catch(console.error);
+                      }
+                    }}
+                  >
+                    <ThumbsDown className="size-4" />
+                  </button>
                 </MessageAction>
               </MessageActions>
             )}

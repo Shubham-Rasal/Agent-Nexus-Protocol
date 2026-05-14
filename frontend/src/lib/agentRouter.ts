@@ -7,6 +7,7 @@
 
 import { AgentId, getAgentByKeywords, findNextAgentByRelationship } from './agentRelationships';
 import { Message } from '@/types/chatTypes';
+import { getCachedReputationScore } from './reputationCache';
 
 export interface RoutingOptions {
   preferRelationships?: boolean;
@@ -136,6 +137,22 @@ function isContinuationOfPreviousContext(query: string, messages: Message[], win
   );
   
   return hasIndicator;
+}
+
+/**
+ * Record the outcome of a routing decision to the on-chain reputation registry.
+ * Called after a task completes so the router contributes to agent reputation.
+ */
+export async function recordRoutingOutcome(agentId: AgentId, success: boolean): Promise<void> {
+  try {
+    await fetch('/api/reputation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentId, rating: success ? 4 : 2, taskContext: 'router' }),
+    });
+  } catch {
+    // non-fatal — reputation recording should not break the app
+  }
 }
 
 /**

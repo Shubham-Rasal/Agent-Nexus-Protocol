@@ -1,0 +1,25 @@
+{
+  "name": "anp-contracts",
+  "version": "1.0.0",
+  "description": "ANP ERC-8004 smart contracts for Filecoin Calibration",
+  "type": "module",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "deploy:calibration": "npx hardhat run scripts/deploy-anp.ts --network filecoinCalibration",
+    "deploy:local": "npx hardhat run scripts/deploy-anp.ts --network hardhatLocal"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
+    "@nomicfoundation/hardhat-ethers": "^4.0.1",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "@types/node": "^22.18.8",
+    "hardhat": "^3.0.6",
+    "tsx": "^4.0.0",
+    "typescript": "~5.8.0",
+    "viem": "^2.38.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}

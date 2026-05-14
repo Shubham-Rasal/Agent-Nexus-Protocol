@@ -1,0 +1,11 @@
+{
+  "chainId": 314159,
+  "deployedAt": "2026-05-13T17:53:03.855Z",
+  "deployer": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+  "contracts": {
+    "IdentityRegistry": "0xb610b8dcb4056e75246ece0829096bb2e807a858",
+    "ReputationRegistry": "0x6550fbf4eb085d5a8370f3e19904df81f76854f9",
+    "IdentityRegistryImpl": "0x20283d5941218ef69dc283fa3a9430e4e251de00",
+    "ReputationRegistryImpl": "0x1473593cd19e0984761be4b23500fe8509a2cb41"
+  }
+}

@@ -63,12 +63,9 @@ export const agentRelationships: AgentRelationship[] = [
 ];
 
 /**
- * Find the most relevant agent relationship based on the previous agent and query
- * 
- * @param previousAgentId - The ID of the agent that made the previous interaction
- * @param query - The user's query text
- * @param preferRelationships - Whether to prioritize relationship-based routing
- * @returns The most appropriate next agent ID or null if no relationship applies
+ * Find the most relevant agent relationship based on the previous agent and query.
+ * Base relevanceScores in agentRelationships are overridden at runtime by on-chain
+ * reputation scores fetched via getCachedReputationScore (see agentRouter.ts).
  */
 export function findNextAgentByRelationship(
   previousAgentId: AgentId | null,
