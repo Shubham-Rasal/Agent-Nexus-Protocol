@@ -8,7 +8,7 @@ async function gql<T>(url: string, query: string, variables: Record<string, unkn
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, variables }),
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(3000),
   });
   if (!res.ok) throw new Error(`Subgraph HTTP ${res.status}`);
   const json = await res.json();

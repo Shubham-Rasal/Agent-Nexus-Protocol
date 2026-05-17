@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  BrainCircuit, 
-  Network, 
-  Router, 
+  BrainCircuit,
+  Router,
   MessageCircle, 
   ChevronRight, 
   ArrowRightCircle,
@@ -111,23 +110,6 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              {/* Agent Network Feature */}
-              <Card className="hover:shadow-md transition-all border border-gray-100">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 mb-3 mx-auto">
-                    <Network className="h-5 w-5 text-green-600" />
-                  </div>
-                  <CardTitle className="text-lg">Agent Network</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-gray-600 text-sm mb-3">
-                    Visualize and customize how your AI agents interconnect to create powerful workflow systems.
-                  </p>
-                  <Link href="/network" className="text-green-600 inline-flex items-center text-sm hover:underline">
-                    See network <ChevronRight className="ml-1 h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>
@@ -161,22 +143,6 @@ export default function Home() {
                     Agents can share their reasoning process, enabling transparent collaboration.
                   </p>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100">
-                    <Network className="h-6 w-6 text-green-600" />
-                  </div>
-                  <h3 className="font-medium text-slate-800">Decentralized Knowledge</h3>
-                  <p className="text-sm text-slate-600 text-center">
-                    A distributed system where each agent maintains specialized knowledge while contributing to a collective intelligence.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-6">
-                <Button variant="outline" size="sm">
-                  <Link href="/network" className="flex items-center">
-                    Network <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
               </div>
             </div>
           </div>
@@ -249,13 +215,6 @@ export default function Home() {
                 ))}
               </div>
               
-              <div className="mt-8 text-center">
-                <Button variant="outline">
-                  <Link href="/network" className="flex items-center">
-                    View Complete Network <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
             </div>
           </div>
         </div>

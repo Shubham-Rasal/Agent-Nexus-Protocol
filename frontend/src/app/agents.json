@@ -1,89 +1,191 @@
 {
   "agents": [
     {
-      "id": "general_purpose",
-      "name": "General Assistant",
-      "description": "Answers general questions and handles queries that don't require specialized agents",
-      "systemPrompt": "You are a helpful, knowledgeable general assistant. Provide clear, accurate, and concise answers to user questions. Be friendly and professional in your responses.",
-      "knowledge_sources": [
-        "recall:general_knowledge",
-        "akave:web_search"
-      ],
-      "tools": [
-        "web_search",
-        "calculator",
-        "text_processor"
-      ],
-      "stake": 1000,
-      "privacy_level": "low"
+      "id": "16",
+      "agentId": "16",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "https://v2bci448mt9nt8dqt76hsre37s.ingress.hurricane.akash.pub/api/agent-card",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-15T12:20:30.000Z",
+      "name": "Agent #16",
+      "description": "",
+      "reputationScore": 50
     },
     {
-      "id": "lead-qualifier",
-      "name": "Lead Qualifier",
-      "description": "Qualifies leads based on provided data and criteria, and collaborates with outreach and analytics agents.",
-      "systemPrompt": "You are an expert in lead qualification. Analyze incoming lead data, score leads, and provide recommendations for next steps. Collaborate with other agents as needed.",
-      "knowledge_sources": [
-        "recall:lead_qualification_criteria",
-        "akave:crm_data"
-      ],
-      "tools": [
-        "lead_scoring",
-        "data_enrichment",
-        "crm_lookup"
-      ],
-      "stake": 800,
-      "privacy_level": "medium"
+      "id": "15",
+      "agentId": "15",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "https://brand-agent-six.vercel.app/api/agent-card",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-15T06:51:00.000Z",
+      "name": "OpenBrand Agent",
+      "description": "",
+      "reputationScore": 50
     },
     {
-      "id": "email-outreach",
-      "name": "Email Outreach",
-      "description": "Handles personalized email campaigns and outreach to qualified leads, working closely with lead and meeting agents.",
-      "systemPrompt": "You are an email outreach specialist. Craft personalized, effective emails to engage leads and drive conversions. Use available data to optimize messaging.",
-      "knowledge_sources": [
-        "recall:email_templates",
-        "akave:lead_profiles"
-      ],
-      "tools": [
-        "email_sender",
-        "template_selector",
-        "open_tracker"
-      ],
-      "stake": 700,
-      "privacy_level": "medium"
+      "id": "14",
+      "agentId": "14",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "https://competitor-analyser.vercel.app/.well-known/agent-card.json",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-12T14:50:30.000Z",
+      "name": "Competitor Analyser Agent",
+      "description": "",
+      "reputationScore": 50
     },
     {
-      "id": "meeting-scheduler",
-      "name": "Meeting Scheduler",
-      "description": "Schedules meetings with leads and clients, integrating with calendars and optimizing for availability.",
-      "systemPrompt": "You are a meeting scheduling assistant. Coordinate with leads and team members to find optimal meeting times, send invites, and handle rescheduling.",
-      "knowledge_sources": [
-        "recall:calendar_availability",
-        "akave:timezone_data"
-      ],
-      "tools": [
-        "calendar_integration",
-        "invite_sender",
-        "reminder_service"
-      ],
-      "stake": 600,
-      "privacy_level": "medium"
+      "id": "13",
+      "agentId": "13",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "https://investor-finder.vercel.app/.well-known/agent-card.json",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-07T15:44:30.000Z",
+      "name": "Agent #13",
+      "description": "",
+      "reputationScore": 50
     },
     {
-      "id": "data-analyzer",
-      "name": "Data Analyzer",
-      "description": "Analyzes campaign, lead, and meeting data to provide insights and recommendations for optimization.",
-      "systemPrompt": "You are a data analysis expert. Review campaign, lead, and meeting data to identify trends, generate reports, and suggest improvements.",
-      "knowledge_sources": [
-        "recall:campaign_data",
-        "akave:analytics_tools"
-      ],
-      "tools": [
-        "report_generator",
-        "trend_identifier",
-        "visualization"
-      ],
-      "stake": 900,
-      "privacy_level": "high"
+      "id": "12",
+      "agentId": "12",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "https://seo-agent-phi.vercel.app/.well-known/agent-card.json",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-07T15:43:30.000Z",
+      "name": "SEO Gap Analysis Agent",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "11",
+      "agentId": "11",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "https://seo-agent-phi.vercel.app/.well-known/agent-card.json",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-05T15:09:00.000Z",
+      "name": "SEO Gap Analysis Agent",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "10",
+      "agentId": "10",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafkreicoilkdc3jfgyrdquekll66qa7oc75ii6xpkjk3al2swxijfds6jm",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T10:50:00.000Z",
+      "name": "Big MOM Agent",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "9",
+      "agentId": "9",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafkreic3vddowexvnv4eveqvg77uluaah75d763by7mvmbo3elp2g45xeq",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T10:35:30.000Z",
+      "name": "Agent #9",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "8",
+      "agentId": "8",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeifpx5pqr2ebubporlvei7vj7oirunilxzthsvpg4zx45m2qwur6ym",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T09:19:00.000Z",
+      "name": "Agent #8",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "7",
+      "agentId": "7",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeifdpff66tm25nkgblioq6x6bqfzljhchwcwn3v3l5hahikckeid6q",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T09:16:00.000Z",
+      "name": "Agent #7",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "6",
+      "agentId": "6",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeidts26bfz2bxwlgm65e7f2ompf4ro5pkp7mcoi5j46kyvlbq3x7gm",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T07:02:00.000Z",
+      "name": "Agent #6",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "5",
+      "agentId": "5",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeicnrb6m5pkz6kiib32zztu4knmmq3ghkfpmynmyyt6pagwx64ep6q",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T06:42:30.000Z",
+      "name": "Agent #5",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "3",
+      "agentId": "3",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeidzbhvqc6dtgxuayqo3pmsxwcct3fj56lhwu7jbvl43y22gyblbxi",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T06:41:00.000Z",
+      "name": "Agent #3",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "4",
+      "agentId": "4",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeihvtyuk5jwzu3pxjjom4wb3t67gux22eb26q6nx5jj2yzaihapnpi",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T06:41:00.000Z",
+      "name": "Agent #4",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "2",
+      "agentId": "2",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeic6savhj6b7tvau5jtpt3yddja4l6wm4o223b424ukyvod7677vlq",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-03T06:37:30.000Z",
+      "name": "Agent #2",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "1",
+      "agentId": "1",
+      "owner": "0x9d19251e5cb35d036a30b9de69bcb3802fd0af0a",
+      "agentURI": "ipfs://bafybeia7az62asi5kzzy2gv2qxcibtxkrorrim2eo6ctcqixlb5mcn6w74",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-02T14:36:00.000Z",
+      "name": "Agent #1",
+      "description": "",
+      "reputationScore": 50
+    },
+    {
+      "id": "0",
+      "agentId": "0",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "ipfs://bafybeiaorrvyiccqkmxznf7j3xuc6r6cus5nqigdp4lgs7uiu7uqegcj6i/github-agent-card.json",
+      "contractId": "0xa450345b850088f68b8982c57fe987124533e194",
+      "registeredAt": "2026-03-01T17:10:00.000Z",
+      "name": "Agent #0",
+      "description": "",
+      "reputationScore": 50
     }
   ]
 }

@@ -29,11 +29,13 @@ import {
   ThumbsUp,
   Bot,
 } from "lucide-react"
-import { memo, useState } from "react"
+import { memo, useState, useEffect } from "react"
 import { useAgents } from "@/hooks/useAgents"
 import { useReputationFeedback } from "@/hooks/useReputationFeedback"
+import { useChatHistory } from "@/hooks/useChatHistory"
 import { AgentMention } from "@/types/agentMentionTypes"
 import { SidebarTrigger } from "@/components/SidebarTrigger"
+import { PaymentApprovalCard } from "@/components/primitives/PaymentApprovalCard"
 
 type MessageComponentProps = {
   message: UIMessage
@@ -72,6 +74,23 @@ export const MessageComponent = memo(
                 </div>
               )}
             </div>
+
+            {/* Render tool invocations (payment cards, etc.) */}
+            {message.parts.map((part: any, i: number) => {
+              // AI SDK v4: static tool parts have type "tool-{toolName}"
+              // dynamic tool parts have type "dynamic-tool" with a toolName field
+              const isRequestAgentService =
+                part.type === "tool-requestAgentService" ||
+                (part.type === "dynamic-tool" && part.toolName === "requestAgentService");
+              if (!isRequestAgentService) return null;
+              // v4 uses state="output-available" and part.output; fall back to part.result for compat
+              const output = part.output ?? part.result;
+              if (output?.status === "payment_required") {
+                return <PaymentApprovalCard key={i} request={output} />;
+              }
+              return null;
+            })}
+
             <MessageContent
               className="text-foreground prose max-w-[85%] sm:max-w-[75%] rounded-lg bg-transparent p-0"
               markdown
@@ -111,9 +130,11 @@ export const MessageComponent = memo(
         ) : (
           <div className="flex w-full max-w-lg flex-col gap-2 items-end">
             <MessageContent className="bg-muted text-primary max-w-[85%] rounded-3xl px-5 py-2.5 whitespace-pre-wrap sm:max-w-[75%]">
-              {message.parts
-                .map((part) => (part.type === "text" ? part.text : null))
-                .join("")}
+              {(() => {
+                const raw = message.parts.map((part) => (part.type === "text" ? part.text : null)).join("")
+                const m = raw.match(/\[User Message\]\n([\s\S]+)/)
+                return m ? m[1].trim() : raw
+              })()}
             </MessageContent>
             {mentionedAgents && mentionedAgents.length > 0 && (
               <div className="flex gap-1 justify-end">
@@ -162,44 +183,111 @@ const ErrorMessage = memo(({ error }: { error: Error }) => (
 
 ErrorMessage.displayName = "ErrorMessage"
 
-export function AgentAwareChatbot() {
+// Module-level cache so closures always see the latest enriched agents
+const enrichedAgentCache = new Map<string, AgentMention>()
+
+export function AgentAwareChatbot({ conversationId }: { conversationId?: string }) {
   const [input, setInput] = useState("")
   const [mentionedAgents, setMentionedAgents] = useState<AgentMention[]>([])
   const [messageAgentMap, setMessageAgentMap] = useState<Record<string, AgentMention[]>>({})
-  const { agents, loading: agentsLoading } = useAgents()
+  const [inputFocused, setInputFocused] = useState(false)
+  // Only fetch agents once the user focuses the input — avoids blocking thread load
+  const { agents, loading: agentsLoading } = useAgents(inputFocused)
   const { submitFeedback } = useReputationFeedback()
+  const { save, get } = useChatHistory()
+
+  // Load initial messages from history when conversationId is provided
+  const initialMessages = conversationId ? (get(conversationId)?.messages ?? []) : []
 
   const { messages, sendMessage, status, error } = useChat({
+    id: conversationId,
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/primitives/chatbot",
     }),
   })
 
-  const handleSubmit = () => {
-    if (!input.trim()) return
+  // Persist messages to localStorage whenever they change
+  useEffect(() => {
+    if (conversationId && messages.length > 0) {
+      save(conversationId, messages)
+    }
+  }, [messages, conversationId, save])
+
+  // Fetch full agent card details; returns cached result or fetches fresh
+  const fetchAgentDetail = async (agent: AgentMention): Promise<AgentMention> => {
+    const cacheKey = String(agent.id)
+    if (enrichedAgentCache.has(cacheKey)) return enrichedAgentCache.get(cacheKey)!
+    try {
+      const uri = encodeURIComponent(agent.agentURI ?? "")
+      const res = await fetch(`/api/agents/${agent.id}?agentURI=${uri}`)
+      if (!res.ok) return agent
+      const detail = await res.json()
+      const enriched = { ...agent, ...detail }
+      enrichedAgentCache.set(cacheKey, enriched)
+      return enriched
+    } catch {
+      return agent
+    }
+  }
+
+  const handleSubmit = async () => {
+    if (!input.trim() || !conversationId) return
+
+    // Fetch details for all mentioned agents (parallel, awaited before sending)
+    const resolvedAgents = await Promise.all(mentionedAgents.map(fetchAgentDetail))
 
     // Store mentioned agents for this message
     const messageId = `message-${Date.now()}`
-    if (mentionedAgents.length > 0) {
-      setMessageAgentMap(prev => ({
-        ...prev,
-        [messageId]: mentionedAgents
-      }))
+    if (resolvedAgents.length > 0) {
+      setMessageAgentMap(prev => ({ ...prev, [messageId]: resolvedAgents }))
     }
 
-    // Modify the input to include agent context
+    // Build enriched prompt with full agent context
     let enhancedInput = input
-    if (mentionedAgents.length > 0) {
-      const systemPrompts = mentionedAgents
-        .filter(agent => agent.systemPrompt)
-        .map(agent => `${agent.name}: ${agent.systemPrompt}`)
-        .join('\n\n')
-      
-      const agentContext = mentionedAgents
-        .map(agent => `@${agent.name} (${agent.description || ''})`)
-        .join(', ')
-      
-      enhancedInput = `[System Instructions for mentioned agents:]\n${systemPrompts}\n\n[Agents mentioned: ${agentContext}]\n\n[User Query:]\n${input}`
+    if (resolvedAgents.length > 0) {
+      const agentBlocks = resolvedAgents.map((agent: any) => {
+        const lines: string[] = [`### ${agent.name}`]
+        if (agent.description) lines.push(`Description: ${agent.description}`)
+        if (agent.systemPrompt) lines.push(`\nSystem prompt:\n${agent.systemPrompt}`)
+
+        // Include services — this is where most agent capability info lives
+        const services: any[] = agent.services ?? []
+        const actionableServices = services.filter((s: any) => s.endpoint && s.name !== "agentWallet")
+        if (actionableServices.length > 0) {
+          lines.push(`\nServices this agent exposes:`)
+          actionableServices.forEach((s: any) => {
+            lines.push(`- **${s.name}**: ${s.description ?? ""}`)
+            lines.push(`  Endpoint: ${s.endpoint}`)
+            const cost = s.cost ?? s.payment?.amount
+            const currency = s.currency ?? s.payment?.currency
+            const network = s.network ?? s.payment?.network
+            const payTo = s.payTo ?? s.payment?.payTo ?? ""
+            const asset = s.asset ?? s.payment?.asset ?? ""
+            if (cost) lines.push(`  Cost: ${cost} ${currency ?? ""} on ${network ?? ""}`)
+            if (payTo) lines.push(`  PayTo: ${payTo}`)
+            if (asset) lines.push(`  Asset: ${asset}`)
+            if (s.inputSchema?.properties) {
+              const props = Object.entries(s.inputSchema.properties as Record<string, any>)
+                .map(([k, v]) => `${k} (${(v as any).type}): ${(v as any).description ?? ""}`)
+                .join(", ")
+              lines.push(`  Input: ${props}`)
+            }
+            if (s.responseSchema) {
+              lines.push(`  Returns: ${JSON.stringify(s.responseSchema)}`)
+            }
+          })
+        }
+
+        if (agent.tools?.length) lines.push(`\nTools: ${agent.tools.join(", ")}`)
+        if (agent.knowledge_sources?.length) lines.push(`Knowledge sources: ${agent.knowledge_sources.join(", ")}`)
+        return lines.join("\n")
+      }).join("\n\n---\n\n")
+
+      enhancedInput = [
+        `[Agent Context]\nThe user has mentioned the following agents. Adopt their persona and capabilities to answer. If the user asks what you can do, explain your services in detail.\n\n${agentBlocks}`,
+        `[User Message]\n${input}`,
+      ].join('\n\n')
     }
 
     sendMessage({ text: enhancedInput })
@@ -214,7 +302,7 @@ export function AgentAwareChatbot() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
       {!hasMessages ? (
         // Welcome screen
         <div className="flex-1 flex flex-col items-center justify-center px-4">
@@ -233,6 +321,7 @@ export function AgentAwareChatbot() {
                     onChange={setInput}
                     onChangeMention={handleMentionChange}
                     onEnter={handleSubmit}
+                    onFocus={() => setInputFocused(true)}
                     placeholder="What do you want to know?"
                     agents={agents}
                     className="min-h-[60px] text-lg leading-relaxed border-none outline-none focus:ring-0 resize-none"
@@ -253,28 +342,7 @@ export function AgentAwareChatbot() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between p-4 pt-2">
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full"
-                      disabled={agentsLoading}
-                    >
-                      <Bot className="h-4 w-4 mr-2" />
-                      Auto
-                      <span className="ml-2 text-xs bg-muted px-1.5 py-0.5 rounded">⌘P</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full"
-                      disabled={agentsLoading}
-                    >
-                      <span className="mr-2">🔧</span>
-                      Tools
-                    </Button>
-                  </div>
+                <div className="flex items-center justify-end p-4 pt-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
                       {agentsLoading ? "Loading..." : `${agents.length} agents`}
@@ -342,6 +410,7 @@ export function AgentAwareChatbot() {
                     onChange={setInput}
                     onChangeMention={handleMentionChange}
                     onEnter={handleSubmit}
+                    onFocus={() => setInputFocused(true)}
                     placeholder="Type @ to mention an agent..."
                     agents={agents}
                     className="min-h-[44px] text-base leading-[1.3] border-none outline-none focus:ring-0"
@@ -362,10 +431,7 @@ export function AgentAwareChatbot() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between p-4 pt-2">
-                  <div className="text-xs text-muted-foreground">
-                    {agentsLoading ? "Loading agents..." : `${agents.length} agents available`}
-                  </div>
+                <div className="flex items-center justify-end p-4 pt-2">
                   <Button
                     size="icon"
                     disabled={

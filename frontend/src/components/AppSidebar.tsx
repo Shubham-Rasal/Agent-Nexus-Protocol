@@ -16,18 +16,17 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { 
-  MessageSquare, 
-  Users, 
-  Settings, 
-  Network,
-  Database,
+import {
+  MessageSquare,
+  Users,
+  Settings,
   Plus,
   PanelLeft,
-  BookOpen
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useChatHistory } from "@/hooks/useChatHistory";
 
 const menuItems = [
   {
@@ -45,42 +44,16 @@ const menuItems = [
     url: "/mcp",
     icon: Settings,
   },
-  {
-    title: "Network", 
-    url: "/network",
-    icon: Network,
-  },
-  {
-    title: "Knowledge Graph",
-    url: "/kg",
-    icon: Database,
-  },
-  {
-    title: "Documentation",
-    url: "/docs",
-    icon: BookOpen,
-  },
 ];
 
 
-
-const olderConversations = [
-  "Greeting an Old Agent",
-  "Entities extracted fro...",
-  "Popular methods of ...",
-  "User greets the assis...",
-  "Adding cat as an enti...",
-  "Entity for water with ...",
-  "Current weather info...",
-  "Available tools and c...",
-  "Greeting and conver...",
-];
 
 export function AppSidebar() {
   const { setOpenMobile, state, toggleSidebar } = useSidebar();
   const isMobile = useIsMobile();
   const currentPath = usePathname();
   const isCollapsed = state === "collapsed";
+  const { conversations, remove } = useChatHistory();
 
   useEffect(() => {
     if (isMobile) {
@@ -102,7 +75,7 @@ export function AppSidebar() {
               </SidebarMenuButton>
             ) : (
               <SidebarMenuButton asChild className="hover:bg-transparent flex-1">
-                <Link href="/chat">
+                <Link href="/chat" prefetch={false}>
                   <h4 className="font-bold text-foreground">ANP</h4>
                 </Link>
               </SidebarMenuButton>
@@ -150,7 +123,7 @@ export function AppSidebar() {
                       isActive={currentPath === item.url}
                       className="w-full"
                     >
-                      <Link href={item.url}>
+                      <Link href={item.url} prefetch={false}>
                         <item.icon className="h-4 w-4" />
                         {!isCollapsed && <span>{item.title}</span>}
                       </Link>
@@ -161,22 +134,34 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Older Conversations */}
-          {!isCollapsed && (
+          {/* Chat History */}
+          {!isCollapsed && conversations.length > 0 && (
             <SidebarGroup>
               <SidebarGroupLabel className="text-muted-foreground text-sm">
-                Older
+                Recent
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {olderConversations.map((conversation, index) => (
-                    <SidebarMenuItem key={index}>
-                      <SidebarMenuButton asChild>
-                        <Link href={`/chat/${index}`}>
-                          <MessageSquare className="h-4 w-4" />
-                          <span className="truncate">{conversation}</span>
+                  {conversations.map((convo) => (
+                    <SidebarMenuItem key={convo.id} className="group/item flex items-center">
+                      <SidebarMenuButton
+                        asChild
+                        isActive={currentPath === `/chat/${convo.id}`}
+                        className="flex-1 min-w-0"
+                      >
+                        <Link href={`/chat/${convo.id}`} prefetch={false}>
+                          <MessageSquare className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{convo.title}</span>
                         </Link>
                       </SidebarMenuButton>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                        onClick={(e) => { e.preventDefault(); remove(convo.id); }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
@@ -186,18 +171,6 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="flex flex-col items-stretch space-y-2">
-        <div className="flex items-center gap-2 p-2">
-          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-sm font-medium">SS</span>
-          </div>
-          {!isCollapsed && (
-            <span className="text-sm font-medium text-foreground truncate">
-              Shubham Subodh Rasal
-            </span>
-          )}
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }

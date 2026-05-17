@@ -2,17 +2,29 @@ import { openai } from "@ai-sdk/openai"
 import { convertToModelMessages, stepCountIs, streamText, tool, UIMessage } from "ai"
 import { z } from "zod"
 
-export const maxDuration = 30
+export const maxDuration = 60
 
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json()
 
   const result = streamText({
-    model: openai("gpt-4.1-nano"),
-    system:
-      "You are a helpful assistant with access to tools. Use the getCurrentDate tool when users ask about dates, time, or current information. You are also able to use the getTime tool to get the current time in a specific timezone. You can use the fetchUrl tool to retrieve content from web URLs, which will automatically detect content types (JSON, HTML, Markdown, text) and provide parsed data when possible.",
+    model: openai("gpt-4.1-mini"),
+    system: `You are a helpful assistant with access to tools. When a message starts with [Agent Context], you are acting AS that agent — adopt its persona completely.
+
+RULE 1 — Answering "what can you do":
+If the user's message contains [Agent Context] and asks "what can you do", "what are your capabilities", or similar, respond by describing the agent's services from the [Agent Context] in detail. List each service, what it does, its cost, and required inputs. Do NOT say you don't have information about the agent.
+
+RULE 2 — Calling agent services:
+When [Agent Context] is present and the user asks to use/call/trigger a service, IMMEDIATELY call the requestAgentService tool. Extract ALL params from the user message and agent context. Use Endpoint, PayTo, Asset, Cost, Currency, Network exactly as listed in the context. Never ask for clarification if the required info is already in the message.
+
+Example: agent needs { url, userId }, user says "extract brand from https://stripe.com for wallet 0xABC" → call requestAgentService with inputParams = { url: "https://stripe.com", userId: "0xABC" }.
+
+Other tools:
+- getCurrentDate: use for date/time questions
+- getTime: use for timezone questions
+- fetchUrl: use to retrieve web content`,
     messages: convertToModelMessages(messages),
-    stopWhen: stepCountIs(5),
+    stopWhen: stepCountIs(15),
     tools: {
       getTime: tool({
         description: "Get the current time in a specific timezone",
@@ -60,6 +72,21 @@ export async function POST(req: Request) {
             utc: now.toUTCString(),
           }
         },
+      }),
+      requestAgentService: tool({
+        description: "Invoke an external agent's paid service. Use when the user wants to trigger an agent capability that costs money (x402 payment-gated). Extract the endpoint and inputParams from the agent context provided.",
+        inputSchema: z.object({
+          serviceName: z.string().describe("Human-readable service name"),
+          endpoint: z.string().describe("Full service endpoint URL"),
+          description: z.string().describe("What this service does"),
+          cost: z.string().describe("Cost amount (e.g. '0.001')"),
+          currency: z.string().describe("Currency symbol (e.g. 'USDC')"),
+          network: z.string().describe("Network identifier (e.g. 'eip155:84532')"),
+          payTo: z.string().describe("Wallet address to pay"),
+          asset: z.string().describe("Token contract address"),
+          inputParams: z.record(z.string(), z.unknown()).describe("Parameters to pass to the service endpoint"),
+        }),
+        execute: async (params) => ({ status: "payment_required", ...params }),
       }),
       fetchUrl: tool({
         description: "Fetch content from a given URL and return the response with metadata",

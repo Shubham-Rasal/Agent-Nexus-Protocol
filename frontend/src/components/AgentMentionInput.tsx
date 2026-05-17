@@ -43,10 +43,11 @@ export default function AgentMentionInput({
   onChange,
   onChangeMention,
   onEnter,
+  onFocus,
   placeholder = "Type a message...",
   agents = [],
   className,
-}: MentionInputProps) {
+}: MentionInputProps & { onFocus?: () => void }) {
   const [suggestion, setSuggestion] = useState<MentionSuggestion | null>(null);
   const [cursorPosition, setCursorPosition] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -64,20 +65,16 @@ export default function AgentMentionInput({
     return fuzzySearch(mentionItems, suggestion.query);
   }, [suggestion?.query, mentionItems]);
 
-  // Parse mentions from text
+  // Parse mentions from text — matches full agent names (including multi-word names like "OpenBrand Agent")
   const parseMentions = useCallback((text: string): AgentMention[] => {
-    const mentionRegex = /@(\w+)/g;
+    const seen = new Set<string>();
     const mentions: AgentMention[] = [];
-    let match;
-    
-    while ((match = mentionRegex.exec(text)) !== null) {
-      const mentionName = match[1];
-      const agent = agents.find(a => a.name.toLowerCase() === mentionName.toLowerCase());
-      if (agent) {
+    for (const agent of agents) {
+      if (!seen.has(agent.id) && text.includes(`@${agent.name}`)) {
+        seen.add(agent.id);
         mentions.push(agent);
       }
     }
-    
     return mentions;
   }, [agents]);
 
@@ -109,8 +106,9 @@ export default function AgentMentionInput({
           const afterCursor = newValue.substring(cursorPos);
           const newText = `${beforeAt}@${item.label} ${afterCursor}`;
           onChange?.(newText);
+          onChangeMention?.(parseMentions(newText));
           setSuggestion(null);
-          
+
           // Update cursor position
           setTimeout(() => {
             if (textareaRef.current) {
@@ -224,6 +222,7 @@ export default function AgentMentionInput({
         value={input}
         onChange={handleTextChange}
         onKeyDown={handleKeyDown}
+        onFocus={onFocus}
         placeholder={placeholder}
         className={cn(
           "w-full max-h-80 min-h-[2rem] break-words overflow-y-auto resize-none focus:outline-none px-2 py-1 border-none bg-transparent text-foreground placeholder:text-muted-foreground",

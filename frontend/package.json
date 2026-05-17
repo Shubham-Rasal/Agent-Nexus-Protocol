@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "NODE_OPTIONS=--max-old-space-size=4096 next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -71,8 +71,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "ethers": "^6.15.0",
-    "groundline": "file:../groundline",
-    "libp2p": "^2.10.0",
+"libp2p": "^2.10.0",
     "llamaindex": "^0.9.17",
     "lucide-react": "^0.485.0",
     "marked": "^16.1.2",

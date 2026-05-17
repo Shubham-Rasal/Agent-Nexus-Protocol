@@ -1,80 +1,72 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AgentMention } from "@/types/agentMentionTypes";
 
-export function useAgents() {
-  const [agents, setAgents] = useState<AgentMention[]>([]);
-  const [loading, setLoading] = useState(true);
+async function fetchAgents(): Promise<AgentMention[]> {
+  try {
+    const res = await fetch("/api/agents");
+    if (res.ok) {
+      const data = await res.json();
+      const networkAgents: AgentMention[] = (data.agents ?? []).map((agent: any) => ({
+        type: "agent" as const,
+        id: agent.id || agent.agentId,
+        name: agent.name,
+        description: agent.description,
+        systemPrompt: agent.systemPrompt || "",
+        agentURI: agent.agentURI || "",
+        tools: agent.tools || [],
+        knowledge_sources: agent.knowledge_sources || [],
+      }));
 
-  useEffect(() => {
-    const loadAgents = async () => {
-      try {
-        // Primary: fetch from sync engine (subgraph-backed)
-        const res = await fetch("/api/network/agents");
-        if (res.ok) {
-          const data = await res.json();
-          const networkAgents: AgentMention[] = (data.agents || data.agents || []).map(
-            (agent: any) => ({
+      let customAgents: AgentMention[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("customAgents");
+          if (stored) {
+            customAgents = JSON.parse(stored).map((a: any) => ({
               type: "agent" as const,
-              id: agent.id || agent.agentId,
-              name: agent.name,
-              description: agent.description,
-              systemPrompt: agent.systemPrompt || "",
-              reputationScore: agent.reputationScore,
-            })
-          );
-
-          // Merge with custom agents from localStorage
-          let customAgents: AgentMention[] = [];
-          if (typeof window !== "undefined") {
-            try {
-              const stored = localStorage.getItem("customAgents");
-              if (stored) {
-                customAgents = JSON.parse(stored).map((a: any) => ({
-                  type: "agent" as const,
-                  id: a.id,
-                  name: a.name,
-                  description: a.description,
-                  systemPrompt: a.systemPrompt || "",
-                }));
-              }
-            } catch {
-              // ignore parse errors
-            }
+              id: a.id,
+              name: a.name,
+              description: a.description,
+              systemPrompt: a.systemPrompt || "",
+            }));
           }
-
-          setAgents([...networkAgents, ...customAgents]);
-          return;
+        } catch {
+          // ignore
         }
-      } catch {
-        // fall through to static fallback
       }
 
-      // Fallback: static JSON (used if API/subgraph is unavailable)
-      try {
-        const { default: agentsData } = await import("@/app/agents.json");
-        const staticAgents: AgentMention[] = (agentsData.agents as any[]).map((agent) => ({
-          type: "agent" as const,
-          id: agent.id,
-          name: agent.name,
-          description: agent.description,
-          systemPrompt: agent.systemPrompt || "",
-        }));
-        setAgents(staticAgents);
-      } catch {
-        console.error("Failed to load agents from any source");
-      }
-    };
-
-    loadAgents().finally(() => setLoading(false));
-
-    const handleStorageChange = () => loadAgents().finally(() => setLoading(false));
-    if (typeof window !== "undefined") {
-      window.addEventListener("storage", handleStorageChange);
-      return () => window.removeEventListener("storage", handleStorageChange);
+      return [...networkAgents, ...customAgents];
     }
-  }, []);
+  } catch {
+    // fall through
+  }
+
+  // Static fallback
+  try {
+    const { default: agentsData } = await import("@/app/agents.json");
+    return (agentsData.agents as any[]).map((agent) => ({
+      type: "agent" as const,
+      id: agent.id,
+      name: agent.name,
+      description: agent.description,
+      systemPrompt: agent.systemPrompt || "",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export function useAgents(enabled = true) {
+  const { data: agents = [], isLoading: loading } = useQuery({
+    queryKey: ["agents"],
+    queryFn: fetchAgents,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 1,
+    enabled,
+  });
 
   return { agents, loading };
 }

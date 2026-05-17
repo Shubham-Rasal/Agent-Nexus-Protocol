@@ -2,12 +2,28 @@
  * Types for agent mentions functionality
  */
 
+export interface AgentService {
+  name: string;
+  description?: string;
+  endpoint?: string;
+  protocol?: string;
+  type?: string;
+  cost?: string;
+  currency?: string;
+  inputSchema?: Record<string, unknown>;
+  responseSchema?: Record<string, unknown>;
+}
+
 export interface AgentMention {
   type: 'agent';
   id: string;
   name: string;
   description?: string;
   systemPrompt?: string;
+  agentURI?: string;
+  tools?: string[];
+  knowledge_sources?: string[];
+  services?: AgentService[];
 }
 
 export interface AgentMentionItem extends AgentMention {

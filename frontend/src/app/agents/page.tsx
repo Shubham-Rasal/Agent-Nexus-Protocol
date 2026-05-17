@@ -1,15 +1,15 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Plus, X, ChevronDown, Trash2, Play, Bot, Server, Check } from 'lucide-react';
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText, tool} from "ai";
-import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, X, ChevronDown, Trash2, Play, Bot, Server, Check, ExternalLink, Star, Shield, Wrench, Calendar, User } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { MCPApiService } from '../../services/mcpApiService';
-
-// Initialize AI providers
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY || 'your-api-key-here',
-});
 
 // IndexedDB Service
 class IndexedDBService {
@@ -296,6 +296,31 @@ const AIAgentsPage: React.FC = () => {
   const [tagInput, setTagInput] = useState('');
   const [toolInput, setToolInput] = useState('');
 
+  const [onChainAgents, setOnChainAgents] = useState<any[]>([]);
+  const [onChainLoading, setOnChainLoading] = useState(true);
+  const [selectedOnChainAgent, setSelectedOnChainAgent] = useState<any | null>(null);
+
+  // Fetch agent card + reputation only when a specific agent is selected
+  const { data: agentDetail, isLoading: agentDetailLoading } = useQuery({
+    queryKey: ["agentDetail", selectedOnChainAgent?.agentId],
+    queryFn: async () => {
+      const uri = encodeURIComponent(selectedOnChainAgent?.agentURI ?? "");
+      const res = await fetch(`/api/agents/${selectedOnChainAgent.agentId}?agentURI=${uri}`);
+      if (!res.ok) throw new Error("Failed to fetch agent detail");
+      return res.json();
+    },
+    enabled: !!selectedOnChainAgent,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    fetch('/api/agents')
+      .then(r => r.json())
+      .then(data => setOnChainAgents(data.agents ?? []))
+      .catch(() => {})
+      .finally(() => setOnChainLoading(false));
+  }, []);
+
   const llmProviders = [
     { id: 'google', name: 'Google Gemini', model: 'models/gemini-2.5-flash' },
     { id: 'openai', name: 'OpenAI', model: 'gpt-3.5-turbo' },
@@ -473,90 +498,6 @@ const AIAgentsPage: React.FC = () => {
     }
   };
 
-  // Convert MCP tool schema to Zod schema
-  const convertMCPSchemaToZod = (schema: any): z.ZodType<any> => {
-    if (!schema || !schema.properties) {
-      return z.object({});
-    }
-
-    const zodObject: Record<string, z.ZodType<any>> = {};
-
-    Object.entries(schema.properties).forEach(([key, prop]: [string, any]) => {
-      switch (prop.type) {
-        case 'string':
-          zodObject[key] = z.string().describe(prop.description || '');
-          break;
-        case 'number':
-          zodObject[key] = z.number().describe(prop.description || '');
-          break;
-        case 'boolean':
-          zodObject[key] = z.boolean().describe(prop.description || '');
-          break;
-        case 'array':
-          zodObject[key] = z.array(z.any()).describe(prop.description || '');
-          break;
-        case 'object':
-          zodObject[key] = z.object({}).describe(prop.description || '');
-          break;
-        default:
-          zodObject[key] = z.any().describe(prop.description || '');
-      }
-
-      // Make optional if not in required array
-      if (!schema.required?.includes(key)) {
-        zodObject[key] = zodObject[key].optional();
-      }
-    });
-
-    return z.object(zodObject);
-  };
-
-  // Create AI SDK tools from MCP servers with enhanced logging
-  const createToolsFromMCPServers = (serverIds: string[]) => {
-    const tools: Record<string, any> = {};
-    let stepCounter = 0;
-
-    serverIds.forEach(serverId => {
-      const server = mcpServers.find(s => s.id === serverId);
-      if (!server || server.status !== 'connected') {
-        console.warn(`⚠️ Skipping unavailable server: ${serverId} (status: ${server?.status || 'not found'})`);
-        return;
-      }
-
-      console.log(`🔌 Registering tools from server: ${server.name} (${serverId})`);
-
-      server.tools.forEach(mcpTool => {
-        const toolKey = `${server.name}_${mcpTool.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
-        
-        console.log(`📝 Registering tool: ${toolKey} -> ${server.name}.${mcpTool.name}`);
-        
-        tools[toolKey] = tool({
-          description: mcpTool.description || `Tool from ${server.name}: ${mcpTool.name}`,
-          inputSchema: mcpTool.inputSchema 
-            ? convertMCPSchemaToZod(mcpTool.inputSchema)
-            : z.object({}),
-          execute: async (args: any) => {
-            stepCounter++;
-            console.log(`🎬 Executing tool: ${toolKey} (Step #${stepCounter})`);
-            console.log('📦 Raw execute args:', args);
-            
-            const { result, logEntry } = await handleMCPToolCall(serverId, mcpTool.name, args, stepCounter);
-            
-            // Store log entry in a way that can be accessed later
-            if (!window.__currentToolCalls) {
-              window.__currentToolCalls = [];
-            }
-            window.__currentToolCalls.push(logEntry);
-            
-            return result;
-          }
-        });
-      });
-    });
-
-    console.log(`🎯 Total tools registered: ${Object.keys(tools).length}`);
-    return tools;
-  };
 
   const resetForm = () => {
     setFormData({
@@ -672,74 +613,19 @@ const testAgent = async () => {
   try {
     let response = '';
     
-    if (selectedAgent.llmProvider === 'google') {
-      // Create tools from MCP servers
-      const tools = createToolsFromMCPServers(selectedAgent.mcpServers);
-      
-      console.log('🛠️ Available tools:', Object.keys(tools));
-
-      const result = await generateText({
-        model: google("models/gemini-2.5-flash"),
-        system: selectedAgent.systemPrompt,
-        prompt: testQuery,
-        tools: tools,
-        // maxSteps: 10, // Limit tool execution steps
-        experimental_telemetry: {
-          isEnabled: true,
-          functionId: 'test-agent'
-        }
-      });
-
-      // Enhanced response extraction
-      if (result.text) {
-        response = result.text;
-      } else if (result.steps && result.steps.length > 0) {
-        // If no final text, try to extract from steps
-        const lastStep = result.steps[result.steps.length - 1];
-        if (lastStep && 'text' in lastStep && lastStep.text) {
-          response = lastStep.text;
-        } else {
-          // Fallback: create response from tool results
-          const toolResults = window.__currentToolCalls || [];
-          if (toolResults.length > 0) {
-            const successfulResults = toolResults.filter(call => call.success);
-            response = `Tool execution completed. ${successfulResults.length} successful tool calls out of ${toolResults.length} total calls.\n\n`;
-            
-            toolResults.forEach((call, index) => {
-              response += `Step ${call.step}: ${call.toolName}\n`;
-              if (call.success && call.result) {
-                // Try to extract meaningful content from result
-                if (typeof call.result === 'object' && call.result.content) {
-                  response += `Result: ${call.result.content[0].text}\n\n`;
-                } else if (typeof call.result === 'string') {
-                  response += `Result: ${call.result}\n\n`;
-                } else {
-                  response += `Result: ${JSON.stringify(call.result, null, 2)}\n\n`;
-                }
-              } else if (call.error) {
-                response += `Error: ${call.error}\n\n`;
-              }
-            });
-          } else {
-            response = "No response generated. This might indicate an issue with the AI model or tool execution.";
-          }
-        }
-      } else {
-        response = "No response generated from the AI model.";
-      }
-
-      console.log('📝 Generated Response:', response);
-      console.log('📊 Result structure:', {
-        hasText: !!result.text,
-        textLength: result.text?.length || 0,
-        stepsCount: result.steps?.length || 0,
-        toolCallsCount: window.__currentToolCalls?.length || 0
-      });
-
-    } else {
-      response = `Testing with ${selectedAgent.llmProvider} is not yet implemented. This is a mock response for agent "${selectedAgent.name}". Query: "${testQuery}"`;
-      console.log('⚠️ Mock response generated for unsupported provider');
-    }
+    // Run test via server-side API to avoid bundling AI SDKs client-side
+    const res = await fetch('/api/test-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemPrompt: selectedAgent.systemPrompt,
+        query: testQuery,
+        llmProvider: selectedAgent.llmProvider,
+        mcpServers: selectedAgent.mcpServers,
+      }),
+    });
+    const data = await res.json();
+    response = data.response || "No response generated";
 
     const executionTime = Date.now() - startTime;
     const toolCallLogs: ToolCallLog[] = window.__currentToolCalls || [];
@@ -973,39 +859,7 @@ const testAgent = async () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 mt-12">
-         
-          <div className="flex justify-end gap-3 mb-4">
-            <button
-              onClick={openModal}
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground py-3 px-6 rounded-lg font-medium hover:bg-primary/90 transition-all transform hover:scale-105 shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              Create Agent
-            </button>
-            
-            <button
-              onClick={clearAllData}
-              className="inline-flex items-center gap-2 bg-destructive text-destructive-foreground py-3 px-4 rounded-lg font-medium hover:bg-destructive/90 transition-all"
-            >
-              <Trash2 className="h-4 w-4" />
-              Clear All
-            </button>
-          </div>
-
-          {/* Save Status Indicator */}
-          {saveStatus !== 'idle' && (
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
-              saveStatus === 'saving' ? 'bg-accent text-accent-foreground' :
-              saveStatus === 'saved' ? 'bg-accent text-accent-foreground' :
-              'bg-destructive text-destructive-foreground'
-            }`}>
-              {saveStatus === 'saving' && '💾 Saving...'}
-              {saveStatus === 'saved' && '✅ Saved'}
-              {saveStatus === 'error' && '❌ Save failed'}
-            </div>
-          )}
-        </div>
+        <div className="mb-8 mt-12" />
 
        
         {/* MCP Servers Status */}
@@ -1049,508 +903,221 @@ const testAgent = async () => {
           )}
         </div> */}
 
-        {/* Agents Grid */}
-        {agents.length === 0 ? (
-          <div className="text-center py-16">
-            <Bot className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-muted-foreground mb-2">No agents created yet</h3>
-            <p className="text-muted-foreground">Click "Create Agent" to get started</p>
+        {/* On-Chain Agents */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-semibold text-foreground">On-Chain Agents</h2>
+            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+              ERC-8004 · Filecoin Calibration
+            </span>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {agents.map(agent => (
-              <div key={agent.id} className="bg-card rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-card-foreground mb-2">{agent.name}</h3>
-                    <p className="text-muted-foreground text-sm mb-3">{agent.description}</p>
-                  </div>
-                  <div className="flex gap-2 ml-3">
-                    <button
-                      onClick={() => openTestModal(agent)}
-                      className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Test agent"
-                    >
-                      <Play className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => deleteAgent(agent.id)}
-                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                      title="Delete agent"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+
+          {onChainLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1,2,3].map(i => (
+                <div key={i} className="bg-card rounded-xl shadow p-6 animate-pulse">
+                  <div className="h-4 bg-muted rounded w-2/3 mb-3" />
+                  <div className="h-3 bg-muted rounded w-full mb-2" />
+                  <div className="h-3 bg-muted rounded w-4/5" />
                 </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">LLM Provider</span>
-                    <p className="text-sm text-foreground mt-1">{agent.llmProvider}</p>
+              ))}
+            </div>
+          ) : onChainAgents.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No on-chain agents found.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {onChainAgents.map(agent => (
+                <div key={agent.agentId} onClick={() => setSelectedOnChainAgent(agent)} className="bg-card rounded-xl shadow p-6 hover:shadow-md transition-shadow flex flex-col gap-3 cursor-pointer">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Bot className="h-5 w-5 text-primary shrink-0" />
+                      <h3 className="text-base font-semibold text-card-foreground truncate">{agent.name}</h3>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0">#{agent.agentId}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Uses</span>
-                      <p className="text-sm text-foreground mt-1">{agent.usageCount}</p>
-                    </div>
-                    {agent.lastUsed && (
-                      <div>
-                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Used</span>
-                        <p className="text-sm text-foreground mt-1">
-                          {new Date(agent.lastUsed).toLocaleDateString()}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {agent.tags.length > 0 && (
-                    <div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tags</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {agent.tags.map((tag, index) => (
-                          <span
-                            key={`${agent.id}-tag-${index}`}
-                            className="inline-block px-2 py-1 bg-primary/10 text-primary rounded text-xs"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                  {agent.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">{agent.description}</p>
                   )}
 
-                  {agent.mcpServers.length > 0 && (
-                    <div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">MCP Servers</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {agent.mcpServers.map((serverId, index) => {
-                          const server = mcpServers.find(s => s.id === serverId);
-                          return server ? (
-                            <span
-                              key={`${agent.id}-server-${index}`}
-                              className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
-                            >
-                              <Server className="h-3 w-3" />
-                              {server.name} ({server.tools.length})
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-500" />
+                      <span>{agent.reputationScore ?? 50} / 100</span>
                     </div>
-                  )}
-
-                  {agent.tools.length > 0 && (
-                    <div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Custom Tools</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {agent.tools.map((tool, index) => (
-                          <span
-                            key={`${agent.id}-tool-${index}`}
-                            className="inline-block px-2 py-1 bg-accent text-accent-foreground rounded text-xs"
-                          >
-                            {tool}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">System Prompt</span>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
-                      {agent.systemPrompt.length > 100 
-                        ? `${agent.systemPrompt.substring(0, 100)}...` 
-                        : agent.systemPrompt}
-                    </p>
-                  </div>
-
-                  <div className="pt-2 border-t border-border">
-                    <span className="text-xs text-muted-foreground">
-                      Created {new Date(agent.createdAt).toLocaleDateString()}
+                    <span className="font-mono truncate max-w-[120px]" title={agent.owner}>
+                      {agent.owner ? `${agent.owner.slice(0,6)}…${agent.owner.slice(-4)}` : '—'}
                     </span>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
-        {/* Create Agent Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-border">
-                <h2 className="text-xl font-bold text-card-foreground">Create New Agent</h2>
-              </div>
-
-              <div className="p-6 space-y-6">
-                {/* Name Field */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Agent Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                    placeholder="e.g., Code Assistant, Content Writer, Data Analyst"
-                  />
-                </div>
-
-                {/* Description Field */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Description *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                    placeholder="Brief description of what this agent does"
-                  />
-                </div>
-
-                {/* System Prompt Field */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    System Prompt *
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formData.systemPrompt}
-                    onChange={(e) => handleInputChange('systemPrompt', e.target.value)}
-                    className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all resize-vertical"
-                    placeholder="Define the agent's behavior, personality, and capabilities..."
-                  />
-                </div>
-
-                {/* LLM Provider Field */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    LLM Provider *
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={formData.llmProvider}
-                      onChange={(e) => handleInputChange('llmProvider', e.target.value)}
-                      className="w-full px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none bg-background"
-                    >
-                      <option value="">Select a provider...</option>
-                      {llmProviders.map(provider => (
-                        <option key={provider.id} value={provider.id}>{provider.name}</option>
+                  {agent.tools?.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {agent.tools.slice(0, 4).map((t: string) => (
+                        <span key={t} className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">{t}</span>
                       ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-3.5 h-5 w-5 text-muted-foreground pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* MCP Servers Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    MCP Servers ({connectedMCPServers.length} available)
-                  </label>
-                  {connectedMCPServers.length === 0 ? (
-                    <div className="bg-gray-50 rounded-lg p-4 text-center">
-                      <Server className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-sm text-gray-500">No MCP servers connected</p>
-                      <p className="text-xs text-gray-400 mt-1">Connect to MCP servers first to use them in agents</p>
-                    </div>
-                  ) : (
-                    <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
-                      {connectedMCPServers.map(server => (
-                        <div
-                          key={server.id}
-                          className="flex items-center p-3 hover:bg-gray-50 border-b last:border-b-0 cursor-pointer"
-                          onClick={() => toggleMCPServer(server.id)}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <Server className="h-4 w-4 text-gray-400" />
-                                <span className="font-medium text-gray-900">{server.name}</span>
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  {server.type}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {server.tools.length} tool{server.tools.length !== 1 ? 's' : ''} available
-                              </p>
-                              <div className="text-xs text-gray-400 mt-1">
-                                Tools: {server.tools.map(t => t.name).join(', ')}
-                              </div>
-                            </div>
-                            <div className="ml-3">
-                              {formData.mcpServers.includes(server.id) ? (
-                                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                  <Check className="h-3 w-3 text-white" />
-                                </div>
-                              ) : (
-                                <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                      {agent.tools.length > 4 && (
+                        <span className="text-xs text-muted-foreground">+{agent.tools.length - 4}</span>
+                      )}
                     </div>
                   )}
-                  {formData.mcpServers.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-xs text-gray-500 mb-2">Selected servers:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {formData.mcpServers.map((serverId, index) => {
-                          const server = mcpServers.find(s => s.id === serverId);
-                          return server ? (
-                            <span
-                              key={`selected-server-${index}`}
-                              className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"
-                            >
-                              <Server className="h-3 w-3" />
-                              {server.name} ({server.tools.length} tools)
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
 
-                {/* Tags Field */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Tags
-                  </label>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyPress={(e) => handleKeyPress(e, addTag)}
-                        className="flex-1 px-4 py-3 border border-input text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                        placeholder="e.g., coding, writing, analysis"
-                      />
-                      <button
-                        type="button"
-                        onClick={addTag}
-                        className="px-4 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+                  <div className="flex items-center justify-between pt-1 border-t border-border mt-auto">
+                    <span className="text-xs text-muted-foreground">
+                      {agent.registeredAt ? new Date(agent.registeredAt).toLocaleDateString() : ''}
+                    </span>
+                    {agent.agentURI && (
+                      <a
+                        href={agent.agentURI.startsWith('ipfs://') ? `https://w3s.link/ipfs/${agent.agentURI.slice(7)}` : agent.agentURI}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                       >
-                        <Plus className="h-4 w-4" />
-                        Add
-                      </button>
-                    </div>
-                    {formData.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {formData.tags.map((tag, index) => (
-                          <span
-                            key={`form-tag-${index}`}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                          >
-                            {tag}
-                            <button
-                              type="button"
-                              onClick={() => removeTag(tag)}
-                              className="hover:bg-primary/20 rounded-full p-1 transition-colors"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
+                        Card <ExternalLink className="h-3 w-3" />
+                      </a>
                     )}
                   </div>
                 </div>
-              </div>
-
-              <div className="p-6 border-t border-border flex justify-end gap-3">
-                <button
-                  onClick={closeModal}
-                  className="px-6 py-3 border border-input text-foreground rounded-lg hover:bg-muted transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!isFormValid}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                    isFormValid
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 transform hover:scale-105'
-                      : 'bg-muted text-muted-foreground cursor-not-allowed'
-                  }`}
-                >
-                  Create Agent
-                </button>
-              </div>
+              ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Test Agent Modal */}
-        {isTestModalOpen && selectedAgent && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-card rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-border">
-                <h2 className="text-xl font-bold text-card-foreground">Test Agent: {selectedAgent.name}</h2>
-                <p className="text-muted-foreground mt-1">{selectedAgent.description}</p>
-                {selectedAgent.mcpServers.length > 0 && (
-                  <div className="mt-2">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Connected MCP Servers:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedAgent.mcpServers.map((serverId, index) => {
-                        const server = mcpServers.find(s => s.id === serverId);
-                        return server ? (
-                          <span
-                            key={`test-server-${index}`}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
-                          >
-                            <Server className="h-3 w-3" />
-                            {server.name} ({server.tools.length} tools)
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-xs font-medium text-muted-foreground">Available Tools:</span>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {selectedAgent.mcpServers.flatMap(serverId => {
-                          const server = mcpServers.find(s => s.id === serverId);
-                          return server ? server.tools.map(tool => `${server.name}.${tool.name}${tool.description ? ` - ${tool.description}` : ''}`) : [];
-                        }).join(' • ')}
+        {/* Agent Detail Sheet */}
+        <Sheet open={!!selectedOnChainAgent} onOpenChange={(open) => { if (!open) setSelectedOnChainAgent(null); }}>
+          <SheetContent side="right" className="w-[400px] sm:w-[480px] overflow-y-auto p-6">
+            {selectedOnChainAgent && (() => {
+              const detail = agentDetail ?? {};
+              const agent = { ...selectedOnChainAgent, ...detail };
+              return (
+                <>
+                  <SheetHeader className="mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Bot className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <SheetTitle>{agent.name}</SheetTitle>
+                        <SheetDescription>Agent #{agent.agentId}</SheetDescription>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  </SheetHeader>
 
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Test Query
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={testQuery}
-                        onChange={(e) => setTestQuery(e.target.value)}
-                        onKeyPress={(e) => handleKeyPress(e, testAgent)}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="Enter a query to test the agent..."
-                      />
-                      <button
-                        onClick={testAgent}
-                        disabled={!testQuery.trim() || isTestingAgent}
-                        className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                          testQuery.trim() && !isTestingAgent
-                            ? 'bg-blue-500 text-white hover:bg-blue-600'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
-                      >
-                        <Play className="h-4 w-4" />
-                        {isTestingAgent ? 'Testing...' : 'Test'}
-                      </button>
-                    </div>
-                  </div>
+                  <div className="space-y-6">
+                    {agentDetailLoading && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="h-3 w-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                        Loading details…
+                      </div>
+                    )}
 
-                  {/* Test Results */}
-                  <div className="max-h-96 overflow-y-auto space-y-4">
-                    {testResults
-                      .filter(result => result.agentId === selectedAgent.id)
-                      .map((result, index) => (
-                      <div key={`test-result-${selectedAgent.id}-${index}`} className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <strong className="text-sm text-gray-700">Query:</strong>
-                          <div className="text-right">
-                            <span className="text-xs text-gray-500 block">
-                              {new Date(result.timestamp).toLocaleString()}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {result.executionTime}ms
-                            </span>
-                          </div>
+                    {/* Description */}
+                    {agent.description && (
+                      <p className="text-sm text-muted-foreground">{agent.description}</p>
+                    )}
+
+                    {/* Reputation */}
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Star className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm font-medium">Reputation</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-muted rounded-full h-2">
+                          <div
+                            className="bg-yellow-400 h-2 rounded-full"
+                            style={{ width: `${agent.reputationScore ?? 50}%` }}
+                          />
                         </div>
-                        <p className="text-sm text-gray-800 mb-3">{result.query}</p>
-                        
-                        {/* Enhanced tool calls display */}
-                        {result.toolCalls && result.toolCalls.length > 0 && (
-                          <div className="mb-3 p-3 bg-blue-50 rounded-lg">
-                            <strong className="text-sm text-blue-700 mb-2 block">
-                              Tool Calls ({result.toolCalls.length}):
-                            </strong>
-                            {result.toolCalls.map((toolCall, toolIndex) => (
-                              <div key={toolIndex} className="mt-2 p-3 bg-white rounded border-l-4 border-blue-300">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="text-sm font-medium text-blue-800">
-                                    Step #{toolCall.step}: {toolCall.toolName}
-                                    {toolCall.serverId && (
-                                      <span className="text-xs text-gray-500 ml-2">
-                                        (Server: {toolCall.serverId})
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className={`text-xs px-2 py-1 rounded ${
-                                    toolCall.success 
-                                      ? 'bg-green-100 text-green-700' 
-                                      : 'bg-red-100 text-red-700'
-                                  }`}>
-                                    {toolCall.success ? 'Success' : 'Failed'}
-                                  </div>
-                                </div>
-                                
-                                <div className="space-y-2 text-xs">
-                                  <div>
-                                    <strong className="text-gray-700">Arguments:</strong>
-                                    <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
-                                      {JSON.stringify(toolCall.args, null, 2)}
-                                    </pre>
-                                  </div>
-                                  
-                                  <div>
-                                    <strong className="text-gray-700">Result:</strong>
-                                    <pre className="mt-1 p-2 bg-gray-100 rounded text-gray-600 overflow-x-auto">
-                                      {JSON.stringify(toolCall.result, null, 2)}
-                                    </pre>
-                                  </div>
-                                  
-                                  {toolCall.error && (
-                                    <div>
-                                      <strong className="text-red-700">Error:</strong>
-                                      <p className="mt-1 p-2 bg-red-50 rounded text-red-600">
-                                        {toolCall.error}
-                                      </p>
-                                    </div>
-                                  )}
-                                  
-                                  <div className="text-gray-500">
-                                    <strong>Timestamp:</strong> {new Date(toolCall.timestamp).toLocaleTimeString()}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        <strong className="text-sm text-gray-700">Response:</strong>
-                        <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{result.response}</p>
+                        <span className="text-sm font-semibold">{agent.reputationScore ?? 50}/100</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                    </div>
 
-              <div className="p-6 border-t border-gray-200 flex justify-end">
-                <button
-                  onClick={closeTestModal}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+                    {/* Owner */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Owner</span>
+                      </div>
+                      <p className="text-sm font-mono break-all">{agent.owner}</p>
+                    </div>
+
+                    {/* Registered */}
+                    {agent.registeredAt && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Registered</span>
+                        </div>
+                        <p className="text-sm">{new Date(agent.registeredAt).toLocaleString()}</p>
+                      </div>
+                    )}
+
+                    {/* Privacy & Trust */}
+                    {agent.privacy_level && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Shield className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Privacy Level</span>
+                        </div>
+                        <span className="text-sm capitalize">{agent.privacy_level}</span>
+                      </div>
+                    )}
+
+                    {/* Tools */}
+                    {agent.tools?.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Wrench className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tools</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {agent.tools.map((t: string) => (
+                            <span key={t} className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Knowledge Sources */}
+                    {agent.knowledge_sources?.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Knowledge Sources</span>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {agent.knowledge_sources.map((k: string) => (
+                            <span key={k} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">{k}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* System Prompt */}
+                    {agent.systemPrompt && (
+                      <div>
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">System Prompt</span>
+                        <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{agent.systemPrompt}</p>
+                      </div>
+                    )}
+
+                    {/* Agent URI */}
+                    {agent.agentURI && (
+                      <div className="pt-2 border-t border-border">
+                        <a
+                          href={agent.agentURI.startsWith('ipfs://') ? `https://w3s.link/ipfs/${agent.agentURI.slice(7)}` : agent.agentURI}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                        >
+                          View Agent Card <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+          </SheetContent>
+        </Sheet>
+
       </div>
     </div>
   );

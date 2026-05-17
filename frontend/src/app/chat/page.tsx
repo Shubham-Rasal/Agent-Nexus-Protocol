@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import MultiAgentChat from "@/components/MultiAgentChat";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
-  return <MultiAgentChat />;
-} 
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(`/chat/chat_${Date.now()}`);
+  }, []);
+
+  return null;
+}
