@@ -25,10 +25,27 @@ function staticAgents() {
   }));
 }
 
+// Agents that aren't registered on-chain (e.g., local demo agents) — always prepended.
+function localAgents() {
+  return (agentsData.agents as any[])
+    .filter((a) => a.contractId === "local")
+    .map((a) => ({
+      id: a.id,
+      agentId: a.agentId,
+      owner: a.owner,
+      agentURI: a.agentURI,
+      contractId: a.contractId,
+      registeredAt: a.registeredAt,
+      name: a.name,
+      description: a.description,
+      reputationScore: a.reputationScore ?? 50,
+    }));
+}
+
 async function refreshCache(cacheKey: string, pageSize: number, skip: number) {
   try {
     const registered = await getRegisteredAgents(pageSize, skip);
-    const agents = registered.map((entry) => {
+    const onChain = registered.map((entry) => {
       const stored = storedAgents.get(String(entry.agentId));
       return {
         id: entry.agentId,
@@ -42,6 +59,7 @@ async function refreshCache(cacheKey: string, pageSize: number, skip: number) {
         reputationScore: 50,
       };
     });
+    const agents = [...localAgents(), ...onChain];
     pageCache.set(cacheKey, { agents, expiresAt: Date.now() + CACHE_TTL });
   } catch {
     // subgraph unavailable — cached static fallback stays in place
@@ -66,7 +84,12 @@ export async function GET(request: NextRequest) {
   }
 
   // Cold start: seed cache with static data immediately, kick off background refresh
-  const fallback = staticAgents();
+  const localFirst = localAgents();
+  const staticIds = new Set(localFirst.map(a => String(a.agentId)));
+  const fallback = [
+    ...localFirst,
+    ...staticAgents().filter(a => !staticIds.has(String(a.agentId))),
+  ];
   pageCache.set(cacheKey, { agents: fallback, expiresAt: Date.now() + CACHE_TTL });
   refreshCache(cacheKey, pageSize, skip);
   return NextResponse.json({ agents: fallback, page, pageSize, total: fallback.length });

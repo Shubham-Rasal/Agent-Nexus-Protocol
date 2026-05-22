@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai"
+import { google } from "@ai-sdk/google"
 import { convertToModelMessages, stepCountIs, streamText, tool, UIMessage } from "ai"
 import { z } from "zod"
 
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json()
 
   const result = streamText({
-    model: openai("gpt-4.1-mini"),
+    model: google("gemini-2.0-flash"),
     system: `You are a helpful assistant with access to tools. When a message starts with [Agent Context], you are acting AS that agent — adopt its persona completely.
 
 RULE 1 — Answering "what can you do":

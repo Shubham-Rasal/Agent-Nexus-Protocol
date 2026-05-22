@@ -1,6 +1,28 @@
 {
   "agents": [
     {
+      "id": "demo",
+      "agentId": "demo",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "http://localhost:3000/api/demo-x402-agent/card",
+      "contractId": "local",
+      "registeredAt": "2026-05-19T00:00:00.000Z",
+      "name": "Local x402 Demo Agent",
+      "description": "Local agent that verifies x402 signed payments end-to-end (no external deps).",
+      "reputationScore": 100
+    },
+    {
+      "id": "linkedin-jobs",
+      "agentId": "linkedin-jobs",
+      "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",
+      "agentURI": "http://localhost:3000/api/linkedin-jobs-agent/card",
+      "contractId": "local",
+      "registeredAt": "2026-05-22T00:00:00.000Z",
+      "name": "LinkedIn Jobs Agent (24h)",
+      "description": "Pay 0.01 USDC to fetch LinkedIn job postings created in the last 24 hours for any keyword + location.",
+      "reputationScore": 90
+    },
+    {
       "id": "16",
       "agentId": "16",
       "owner": "0x0a7c56744ed6fd786931e11e40f462cf213654b0",

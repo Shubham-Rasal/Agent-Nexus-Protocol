@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useSignTypedData, useSwitchChain } from "wagmi";
+import { useAccount, useSwitchChain, useWalletClient, usePublicClient } from "wagmi";
+import type { PublicClient } from "viem";
 import { baseSepolia } from "wagmi/chains";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2, Wallet, ExternalLink } from "lucide-react";
-import { toHex, pad, parseUnits } from "viem";
+import { x402Client } from "@x402/core/client";
+import { ExactEvmScheme } from "@x402/evm/exact/client";
+import { toClientEvmSigner } from "@x402/evm";
+import { wrapFetchWithPayment } from "@x402/fetch";
 
 interface PaymentRequest {
   serviceName: string;
@@ -19,24 +23,14 @@ interface PaymentRequest {
   inputParams: Record<string, unknown>;
 }
 
-type State = "idle" | "switching" | "signing" | "calling" | "done" | "denied" | "error";
-
-// EIP-712 domain + types for EIP-3009 transferWithAuthorization (USDC v2)
-const EIP3009_TYPES = {
-  TransferWithAuthorization: [
-    { name: "from", type: "address" },
-    { name: "to", type: "address" },
-    { name: "value", type: "uint256" },
-    { name: "validAfter", type: "uint256" },
-    { name: "validBefore", type: "uint256" },
-    { name: "nonce", type: "bytes32" },
-  ],
-} as const;
+type State = "idle" | "switching" | "calling" | "signing" | "done" | "denied" | "error";
 
 export function PaymentApprovalCard({ request }: { request: PaymentRequest }) {
   const { address, chain } = useAccount();
   const { switchChainAsync } = useSwitchChain();
-  const { signTypedDataAsync } = useSignTypedData();
+  const { data: walletClient } = useWalletClient();
+  // Pin to Base Sepolia so the client is correct even when connected chain differs
+  const publicClient = usePublicClient({ chainId: baseSepolia.id }) as PublicClient;
 
   const [state, setState] = useState<State>("idle");
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
@@ -48,97 +42,137 @@ export function PaymentApprovalCard({ request }: { request: PaymentRequest }) {
       setState("error");
       return;
     }
+    if (!walletClient || !publicClient) {
+      setErrorMsg("Wallet not ready � please reconnect.");
+      setState("error");
+      return;
+    }
+
+    setErrorMsg("");
 
     try {
       // 1. Switch to Base Sepolia if needed
       if (chain?.id !== baseSepolia.id) {
         setState("switching");
-        await switchChainAsync({ chainId: baseSepolia.id });
+        try {
+          await switchChainAsync({ chainId: baseSepolia.id });
+        } catch {
+          setErrorMsg("Please click \u2018Approve\u2019 in the MetaMask \u2018Switch to Base Sepolia\u2019 popup, then try again.");
+          setState("error");
+          return;
+        }
       }
 
-      setState("signing");
-
-      // 2. Build EIP-3009 authorization params
-      const amount = parseUnits(request.cost, 6); // USDC = 6 decimals
-      const validAfter = BigInt(0);
-      const validBefore = BigInt(Math.floor(Date.now() / 1000) + 300); // 5 min window
-      // Random 32-byte nonce
-      const nonceBytes = new Uint8Array(32);
-      crypto.getRandomValues(nonceBytes);
-      const nonce = toHex(nonceBytes) as `0x${string}`;
-
-      const domain = {
-        name: "USD Coin",
-        version: "2",
-        chainId: baseSepolia.id,
-        verifyingContract: request.asset as `0x${string}`,
-      };
-
-      const message = {
-        from: address,
-        to: request.payTo as `0x${string}`,
-        value: amount,
-        validAfter,
-        validBefore,
-        nonce,
-      };
-
-      // 3. Sign — opens wallet popup (signature only, no gas)
-      const signature = await signTypedDataAsync({
-        domain,
-        types: EIP3009_TYPES,
-        primaryType: "TransferWithAuthorization",
-        message,
-      });
-
-      // 4. Build x402 v2 payment payload and call service
       setState("calling");
 
-      const paymentPayload = {
-        x402Version: 2,
-        scheme: "exact",
-        network: request.network || "eip155:84532",
-        payload: {
-          signature,
-          authorization: {
-            from: address,
-            to: request.payTo,
-            value: amount.toString(),
-            validAfter: validAfter.toString(),
-            validBefore: validBefore.toString(),
-            nonce,
+      // Safety net: replace common placeholder strings with the real wallet address
+      const PLACEHOLDERS = ["USER_WALLET_ADDRESS", "YOUR_WALLET_ADDRESS", "WALLET_ADDRESS", "user_wallet_address"];
+      const resolvedInputParams = Object.fromEntries(
+        Object.entries(request.inputParams).map(([k, v]) => [
+          k,
+          PLACEHOLDERS.includes(String(v)) ? (address ?? "unknown") : v,
+        ])
+      );
+
+      // Pre-flight USDC balance check
+      if (request.asset && request.asset.startsWith("0x")) {
+        try {
+          const balance = await publicClient.readContract({
+            address: request.asset as `0x${string}`,
+            abi: [{ name: "balanceOf", type: "function", inputs: [{ name: "account", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" }] as const,
+            functionName: "balanceOf",
+            args: [address!],
+          }) as bigint;
+          const costNum = parseFloat(request.cost ?? "0");
+          const requiredRaw = BigInt(Math.ceil(costNum * 1_000_000));
+          if (balance < requiredRaw) {
+            const balanceFormatted = (Number(balance) / 1_000_000).toFixed(4);
+            setErrorMsg(
+              `Insufficient USDC � you have $${balanceFormatted} but need $${costNum} on Base Sepolia. Get test USDC at faucet.circle.com`
+            );
+            setState("error");
+            return;
+          }
+        } catch {
+          // Balance check failed � proceed anyway
+        }
+      }
+
+      // 2. Build x402 signer
+      const signer = toClientEvmSigner(
+        {
+          address,
+          signTypedData: async (msg) => {
+            setState("signing");
+            try {
+              const sig = await walletClient.signTypedData({
+                ...msg,
+                account: address,
+              } as Parameters<typeof walletClient.signTypedData>[0]);
+              setState("calling");
+              return sig;
+            } catch (sigErr) {
+              // Tag user-rejection so outer catch can give a clear message
+              throw new Error("__SIGN_REJECTED__: " + (sigErr instanceof Error ? sigErr.message : ""));
+            }
           },
         },
-      };
+        publicClient as Parameters<typeof toClientEvmSigner>[1],
+      );
 
-      const res = await fetch("/api/agent-service", {
+      const client = new x402Client();
+      client.register("eip155:*", new ExactEvmScheme(signer));
+      const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+
+      const res = await fetchWithPayment("/api/agent-service", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           endpoint: request.endpoint,
-          inputParams: request.inputParams,
-          payment: paymentPayload,
+          inputParams: resolvedInputParams,
         }),
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `Service error ${res.status}`);
+      if (!res.ok) {
+        if (res.status === 402) {
+          let balance = "unknown";
+          try {
+            const bal = await publicClient.readContract({
+              address: request.asset as `0x${string}`,
+              abi: [{ name: "balanceOf", type: "function", inputs: [{ name: "account", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" }] as const,
+              functionName: "balanceOf",
+              args: [address!],
+            }) as bigint;
+            balance = `$${(Number(bal) / 1_000_000).toFixed(4)} USDC`;
+          } catch { /* ignore */ }
+          const reason: string =
+            json?.invalidReason ??
+            json?.invalidMessage ??
+            (json?.error && json.error !== "Payment required" ? json.error : "") ??
+            "Unknown reason";
+          setErrorMsg(
+            `Payment verification failed: ${reason}. (Balance: ${balance})`,
+          );
+          setState("error");
+          return;
+        }
+        throw new Error(json.error ?? `Service error ${res.status}`);
+      }
+
       setResult(json);
       setState("done");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
-      if (
-        msg.toLowerCase().includes("rejected") ||
-        msg.toLowerCase().includes("denied") ||
-        msg.toLowerCase().includes("user rejected")
-      ) {
-        setState("denied");
+      if (msg.startsWith("__SIGN_REJECTED__")) {
+        setErrorMsg("You clicked Reject in MetaMask. Click \u2018Try Again\u2019 and then click \u2018Sign\u2019 in the MetaMask popup.");
       } else {
         setErrorMsg(msg);
-        setState("error");
       }
+      setState("error");
     }
   };
+
 
   return (
     <div className="my-2 rounded-xl border border-border bg-card shadow-sm overflow-hidden max-w-md">
@@ -172,34 +206,48 @@ export function PaymentApprovalCard({ request }: { request: PaymentRequest }) {
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground">Network: Base Sepolia · USDC</p>
-        <p className="text-xs text-muted-foreground">Signing only — no gas required</p>
+        <p className="text-xs text-muted-foreground">Network: Base Sepolia � USDC</p>
+        <p className="text-xs text-muted-foreground">Signing only � no gas required</p>
+        
+        {/* Step hint shown before approval */}
+        {state === "idle" && (
+          <p className="text-xs text-muted-foreground/70">
+            MetaMask will show 1�2 prompts: switch network (if needed) then sign a gasless message.
+          </p>
+        )}
 
         {state === "idle" && (
           <div className="flex gap-2 pt-1">
             <Button size="sm" onClick={handleApprove} className="flex-1">
-              Approve & Sign
+              Approve &amp; Sign
             </Button>
             <Button size="sm" variant="outline" onClick={() => setState("denied")} className="flex-1">
-              Deny
+              Cancel
             </Button>
           </div>
         )}
 
         {state === "switching" && (
-          <Status icon={<Loader2 className="h-4 w-4 animate-spin" />} text="Switching to Base Sepolia…" />
-        )}
-        {state === "signing" && (
-          <Status icon={<Loader2 className="h-4 w-4 animate-spin" />} text="Sign the payment in your wallet (no gas)…" />
+          <Status icon={<Loader2 className="h-4 w-4 animate-spin" />} text="MetaMask: accept the \u2018Switch to Base Sepolia\u2019 prompt�" />
         )}
         {state === "calling" && (
-          <Status icon={<Loader2 className="h-4 w-4 animate-spin" />} text="Calling service…" />
+          <Status icon={<Loader2 className="h-4 w-4 animate-spin" />} text="Contacting service�" />
+        )}
+        {state === "signing" && (
+          <Status icon={<Loader2 className="h-4 w-4 animate-spin" />} text="MetaMask: click \u2018Sign\u2019 to authorise the gasless payment�" />
         )}
         {state === "denied" && (
-          <Status icon={<XCircle className="h-4 w-4 text-destructive" />} text="Payment denied." />
+          <div className="space-y-2">
+            <Status icon={<XCircle className="h-4 w-4 text-muted-foreground" />} text="Cancelled." />
+          </div>
         )}
         {state === "error" && (
-          <Status icon={<XCircle className="h-4 w-4 text-destructive" />} text={errorMsg} error />
+          <div className="space-y-2">
+            <Status icon={<XCircle className="h-4 w-4 text-destructive" />} text={errorMsg} error />
+            <Button size="sm" variant="outline" onClick={() => { setState("idle"); setErrorMsg(""); }} className="w-full">
+              Try Again
+            </Button>
+          </div>
         )}
         {state === "done" && result && (
           <div className="space-y-2">
