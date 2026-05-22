@@ -74,6 +74,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "ethers": "^6.15.0",
+    "highlight.js": "^11.11.1",
     "libp2p": "^2.10.0",
     "llamaindex": "^0.9.17",
     "lucide-react": "^0.485.0",
