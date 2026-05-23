@@ -1,0 +1,9 @@
+allowBuilds:
+  '@ipshipyard/node-datachannel': true
+  '@parcel/watcher': true
+  bufferutil: true
+  keccak: true
+  protobufjs: true
+  sharp: true
+  tree-sitter: true
+  utf-8-validate: true

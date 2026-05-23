@@ -34,8 +34,12 @@ export async function GET(
       payTo: s.payTo ?? s.payment?.payTo ?? agentWalletAddress,
       asset: s.asset ?? s.payment?.asset ?? "",
       network: s.network ?? s.payment?.network ?? "",
-      cost: s.cost ?? s.payment?.amount ?? "",
+      // Prefer the human-readable cost ("0.001") over the raw on-chain amount ("1000")
+      // so display + balance-check + LLM tool params all use the same units.
+      cost: s.cost ?? s.payment?.cost ?? s.payment?.amount ?? "",
       currency: s.currency ?? s.payment?.currency ?? "",
+      // Raw on-chain amount in minor units (e.g. "1000" = 0.001 USDC) — kept for diagnostics.
+      amount: s.payment?.amount ?? "",
     }));
 
   return NextResponse.json({
